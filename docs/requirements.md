@@ -9,7 +9,7 @@ Author: Phan Tuan Thanh - CE190595
 | Bài tập | SBA301 Assignment 02 - CRUD Application with RESTful Web Service and ReactJS |
 | Project / database | `A2PhanTuanThanh_SE1910` |
 | Công nghệ bắt buộc | Spring Boot 3, SQL Server, Spring Data JPA, ReactJS và axios |
-| Trạng thái | Sau M1: nền tảng backend đã chạy; chức năng nghiệp vụ chưa triển khai |
+| Trạng thái | M2: entity/repository và persistence SQL Server; API/auth/React chưa triển khai |
 | Nguồn yêu cầu | Assignment 02 (5 trang); C2 và ảnh cấu trúc docs do sinh viên cung cấp trong chat |
 | Cách trình bày | Theo bộ docs Assignment 01 của sinh viên; nội dung nghiệp vụ theo Assignment 02 |
 
@@ -25,9 +25,9 @@ Các quyết định dưới đây giữ mã DEC để đối chiếu với thi�
 
 | ID | Nội dung | Trạng thái |
 |---|---|---|
-| DEC-01 | Sơ đồ có NewsTag nhưng phần chữ giới hạn một tag thuộc tối đa một bài. Dự kiến giữ bảng nối và unique TagID. | Cần chốt trước mapping |
-| DEC-02 | PDF không nêu kiểu/độ dài. Giới hạn trong design là đề xuất, phải đồng bộ entity/DTO/React. | Dự kiến |
-| DEC-03 | Script tạo database rỗng; JPA tạo bảng/FK ở M2. | Đã tạo DB; cần xác nhận cách hiểu yêu cầu |
+| DEC-01 | Giữ NewsTag với PK ghép NewsArticleID+TagID và unique TagID: một tag thuộc 0 hoặc 1 bài theo phần chữ tr.3. | Đã áp dụng tạm ở M2 theo yêu cầu sinh viên; chưa có xác nhận giảng viên |
+| DEC-02 | PDF không nêu kiểu/độ dài/nullable. Entity áp dụng giới hạn ở design; DTO/React sau này phải đồng bộ. | Lựa chọn triển khai M2, không phải thông số bắt buộc của đề |
+| DEC-03 | Giữ script tạo database rỗng; JPA/Hibernate update tạo bảng/FK, không reset dữ liệu. | Đã áp dụng ở M2 theo yêu cầu sinh viên; cách hiểu chưa được giảng viên xác nhận |
 | DEC-04 | Admin và Staff dùng chung API đăng nhập; admin demo lấy từ cấu hình. | Dự kiến |
 | DEC-05 | Category chưa có bài nhưng có con: cho xóa và đặt parent của con thành null trong transaction. | Dự kiến |
 | DEC-06 | Account chưa tạo bài nhưng từng sửa bài: đặt UpdatedByID thành null rồi xóa account, giữ bài. | Dự kiến |
@@ -93,6 +93,6 @@ Admin không tự động kế thừa quyền Staff. Module news cho Staff quả
 
 ## 7. Tiến độ và ngoài phạm vi
 
-M1 đã kiểm tra Boot 3, tên BE/DB và kết nối SQL Server. REQ-01 còn React; REQ-02 còn API/ba lớp; REQ-03 còn schema/persistence; REQ-19 còn minh chứng IntelliJ. Chi tiết ở [development-plan](development-plan.md).
+M1 đã kiểm tra Boot 3, tên BE/DB và kết nối SQL Server. M2 bổ sung REQ-03/05 về schema/persistence và phần validation/constraint lưu trữ của REQ-17; kết quả thực chạy ở [test-matrix](test-matrix.md). REQ-01 còn React; REQ-02 còn API/ba lớp; REQ-17 còn DTO/FE/nghiệp vụ; REQ-19 còn minh chứng IntelliJ. Chi tiết ở [development-plan](development-plan.md).
 
 Approval workflow, scheduling và analytics được nhắc trong phần giới thiệu nhưng không thuộc Main Functions. Logo AI, `Admin/Admin` và mock localStorage của Assignment 01 không phải yêu cầu Assignment 02. JWT là lựa chọn thiết kế, không phải yêu cầu bắt buộc của đề.

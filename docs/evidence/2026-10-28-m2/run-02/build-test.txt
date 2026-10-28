@@ -1,0 +1,218 @@
+[INFO] Scanning for projects...
+[INFO] Loaded 24270 auto-discovered prefixes for remote repository central (prefixes-central.txt)
+[INFO] 
+[INFO] -------------------< fpt.edu:A2PhanTuanThanh_SE1910 >-------------------
+[INFO] Building A2PhanTuanThanh_SE1910 0.0.1-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[WARNING] Could not transfer metadata /.meta/prefixes.txt from/to apache.snapshots (https://repository.apache.org/snapshots): Connect to repository.apache.org:443 [repository.apache.org/37.27.138.133] failed: Connection timed out: getsockopt
+[INFO] 
+[INFO] --- clean:3.4.1:clean (default-clean) @ A2PhanTuanThanh_SE1910 ---
+[INFO] Deleting D:\FA2026\SBA301\A2PhanTuanThanh_SE1910\target
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ A2PhanTuanThanh_SE1910 ---
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] Copying 0 resource from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.14.1:compile (default-compile) @ A2PhanTuanThanh_SE1910 ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 12 source files with javac [debug parameters release 21] to target\classes
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ A2PhanTuanThanh_SE1910 ---
+[INFO] skip non existing resourceDirectory D:\FA2026\SBA301\A2PhanTuanThanh_SE1910\src\test\resources
+[INFO] 
+[INFO] --- compiler:3.14.1:testCompile (default-testCompile) @ A2PhanTuanThanh_SE1910 ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 3 source files with javac [debug parameters release 21] to target\test-classes
+[INFO] 
+[INFO] --- surefire:3.5.6:test (default-test) @ A2PhanTuanThanh_SE1910 ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running fpt.edu.a2phantuanthanh_se1910.A2PhanTuanThanhSe1910ApplicationTests
+18:22:55.454 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [fpt.edu.a2phantuanthanh_se1910.A2PhanTuanThanhSe1910ApplicationTests]: A2PhanTuanThanhSe1910ApplicationTests does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+18:22:55.586 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration fpt.edu.a2phantuanthanh_se1910.A2PhanTuanThanhSe1910Application for test class fpt.edu.a2phantuanthanh_se1910.A2PhanTuanThanhSe1910ApplicationTests
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::               (v3.5.16)
+
+2026-10-28T18:22:56.157+07:00  INFO 9940 --- [A2PhanTuanThanh_SE1910] [           main] .a.A2PhanTuanThanhSe1910ApplicationTests : Starting A2PhanTuanThanhSe1910ApplicationTests using Java 21.0.8 with PID 9940 (started by Phan Tuan Thanh in D:\FA2026\SBA301\A2PhanTuanThanh_SE1910)
+2026-10-28T18:22:56.159+07:00  INFO 9940 --- [A2PhanTuanThanh_SE1910] [           main] .a.A2PhanTuanThanhSe1910ApplicationTests : No active profile set, falling back to 1 default profile: "default"
+2026-10-28T18:22:56.958+07:00  INFO 9940 --- [A2PhanTuanThanh_SE1910] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-10-28T18:22:57.038+07:00  INFO 9940 --- [A2PhanTuanThanh_SE1910] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 67 ms. Found 5 JPA repository interfaces.
+2026-10-28T18:22:57.665+07:00  INFO 9940 --- [A2PhanTuanThanh_SE1910] [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-10-28T18:22:57.795+07:00  INFO 9940 --- [A2PhanTuanThanh_SE1910] [           main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.6.53.Final
+2026-10-28T18:22:57.861+07:00  INFO 9940 --- [A2PhanTuanThanh_SE1910] [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-10-28T18:22:58.505+07:00  INFO 9940 --- [A2PhanTuanThanh_SE1910] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-10-28T18:22:58.574+07:00  INFO 9940 --- [A2PhanTuanThanh_SE1910] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-10-28T18:22:59.346+07:00  INFO 9940 --- [A2PhanTuanThanh_SE1910] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection ConnectionID:1 ClientConnectionId: 03dbe7ba-6b1e-4194-ad21-4dffb0355fee
+2026-10-28T18:22:59.350+07:00  INFO 9940 --- [A2PhanTuanThanh_SE1910] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-10-28T18:22:59.544+07:00  INFO 9940 --- [A2PhanTuanThanh_SE1910] [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
+	Database driver: undefined/unknown
+	Database version: 16.0
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-10-28T18:23:01.263+07:00  INFO 9940 --- [A2PhanTuanThanh_SE1910] [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-10-28T18:23:02.123+07:00  INFO 9940 --- [A2PhanTuanThanh_SE1910] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-10-28T18:23:03.508+07:00  INFO 9940 --- [A2PhanTuanThanh_SE1910] [           main] .a.A2PhanTuanThanhSe1910ApplicationTests : Started A2PhanTuanThanhSe1910ApplicationTests in 7.746 seconds (process running for 8.842)
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+Java HotSpot(TM) 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+WARNING: A Java agent has been loaded dynamically (C:\Users\FPT\.m2\repository\net\bytebuddy\byte-buddy-agent\1.17.8\byte-buddy-agent-1.17.8.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 8.958 s -- in fpt.edu.a2phantuanthanh_se1910.A2PhanTuanThanhSe1910ApplicationTests
+[INFO] Running fpt.edu.a2phantuanthanh_se1910.persistence.NewsPersistenceTests
+2026-10-28T18:23:04.311+07:00  INFO 9940 --- [A2PhanTuanThanh_SE1910] [           main] o.a.maven.surefire.booter.ForkedBooter   : Starting ForkedBooter v3.5.6 using Java 21.0.8 with PID 9940 (started by Phan Tuan Thanh in D:\FA2026\SBA301\A2PhanTuanThanh_SE1910)
+2026-10-28T18:23:04.312+07:00  INFO 9940 --- [A2PhanTuanThanh_SE1910] [           main] o.a.maven.surefire.booter.ForkedBooter   : No active profile set, falling back to 1 default profile: "default"
+2026-10-28T18:23:04.491+07:00  INFO 9940 --- [A2PhanTuanThanh_SE1910] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-10-28T18:23:04.509+07:00  INFO 9940 --- [A2PhanTuanThanh_SE1910] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 17 ms. Found 5 JPA repository interfaces.
+2026-10-28T18:23:04.611+07:00  INFO 9940 --- [A2PhanTuanThanh_SE1910] [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-10-28T18:23:04.613+07:00  INFO 9940 --- [A2PhanTuanThanh_SE1910] [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-10-28T18:23:04.624+07:00  INFO 9940 --- [A2PhanTuanThanh_SE1910] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-10-28T18:23:04.625+07:00  INFO 9940 --- [A2PhanTuanThanh_SE1910] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Starting...
+2026-10-28T18:23:04.656+07:00  INFO 9940 --- [A2PhanTuanThanh_SE1910] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-2 - Added connection ConnectionID:11 ClientConnectionId: 86f03c4c-e9ee-4a00-ace6-26d810abd071
+2026-10-28T18:23:04.656+07:00  INFO 9940 --- [A2PhanTuanThanh_SE1910] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Start completed.
+2026-10-28T18:23:04.708+07:00  INFO 9940 --- [A2PhanTuanThanh_SE1910] [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-2)']
+	Database driver: undefined/unknown
+	Database version: 16.0
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-10-28T18:23:04.774+07:00  INFO 9940 --- [A2PhanTuanThanh_SE1910] [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-10-28T18:23:05.381+07:00  INFO 9940 --- [A2PhanTuanThanh_SE1910] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-10-28T18:23:05.521+07:00  INFO 9940 --- [A2PhanTuanThanh_SE1910] [           main] o.a.maven.surefire.booter.ForkedBooter   : Started ForkedBooter in 1.263 seconds (process running for 10.856)
+2026-10-28T18:23:07.061+07:00  INFO 9940 --- [A2PhanTuanThanh_SE1910] [           main] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-10-28T18:23:07.065+07:00  INFO 9940 --- [A2PhanTuanThanh_SE1910] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Shutdown initiated...
+2026-10-28T18:23:07.072+07:00  INFO 9940 --- [A2PhanTuanThanh_SE1910] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Shutdown completed.
+2026-10-28T18:23:07.105+07:00  INFO 9940 --- [A2PhanTuanThanh_SE1910] [           main] o.a.maven.surefire.booter.ForkedBooter   : Starting ForkedBooter v3.5.6 using Java 21.0.8 with PID 9940 (started by Phan Tuan Thanh in D:\FA2026\SBA301\A2PhanTuanThanh_SE1910)
+2026-10-28T18:23:07.106+07:00  INFO 9940 --- [A2PhanTuanThanh_SE1910] [           main] o.a.maven.surefire.booter.ForkedBooter   : No active profile set, falling back to 1 default profile: "default"
+2026-10-28T18:23:07.273+07:00  INFO 9940 --- [A2PhanTuanThanh_SE1910] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-10-28T18:23:07.292+07:00  INFO 9940 --- [A2PhanTuanThanh_SE1910] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 17 ms. Found 5 JPA repository interfaces.
+2026-10-28T18:23:07.374+07:00  INFO 9940 --- [A2PhanTuanThanh_SE1910] [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-10-28T18:23:07.378+07:00  INFO 9940 --- [A2PhanTuanThanh_SE1910] [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-10-28T18:23:07.391+07:00  INFO 9940 --- [A2PhanTuanThanh_SE1910] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-10-28T18:23:07.392+07:00  INFO 9940 --- [A2PhanTuanThanh_SE1910] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-3 - Starting...
+2026-10-28T18:23:07.422+07:00  INFO 9940 --- [A2PhanTuanThanh_SE1910] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-3 - Added connection ConnectionID:21 ClientConnectionId: d37713b2-275a-4fb0-8106-2724e86ad320
+2026-10-28T18:23:07.422+07:00  INFO 9940 --- [A2PhanTuanThanh_SE1910] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-3 - Start completed.
+2026-10-28T18:23:07.469+07:00  INFO 9940 --- [A2PhanTuanThanh_SE1910] [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-3)']
+	Database driver: undefined/unknown
+	Database version: 16.0
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-10-28T18:23:07.536+07:00  INFO 9940 --- [A2PhanTuanThanh_SE1910] [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-10-28T18:23:08.051+07:00  INFO 9940 --- [A2PhanTuanThanh_SE1910] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-10-28T18:23:08.166+07:00  INFO 9940 --- [A2PhanTuanThanh_SE1910] [           main] o.a.maven.surefire.booter.ForkedBooter   : Started ForkedBooter in 1.089 seconds (process running for 13.501)
+2026-10-28T18:23:08.360+07:00  INFO 9940 --- [A2PhanTuanThanh_SE1910] [           main] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-10-28T18:23:08.360+07:00  INFO 9940 --- [A2PhanTuanThanh_SE1910] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-3 - Shutdown initiated...
+2026-10-28T18:23:08.363+07:00  INFO 9940 --- [A2PhanTuanThanh_SE1910] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-3 - Shutdown completed.
+2026-10-28T18:23:08.393+07:00  INFO 9940 --- [A2PhanTuanThanh_SE1910] [           main] o.a.maven.surefire.booter.ForkedBooter   : Starting ForkedBooter v3.5.6 using Java 21.0.8 with PID 9940 (started by Phan Tuan Thanh in D:\FA2026\SBA301\A2PhanTuanThanh_SE1910)
+2026-10-28T18:23:08.393+07:00  INFO 9940 --- [A2PhanTuanThanh_SE1910] [           main] o.a.maven.surefire.booter.ForkedBooter   : No active profile set, falling back to 1 default profile: "default"
+2026-10-28T18:23:08.530+07:00  INFO 9940 --- [A2PhanTuanThanh_SE1910] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-10-28T18:23:08.551+07:00  INFO 9940 --- [A2PhanTuanThanh_SE1910] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 18 ms. Found 5 JPA repository interfaces.
+2026-10-28T18:23:08.626+07:00  INFO 9940 --- [A2PhanTuanThanh_SE1910] [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-10-28T18:23:08.629+07:00  INFO 9940 --- [A2PhanTuanThanh_SE1910] [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-10-28T18:23:08.642+07:00  INFO 9940 --- [A2PhanTuanThanh_SE1910] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-10-28T18:23:08.643+07:00  INFO 9940 --- [A2PhanTuanThanh_SE1910] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-4 - Starting...
+2026-10-28T18:23:08.666+07:00  INFO 9940 --- [A2PhanTuanThanh_SE1910] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-4 - Added connection ConnectionID:31 ClientConnectionId: 5a0fab96-6afa-45c3-983d-2b055b835ec5
+2026-10-28T18:23:08.667+07:00  INFO 9940 --- [A2PhanTuanThanh_SE1910] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-4 - Start completed.
+2026-10-28T18:23:08.709+07:00  INFO 9940 --- [A2PhanTuanThanh_SE1910] [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-4)']
+	Database driver: undefined/unknown
+	Database version: 16.0
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-10-28T18:23:08.776+07:00  INFO 9940 --- [A2PhanTuanThanh_SE1910] [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-10-28T18:23:10.046+07:00  INFO 9940 --- [A2PhanTuanThanh_SE1910] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-10-28T18:23:10.498+07:00  INFO 9940 --- [A2PhanTuanThanh_SE1910] [           main] o.a.maven.surefire.booter.ForkedBooter   : Started ForkedBooter in 2.13 seconds (process running for 15.833)
+TC-DB-02 PASS: committed Vietnamese fixture survives two application context restarts (validate/update)
+2026-10-28T18:23:11.490+07:00  INFO 9940 --- [A2PhanTuanThanh_SE1910] [           main] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-10-28T18:23:11.491+07:00  INFO 9940 --- [A2PhanTuanThanh_SE1910] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-4 - Shutdown initiated...
+2026-10-28T18:23:11.494+07:00  INFO 9940 --- [A2PhanTuanThanh_SE1910] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-4 - Shutdown completed.
+[ERROR] Tests run: 7, Failures: 2, Errors: 0, Skipped: 0, Time elapsed: 7.249 s <<< FAILURE! -- in fpt.edu.a2phantuanthanh_se1910.persistence.NewsPersistenceTests
+[ERROR] fpt.edu.a2phantuanthanh_se1910.persistence.NewsPersistenceTests.jpaCreatesExactTablesColumnsKeysAndConstraints -- Time elapsed: 0.322 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: 
+
+expected: 4
+ but was: 9
+	at fpt.edu.a2phantuanthanh_se1910.persistence.NewsPersistenceTests.jpaCreatesExactTablesColumnsKeysAndConstraints(NewsPersistenceTests.java:146)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+
+[ERROR] fpt.edu.a2phantuanthanh_se1910.persistence.NewsPersistenceTests.failedLinkRollsBackFlushedArticleAndNewTag -- Time elapsed: 0.167 s <<< FAILURE!
+java.lang.AssertionError: 
+
+Expecting actual throwable to be an instance of:
+  org.springframework.dao.DataIntegrityViolationException
+but was:
+  jakarta.validation.ConstraintViolationException: Validation failed for classes [fpt.edu.a2phantuanthanh_se1910.entity.NewsTagId] during persist time for groups [jakarta.validation.groups.Default, ]
+List of constraint violations:[
+	ConstraintViolationImpl{interpolatedMessage='must be greater than 0', propertyPath=id.newsArticleId, rootBeanClass=class fpt.edu.a2phantuanthanh_se1910.entity.NewsTag, messageTemplate='{jakarta.validation.constraints.Positive.message}'}
+]
+	at org.hibernate.boot.beanvalidation.BeanValidationEventListener.validate(BeanValidationEventListener.java:176)
+	at org.hibernate.boot.beanvalidation.BeanValidationEventListener.onPreInsert(BeanValidationEventListener.java:88)
+	at org.hibernate.action.internal.EntityInsertAction.preInsert(EntityInsertAction.java:251)
+	...(123 remaining lines not displayed - this can be changed with Assertions.setMaxStackTraceElementsDisplayed)
+	at fpt.edu.a2phantuanthanh_se1910.persistence.NewsPersistenceTests.failedLinkRollsBackFlushedArticleAndNewTag(NewsPersistenceTests.java:310)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+
+[INFO] 
+[INFO] Results:
+[INFO] 
+[ERROR] Failures: 
+[ERROR]   NewsPersistenceTests.failedLinkRollsBackFlushedArticleAndNewTag:310 
+Expecting actual throwable to be an instance of:
+  org.springframework.dao.DataIntegrityViolationException
+but was:
+  jakarta.validation.ConstraintViolationException: Validation failed for classes [fpt.edu.a2phantuanthanh_se1910.entity.NewsTagId] during persist time for groups [jakarta.validation.groups.Default, ]
+List of constraint violations:[
+	ConstraintViolationImpl{interpolatedMessage='must be greater than 0', propertyPath=id.newsArticleId, rootBeanClass=class fpt.edu.a2phantuanthanh_se1910.entity.NewsTag, messageTemplate='{jakarta.validation.constraints.Positive.message}'}
+]
+	at org.hibernate.boot.beanvalidation.BeanValidationEventListener.validate(BeanValidationEventListener.java:176)
+	at org.hibernate.boot.beanvalidation.BeanValidationEventListener.onPreInsert(BeanValidationEventListener.java:88)
+	at org.hibernate.action.internal.EntityInsertAction.preInsert(EntityInsertAction.java:251)
+	...(123 remaining lines not displayed - this can be changed with Assertions.setMaxStackTraceElementsDisplayed)
+[ERROR]   NewsPersistenceTests.jpaCreatesExactTablesColumnsKeysAndConstraints:146 
+expected: 4
+ but was: 9
+[INFO] 
+[ERROR] Tests run: 9, Failures: 2, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[ERROR] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  45.468 s
+[INFO] Finished at: 2026-10-28T18:23:11+07:00
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-surefire-plugin:3.5.6:test (default-test) on project A2PhanTuanThanh_SE1910: There are test failures.
+[ERROR] 
+[ERROR] See D:\FA2026\SBA301\A2PhanTuanThanh_SE1910\target\surefire-reports for the individual test results.
+[ERROR] See dump files (if any exist) [date].dump, [date]-jvmRun[N].dump and [date].dumpstream.
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException

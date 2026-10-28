@@ -1,0 +1,10 @@
+DatabaseName
+------------
+A2PhanTuanThanh_SE1910
+name
+----
+Category
+NewsArticle
+NewsTag
+SystemAccount
+Tag

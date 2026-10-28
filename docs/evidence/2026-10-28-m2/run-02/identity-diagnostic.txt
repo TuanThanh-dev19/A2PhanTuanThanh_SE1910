@@ -1,0 +1,11 @@
+TableName name
+--------- ----
+sqlagent_job_history instance_id
+sqlagent_jobsteps_logs log_id
+Category CategoryID
+NewsArticle NewsArticleID
+SystemAccount AccountID
+Tag TagID
+queue_messages_1977058079 queuing_order
+queue_messages_2009058193 queuing_order
+queue_messages_2041058307 queuing_order

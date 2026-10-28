@@ -1,0 +1,173 @@
+[INFO] Scanning for projects...
+[INFO] Loaded 24270 auto-discovered prefixes for remote repository central (prefixes-central.txt)
+[INFO] 
+[INFO] -------------------< fpt.edu:A2PhanTuanThanh_SE1910 >-------------------
+[INFO] Building A2PhanTuanThanh_SE1910 0.0.1-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[WARNING] Could not transfer metadata /.meta/prefixes.txt from/to apache.snapshots (https://repository.apache.org/snapshots): Connect to repository.apache.org:443 [repository.apache.org/37.27.138.133] failed: Connection timed out: getsockopt
+[INFO] 
+[INFO] --- clean:3.4.1:clean (default-clean) @ A2PhanTuanThanh_SE1910 ---
+[INFO] Deleting D:\FA2026\SBA301\A2PhanTuanThanh_SE1910\target
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ A2PhanTuanThanh_SE1910 ---
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] Copying 0 resource from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.14.1:compile (default-compile) @ A2PhanTuanThanh_SE1910 ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 12 source files with javac [debug parameters release 21] to target\classes
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ A2PhanTuanThanh_SE1910 ---
+[INFO] skip non existing resourceDirectory D:\FA2026\SBA301\A2PhanTuanThanh_SE1910\src\test\resources
+[INFO] 
+[INFO] --- compiler:3.14.1:testCompile (default-testCompile) @ A2PhanTuanThanh_SE1910 ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 3 source files with javac [debug parameters release 21] to target\test-classes
+[INFO] 
+[INFO] --- surefire:3.5.6:test (default-test) @ A2PhanTuanThanh_SE1910 ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running fpt.edu.a2phantuanthanh_se1910.A2PhanTuanThanhSe1910ApplicationTests
+18:26:03.135 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [fpt.edu.a2phantuanthanh_se1910.A2PhanTuanThanhSe1910ApplicationTests]: A2PhanTuanThanhSe1910ApplicationTests does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+18:26:03.243 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration fpt.edu.a2phantuanthanh_se1910.A2PhanTuanThanhSe1910Application for test class fpt.edu.a2phantuanthanh_se1910.A2PhanTuanThanhSe1910ApplicationTests
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::               (v3.5.16)
+
+2026-10-28T18:26:03.678+07:00  INFO 20596 --- [A2PhanTuanThanh_SE1910] [           main] .a.A2PhanTuanThanhSe1910ApplicationTests : Starting A2PhanTuanThanhSe1910ApplicationTests using Java 21.0.8 with PID 20596 (started by Phan Tuan Thanh in D:\FA2026\SBA301\A2PhanTuanThanh_SE1910)
+2026-10-28T18:26:03.680+07:00  INFO 20596 --- [A2PhanTuanThanh_SE1910] [           main] .a.A2PhanTuanThanhSe1910ApplicationTests : No active profile set, falling back to 1 default profile: "default"
+2026-10-28T18:26:04.340+07:00  INFO 20596 --- [A2PhanTuanThanh_SE1910] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-10-28T18:26:04.417+07:00  INFO 20596 --- [A2PhanTuanThanh_SE1910] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 66 ms. Found 5 JPA repository interfaces.
+2026-10-28T18:26:04.896+07:00  INFO 20596 --- [A2PhanTuanThanh_SE1910] [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-10-28T18:26:04.959+07:00  INFO 20596 --- [A2PhanTuanThanh_SE1910] [           main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.6.53.Final
+2026-10-28T18:26:05.005+07:00  INFO 20596 --- [A2PhanTuanThanh_SE1910] [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-10-28T18:26:05.393+07:00  INFO 20596 --- [A2PhanTuanThanh_SE1910] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-10-28T18:26:05.444+07:00  INFO 20596 --- [A2PhanTuanThanh_SE1910] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-10-28T18:26:06.062+07:00  INFO 20596 --- [A2PhanTuanThanh_SE1910] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection ConnectionID:1 ClientConnectionId: 91e9fe5a-4f76-45d2-aa36-0424446ba5d4
+2026-10-28T18:26:06.065+07:00  INFO 20596 --- [A2PhanTuanThanh_SE1910] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-10-28T18:26:06.195+07:00  INFO 20596 --- [A2PhanTuanThanh_SE1910] [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
+	Database driver: undefined/unknown
+	Database version: 16.0
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-10-28T18:26:07.642+07:00  INFO 20596 --- [A2PhanTuanThanh_SE1910] [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-10-28T18:26:09.346+07:00  INFO 20596 --- [A2PhanTuanThanh_SE1910] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-10-28T18:26:10.742+07:00  INFO 20596 --- [A2PhanTuanThanh_SE1910] [           main] .a.A2PhanTuanThanhSe1910ApplicationTests : Started A2PhanTuanThanhSe1910ApplicationTests in 7.351 seconds (process running for 8.345)
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+WARNING: A Java agent has been loaded dynamically (C:\Users\FPT\.m2\repository\net\bytebuddy\byte-buddy-agent\1.17.8\byte-buddy-agent-1.17.8.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+Java HotSpot(TM) 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 8.450 s -- in fpt.edu.a2phantuanthanh_se1910.A2PhanTuanThanhSe1910ApplicationTests
+[INFO] Running fpt.edu.a2phantuanthanh_se1910.persistence.NewsPersistenceTests
+2026-10-28T18:26:11.494+07:00  INFO 20596 --- [A2PhanTuanThanh_SE1910] [           main] o.a.maven.surefire.booter.ForkedBooter   : Starting ForkedBooter v3.5.6 using Java 21.0.8 with PID 20596 (started by Phan Tuan Thanh in D:\FA2026\SBA301\A2PhanTuanThanh_SE1910)
+2026-10-28T18:26:11.495+07:00  INFO 20596 --- [A2PhanTuanThanh_SE1910] [           main] o.a.maven.surefire.booter.ForkedBooter   : No active profile set, falling back to 1 default profile: "default"
+2026-10-28T18:26:11.661+07:00  INFO 20596 --- [A2PhanTuanThanh_SE1910] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-10-28T18:26:11.679+07:00  INFO 20596 --- [A2PhanTuanThanh_SE1910] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 16 ms. Found 5 JPA repository interfaces.
+2026-10-28T18:26:11.766+07:00  INFO 20596 --- [A2PhanTuanThanh_SE1910] [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-10-28T18:26:11.771+07:00  INFO 20596 --- [A2PhanTuanThanh_SE1910] [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-10-28T18:26:11.783+07:00  INFO 20596 --- [A2PhanTuanThanh_SE1910] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-10-28T18:26:11.784+07:00  INFO 20596 --- [A2PhanTuanThanh_SE1910] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Starting...
+2026-10-28T18:26:11.813+07:00  INFO 20596 --- [A2PhanTuanThanh_SE1910] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-2 - Added connection ConnectionID:11 ClientConnectionId: f241a5bc-7d26-4238-8a6b-69e82627090c
+2026-10-28T18:26:11.814+07:00  INFO 20596 --- [A2PhanTuanThanh_SE1910] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Start completed.
+2026-10-28T18:26:11.864+07:00  INFO 20596 --- [A2PhanTuanThanh_SE1910] [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-2)']
+	Database driver: undefined/unknown
+	Database version: 16.0
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-10-28T18:26:11.931+07:00  INFO 20596 --- [A2PhanTuanThanh_SE1910] [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-10-28T18:26:12.507+07:00  INFO 20596 --- [A2PhanTuanThanh_SE1910] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-10-28T18:26:12.667+07:00  INFO 20596 --- [A2PhanTuanThanh_SE1910] [           main] o.a.maven.surefire.booter.ForkedBooter   : Started ForkedBooter in 1.212 seconds (process running for 10.269)
+TC-DB-01 PASS: 5 tables, 26 columns, 5 PKs, 6 FKs, 2 unique constraints, 3 checks
+2026-10-28T18:26:14.296+07:00  INFO 20596 --- [A2PhanTuanThanh_SE1910] [           main] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-10-28T18:26:14.299+07:00  INFO 20596 --- [A2PhanTuanThanh_SE1910] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Shutdown initiated...
+2026-10-28T18:26:14.308+07:00  INFO 20596 --- [A2PhanTuanThanh_SE1910] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Shutdown completed.
+2026-10-28T18:26:14.345+07:00  INFO 20596 --- [A2PhanTuanThanh_SE1910] [           main] o.a.maven.surefire.booter.ForkedBooter   : Starting ForkedBooter v3.5.6 using Java 21.0.8 with PID 20596 (started by Phan Tuan Thanh in D:\FA2026\SBA301\A2PhanTuanThanh_SE1910)
+2026-10-28T18:26:14.346+07:00  INFO 20596 --- [A2PhanTuanThanh_SE1910] [           main] o.a.maven.surefire.booter.ForkedBooter   : No active profile set, falling back to 1 default profile: "default"
+2026-10-28T18:26:15.051+07:00  INFO 20596 --- [A2PhanTuanThanh_SE1910] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-10-28T18:26:15.096+07:00  INFO 20596 --- [A2PhanTuanThanh_SE1910] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 41 ms. Found 5 JPA repository interfaces.
+2026-10-28T18:26:15.317+07:00  INFO 20596 --- [A2PhanTuanThanh_SE1910] [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-10-28T18:26:15.324+07:00  INFO 20596 --- [A2PhanTuanThanh_SE1910] [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-10-28T18:26:15.346+07:00  INFO 20596 --- [A2PhanTuanThanh_SE1910] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-10-28T18:26:15.348+07:00  INFO 20596 --- [A2PhanTuanThanh_SE1910] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-3 - Starting...
+2026-10-28T18:26:15.414+07:00  INFO 20596 --- [A2PhanTuanThanh_SE1910] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-3 - Added connection ConnectionID:21 ClientConnectionId: 1de25977-6d89-4396-b6b9-1f7cb84c1af7
+2026-10-28T18:26:15.415+07:00  INFO 20596 --- [A2PhanTuanThanh_SE1910] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-3 - Start completed.
+2026-10-28T18:26:15.457+07:00  INFO 20596 --- [A2PhanTuanThanh_SE1910] [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-3)']
+	Database driver: undefined/unknown
+	Database version: 16.0
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-10-28T18:26:15.522+07:00  INFO 20596 --- [A2PhanTuanThanh_SE1910] [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-10-28T18:26:16.015+07:00  INFO 20596 --- [A2PhanTuanThanh_SE1910] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-10-28T18:26:16.141+07:00  INFO 20596 --- [A2PhanTuanThanh_SE1910] [           main] o.a.maven.surefire.booter.ForkedBooter   : Started ForkedBooter in 1.829 seconds (process running for 13.743)
+2026-10-28T18:26:16.356+07:00  INFO 20596 --- [A2PhanTuanThanh_SE1910] [           main] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-10-28T18:26:16.356+07:00  INFO 20596 --- [A2PhanTuanThanh_SE1910] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-3 - Shutdown initiated...
+2026-10-28T18:26:16.359+07:00  INFO 20596 --- [A2PhanTuanThanh_SE1910] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-3 - Shutdown completed.
+2026-10-28T18:26:16.389+07:00  INFO 20596 --- [A2PhanTuanThanh_SE1910] [           main] o.a.maven.surefire.booter.ForkedBooter   : Starting ForkedBooter v3.5.6 using Java 21.0.8 with PID 20596 (started by Phan Tuan Thanh in D:\FA2026\SBA301\A2PhanTuanThanh_SE1910)
+2026-10-28T18:26:16.389+07:00  INFO 20596 --- [A2PhanTuanThanh_SE1910] [           main] o.a.maven.surefire.booter.ForkedBooter   : No active profile set, falling back to 1 default profile: "default"
+2026-10-28T18:26:16.506+07:00  INFO 20596 --- [A2PhanTuanThanh_SE1910] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-10-28T18:26:16.522+07:00  INFO 20596 --- [A2PhanTuanThanh_SE1910] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 14 ms. Found 5 JPA repository interfaces.
+2026-10-28T18:26:16.590+07:00  INFO 20596 --- [A2PhanTuanThanh_SE1910] [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-10-28T18:26:16.593+07:00  INFO 20596 --- [A2PhanTuanThanh_SE1910] [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-10-28T18:26:16.605+07:00  INFO 20596 --- [A2PhanTuanThanh_SE1910] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-10-28T18:26:16.607+07:00  INFO 20596 --- [A2PhanTuanThanh_SE1910] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-4 - Starting...
+2026-10-28T18:26:16.638+07:00  INFO 20596 --- [A2PhanTuanThanh_SE1910] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-4 - Added connection ConnectionID:31 ClientConnectionId: 98423221-5f97-48cd-885a-292862f26fd0
+2026-10-28T18:26:16.639+07:00  INFO 20596 --- [A2PhanTuanThanh_SE1910] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-4 - Start completed.
+2026-10-28T18:26:16.679+07:00  INFO 20596 --- [A2PhanTuanThanh_SE1910] [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-4)']
+	Database driver: undefined/unknown
+	Database version: 16.0
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-10-28T18:26:16.739+07:00  INFO 20596 --- [A2PhanTuanThanh_SE1910] [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-10-28T18:26:17.639+07:00  INFO 20596 --- [A2PhanTuanThanh_SE1910] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-10-28T18:26:17.762+07:00  INFO 20596 --- [A2PhanTuanThanh_SE1910] [           main] o.a.maven.surefire.booter.ForkedBooter   : Started ForkedBooter in 1.399 seconds (process running for 15.364)
+TC-DB-02 PASS: committed Vietnamese fixture survives two application context restarts (validate/update)
+2026-10-28T18:26:18.625+07:00  WARN 20596 --- [A2PhanTuanThanh_SE1910] [           main] o.h.engine.jdbc.spi.SqlExceptionHelper   : SQL Error: 547, SQLState: 23000
+2026-10-28T18:26:18.626+07:00 ERROR 20596 --- [A2PhanTuanThanh_SE1910] [           main] o.h.engine.jdbc.spi.SqlExceptionHelper   : The INSERT statement conflicted with the FOREIGN KEY constraint "FK_NewsTag_NewsArticle". The conflict occurred in database "A2PhanTuanThanh_SE1910_M2Test_20261028_182531_ecb085d8", table "dbo.NewsArticle", column 'NewsArticleID'.
+TC-DB-03 PASS: all FKs, duplicate link/tag limit, domains and validation rejected; flushed writes rolled back
+2026-10-28T18:26:18.744+07:00  INFO 20596 --- [A2PhanTuanThanh_SE1910] [           main] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-10-28T18:26:18.744+07:00  INFO 20596 --- [A2PhanTuanThanh_SE1910] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-4 - Shutdown initiated...
+2026-10-28T18:26:18.748+07:00  INFO 20596 --- [A2PhanTuanThanh_SE1910] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-4 - Shutdown completed.
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 7.302 s -- in fpt.edu.a2phantuanthanh_se1910.persistence.NewsPersistenceTests
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 9, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] 
+[INFO] --- jar:3.4.2:jar (default-jar) @ A2PhanTuanThanh_SE1910 ---
+[INFO] Building jar: D:\FA2026\SBA301\A2PhanTuanThanh_SE1910\target\A2PhanTuanThanh_SE1910-0.0.1-SNAPSHOT.jar
+[INFO] 
+[INFO] --- spring-boot:3.5.16:repackage (repackage) @ A2PhanTuanThanh_SE1910 ---
+[INFO] Loaded 50 auto-discovered prefixes for remote repository ow2-snapshot (prefixes-ow2-snapshot.txt)
+[INFO] Replacing main artifact D:\FA2026\SBA301\A2PhanTuanThanh_SE1910\target\A2PhanTuanThanh_SE1910-0.0.1-SNAPSHOT.jar with repackaged archive, adding nested dependencies in BOOT-INF/.
+[INFO] The original artifact has been renamed to D:\FA2026\SBA301\A2PhanTuanThanh_SE1910\target\A2PhanTuanThanh_SE1910-0.0.1-SNAPSHOT.jar.original
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  46.568 s
+[INFO] Finished at: 2026-10-28T18:26:20+07:00
+[INFO] ------------------------------------------------------------------------

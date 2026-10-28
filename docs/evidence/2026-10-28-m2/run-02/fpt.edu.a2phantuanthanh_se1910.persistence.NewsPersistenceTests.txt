@@ -1,0 +1,33 @@
+-------------------------------------------------------------------------------
+Test set: fpt.edu.a2phantuanthanh_se1910.persistence.NewsPersistenceTests
+-------------------------------------------------------------------------------
+Tests run: 7, Failures: 2, Errors: 0, Skipped: 0, Time elapsed: 7.249 s <<< FAILURE! -- in fpt.edu.a2phantuanthanh_se1910.persistence.NewsPersistenceTests
+fpt.edu.a2phantuanthanh_se1910.persistence.NewsPersistenceTests.jpaCreatesExactTablesColumnsKeysAndConstraints -- Time elapsed: 0.322 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: 
+
+expected: 4
+ but was: 9
+	at fpt.edu.a2phantuanthanh_se1910.persistence.NewsPersistenceTests.jpaCreatesExactTablesColumnsKeysAndConstraints(NewsPersistenceTests.java:146)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+
+fpt.edu.a2phantuanthanh_se1910.persistence.NewsPersistenceTests.failedLinkRollsBackFlushedArticleAndNewTag -- Time elapsed: 0.167 s <<< FAILURE!
+java.lang.AssertionError: 
+
+Expecting actual throwable to be an instance of:
+  org.springframework.dao.DataIntegrityViolationException
+but was:
+  jakarta.validation.ConstraintViolationException: Validation failed for classes [fpt.edu.a2phantuanthanh_se1910.entity.NewsTagId] during persist time for groups [jakarta.validation.groups.Default, ]
+List of constraint violations:[
+	ConstraintViolationImpl{interpolatedMessage='must be greater than 0', propertyPath=id.newsArticleId, rootBeanClass=class fpt.edu.a2phantuanthanh_se1910.entity.NewsTag, messageTemplate='{jakarta.validation.constraints.Positive.message}'}
+]
+	at org.hibernate.boot.beanvalidation.BeanValidationEventListener.validate(BeanValidationEventListener.java:176)
+	at org.hibernate.boot.beanvalidation.BeanValidationEventListener.onPreInsert(BeanValidationEventListener.java:88)
+	at org.hibernate.action.internal.EntityInsertAction.preInsert(EntityInsertAction.java:251)
+	...(123 remaining lines not displayed - this can be changed with Assertions.setMaxStackTraceElementsDisplayed)
+	at fpt.edu.a2phantuanthanh_se1910.persistence.NewsPersistenceTests.failedLinkRollsBackFlushedArticleAndNewTag(NewsPersistenceTests.java:310)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+

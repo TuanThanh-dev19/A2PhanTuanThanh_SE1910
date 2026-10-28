@@ -1,0 +1,2 @@
+﻿Msg 156, Level 15, State 1, Server LAPTOP-JED9V0CH\SQL2022, Line 34
+Incorrect syntax near the keyword 'RowCount'.

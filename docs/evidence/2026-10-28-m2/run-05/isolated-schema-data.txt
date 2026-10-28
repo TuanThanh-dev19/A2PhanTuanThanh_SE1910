@@ -1,0 +1,71 @@
+﻿DatabaseName ServerVersion
+------------ -------------
+A2PhanTuanThanh_SE1910_M2Test_20261028_182815_765a698b 16.0.1000.6
+TableName ColumnName SqlType MaxBytes Nullable IsIdentity
+--------- ---------- ------- -------- -------- ----------
+Category CategoryID bigint 8 0 1
+Category CategoryDescription nvarchar 2000 1 0
+Category CategoryName nvarchar 200 0 0
+Category IsActive int 4 0 0
+Category ParentCategoryID bigint 8 1 0
+NewsArticle NewsArticleID bigint 8 0 1
+NewsArticle CreatedDate datetime2 8 0 0
+NewsArticle Headline nvarchar 600 0 0
+NewsArticle ModifiedDate datetime2 8 1 0
+NewsArticle NewsContent nvarchar -1 0 0
+NewsArticle NewsSource nvarchar 1000 1 0
+NewsArticle NewsStatus int 4 0 0
+NewsArticle NewsTitle nvarchar 400 0 0
+NewsArticle CategoryID bigint 8 0 0
+NewsArticle CreatedByID bigint 8 0 0
+NewsArticle UpdatedByID bigint 8 1 0
+NewsTag NewsArticleID bigint 8 0 0
+NewsTag TagID bigint 8 0 0
+SystemAccount AccountID bigint 8 0 1
+SystemAccount AccountEmail nvarchar 508 0 0
+SystemAccount AccountName nvarchar 200 0 0
+SystemAccount AccountPassword nvarchar 510 0 0
+SystemAccount AccountRole int 4 0 0
+Tag TagID bigint 8 0 1
+Tag Note nvarchar 1000 1 0
+Tag TagName nvarchar 200 0 0
+TableName KeyName IsPrimaryKey IsUniqueConstraint ColumnName KeyPosition
+--------- ------- ------------ ------------------ ---------- -----------
+Category PK__Category__19093A2B4836D3F0 1 0 CategoryID 1
+NewsArticle PK__NewsArti__4CD0926CEB888579 1 0 NewsArticleID 1
+NewsTag PK__NewsTag__9A875DC8E79E1659 1 0 NewsArticleID 1
+NewsTag PK__NewsTag__9A875DC8E79E1659 1 0 TagID 2
+NewsTag UQ_NewsTag_TagID 0 1 TagID 1
+SystemAccount PK__SystemAc__349DA5865962CD30 1 0 AccountID 1
+SystemAccount UQ_SystemAccount_AccountEmail 0 1 AccountEmail 1
+Tag PK__Tag__657CFA4CB7D03972 1 0 TagID 1
+ForeignKeyName ChildTable ChildColumn ParentTable ParentColumn DeleteAction is_disabled is_not_trusted
+-------------- ---------- ----------- ----------- ------------ ------------ ----------- --------------
+FK_Category_Parent Category ParentCategoryID Category CategoryID NO_ACTION 0 0
+FK_NewsArticle_Category NewsArticle CategoryID Category CategoryID NO_ACTION 0 0
+FK_NewsArticle_Creator NewsArticle CreatedByID SystemAccount AccountID NO_ACTION 0 0
+FK_NewsArticle_Updater NewsArticle UpdatedByID SystemAccount AccountID NO_ACTION 0 0
+FK_NewsTag_NewsArticle NewsTag NewsArticleID NewsArticle NewsArticleID NO_ACTION 0 0
+FK_NewsTag_Tag NewsTag TagID Tag TagID NO_ACTION 0 0
+CheckName CheckDefinition
+--------- ---------------
+CK_Category_StatusAndParent (([IsActive]=(1) OR [IsActive]=(0)) AND ([ParentCategoryID] IS NULL OR [ParentCategoryID]<>[CategoryID]))
+CK_NewsArticle_Status ([NewsStatus]=(1) OR [NewsStatus]=(0))
+CK_SystemAccount_Role ([AccountRole]=(2) OR [AccountRole]=(1))
+TableName TotalRows
+--------- ---------
+SystemAccount 3
+Category 3
+NewsArticle 3
+Tag 3
+NewsTag 2
+NewsArticleID NewsTitle CategoryID CreatedByID UpdatedByID NewsStatus CreatedDate ModifiedDate
+------------- --------- ---------- ----------- ----------- ---------- ----------- ------------
+1 Ngày hội sáng tạo tại Đại học FPT 2 2 3 1 2026-10-28 10:00:00.000000 2026-10-28 11:00:00.000000
+2 Bài nháp tiếng Việt 1 2 NULL 0 2026-10-28 10:01:00.000000 NULL
+3 Bài của tác giả khác 1 3 NULL 1 2026-10-28 10:02:00.000000 NULL
+NewsArticleID ContentBytes ContentSHA256
+------------- ------------ -------------
+1 11600 C703C3A88930BD2D142136D1B39B7C891A8FA3614A4F6C459674844FF4E0A250
+2 34 9A1012641FE9AC5EE16A7181E2130063507F887424AB18D9B1E0593985BAEA2B
+3 34 5C97A80ABEEEDFA7CA1FE28244D526DA509ADE1B20D0DB6A883888DEFBDDBAD4

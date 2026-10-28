@@ -1,0 +1,7 @@
+Recorded at: 2026-10-28T18:25:31.8619287+07:00
+Runner: Codex/tool or local operator; not student IntelliJ evidence.
+Git base: ea845447eeefdad733e77f106394cbe4c4ed4df0
+SQL instance: .\SQL2022
+Isolated database: A2PhanTuanThanh_SE1910_M2Test_20261028_182531_ecb085d8
+Authentication: Windows integrated. No credentials recorded.
+Database is retained for inspection; no database is dropped or reset.

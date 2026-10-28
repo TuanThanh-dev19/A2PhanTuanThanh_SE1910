@@ -8,7 +8,8 @@ Assignment 02 SBA301 — FUNewsManagementSystem, dùng Spring Boot 3, SQL Server
 
 - Baseline: `6a26a99`. Nền tảng M1: `db2e8e6`.
 - Đã có Boot **3.5.16**, Java **21**, Web/JPA/Validation/JDBC và kết nối SQL Server bằng Windows Authentication. Kết quả đã lưu: **2 tests pass**, JAR chạy được. [Evidence M1](docs/evidence/2026-10-28-m1/inspection.md).
-- M1 còn thiếu minh chứng sinh viên chạy trong IntelliJ. Chưa có entity, bảng nghiệp vụ, CRUD, auth hoặc React. Bước tiếp theo: M2.
+- M2 đã thêm 5 entity, 5 repository và constraint SQL Server; xem [thiết kế persistence](docs/design.md#5-data-model-và-persistence) và [evidence M2](docs/evidence/2026-10-28-m2/inspection.md). DEC-01/03 áp dụng tạm theo yêu cầu sinh viên, chưa có xác nhận giảng viên.
+- M1 còn thiếu minh chứng sinh viên chạy trong IntelliJ. Chưa có Controller, Service nghiệp vụ, REST CRUD, auth/JWT hoặc React. Bước tiếp theo: M3.
 
 ## Chạy backend trên Windows
 
@@ -45,11 +46,15 @@ Tên DB đã cố định là `A2PhanTuanThanh_SE1910`. Mặc định source v�
 **4. Build/test rồi chạy:**
 
 ```powershell
-.\mvnw.cmd -B clean verify
+.\scripts\test-persistence.ps1 -SqlServerInstance '.\SQL2022'
 java -jar target/A2PhanTuanThanh_SE1910-0.0.1-SNAPSHOT.jar
 ```
 
-Tests hiện cần SQL Server thật. Backend dùng cổng 8080; GET `/` trả 404 vì chưa có controller. Ctrl+C để dừng.
+Chạy script bằng **PowerShell 7** (`pwsh`). Script chạy `clean verify`, hai test M1 trên DB bài tập và test M2 trên DB mới có tên `A2PhanTuanThanh_SE1910_M2Test_<timestamp>_<suffix>`. Cần quyền CREATE DATABASE qua Windows Authentication; SQL login chưa được kiểm tra. Mỗi lần chạy giữ DB test và log/report trong thư mục riêng dưới `tmp/m2-results/`; không drop/reset DB. Có thể truyền `-EvidenceDirectory <thư mục mới>` để lưu minh chứng. Chạy `clean verify` trực tiếp cần tự chuẩn bị DB test rỗng và đặt `SQLSERVER_TEST_DATABASE` theo mẫu trên.
+
+Backend dùng cổng 8080; GET `/` trả 404 vì chưa có controller. Ctrl+C để dừng. `ddl-auto=update` tạo bảng/FK thiếu, không seed khi startup; dùng `--spring.jpa.hibernate.ddl-auto=validate` để kiểm tra schema đã có. `update` phục vụ dev theo DEC-03, không thay thế migration khi cần thay đổi schema/dữ liệu phức tạp.
+
+Fixture nằm trong test source: 3 account, 3 category, 3 news, 3 tag và 2 links; có tiếng Việt, active/inactive, parent/updater nullable và tag tự do. Password là chuỗi ngẫu nhiên dành riêng cho test, không phải credential thật hoặc dữ liệu đăng nhập M3. Không có startup seeder trên DB bài tập.
 
 **IntelliJ:** mở `pom.xml`, reload Maven, chọn JDK 21 và đặt các biến trên trong Run Configuration. Cấu hình PATH chứa DLL hoặc VM option `-Djava.library.path=<thư mục x64>`. Sinh viên chạy main và lưu ảnh IDE/log làm minh chứng `TC-SETUP-03`.
 

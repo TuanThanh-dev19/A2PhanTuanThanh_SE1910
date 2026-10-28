@@ -1,0 +1,13 @@
+Recorded at: 2026-10-28T18:34:29.270032+07:00
+Base: ea845447eeefdad733e77f106394cbe4c4ed4df0
+PASS: author headers for 28 changed project-authored files.
+PASS: local Markdown links in changed documentation resolve.
+PASS: POM XML parses.
+PASS: baseline/M1 evidence, Wrapper, empty-DB script and original M1 tests unchanged.
+PASS: authored source/config/scripts/docs whitespace checks.
+PASS: 57 recorded TXT artifacts staged byte-for-byte.
+Recorded log whitespace/native CRLF preserved deliberately; excluded from source whitespace checks.
+Final build/run: run-05, 9 tests pass; runner exit 0, two JVM restarts/snapshot equality.
+Code review: explicit mappings/imports/names; no Controller/Service/auth/React or startup seed; no cascade/delete-reset.
+No credential values are written to logs; fixture passwords are random test-only values.
+Commit author verified: Phan Tuan Thanh <phanthanh19112005@gmail.com>. No push.

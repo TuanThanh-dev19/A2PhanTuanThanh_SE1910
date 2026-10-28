@@ -1,0 +1,4 @@
+PASS TC-DB-02: committed fixture unchanged across two independent packaged JVM starts/stops.
+Compared schema, keys, FKs, checks, counts, article/audit data and Unicode content byte lengths/SHA256.
+Before SHA256: 71A47FFAB8FD13D9507B54FD34E6B7841DAC5CBC6D51317FCDF4CB7108368A98
+After SHA256: 71A47FFAB8FD13D9507B54FD34E6B7841DAC5CBC6D51317FCDF4CB7108368A98

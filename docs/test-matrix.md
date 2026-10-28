@@ -4,7 +4,7 @@ Author: Phan Tuan Thanh - CE190595
 
 ## Trạng thái
 
-Mới kiểm tra baseline và nền tảng M1 bằng AI/tool. Có **2 automated tests pass ở M1** cùng kiểm tra startup/kết nối; các ca nghiệp vụ bên dưới là kế hoạch, chưa chạy. Không lấy kết quả Assignment 01 làm kết quả Assignment 02.
+Đã kiểm tra baseline, M1 và persistence M2 bằng AI/tool. Lần cuối M2 run-05 có **9 automated tests pass (2 M1 + 7 M2), 0 failure/error/skipped**, packaged JAR chạy và dữ liệu giữ nguyên qua restart JVM trên SQL Server thật. Các ca API/Service/auth/React bên dưới vẫn là kế hoạch, chưa chạy. Không lấy kết quả Assignment 01 làm kết quả Assignment 02.
 
 **Pass:** đã chạy đủ và đạt; **Fail:** đã chạy nhưng sai; **Not run:** chưa chạy; **Partial:** mới đạt một phần; **Blocked:** bị chặn, cần ghi nguyên nhân. Một hàng nhiều nhánh chỉ Pass khi đủ các nhánh.
 
@@ -21,7 +21,9 @@ Mới kiểm tra baseline và nền tảng M1 bằng AI/tool. Có **2 automated 
 
 Minh chứng: [baseline report](evidence/2026-10-28-baseline/context-test.txt), [M1 inspection](evidence/2026-10-28-m1/inspection.md), [build](evidence/2026-10-28-m1/build-test.txt), [SQL session](evidence/2026-10-28-m1/sqlserver-application-session.txt), [HTTP smoke](evidence/2026-10-28-m1/runtime-smoke.txt).
 
-Test M1 chạy trên base `6a26a99` + working tree, sau đó lưu ở `db2e8e6`. Lần chỉnh docs này không chạy lại ứng dụng. Cảnh báo còn lại xem OBS-001 trong [debug-log](debug-log.md).
+Test M1 chạy trên base `6a26a99` + working tree, sau đó lưu ở `db2e8e6`. Lần chỉnh docs/header trước M2 (`ea84544`) không chạy lại ứng dụng; lần triển khai M2 có regression bên dưới. Cảnh báo còn lại xem OBS-001 trong [debug-log](debug-log.md).
+
+**Regression M1 trong M2 (28/10/2026):** chạy lại nguyên vẹn `A2PhanTuanThanhSe1910ApplicationTests` (2/2 pass); build Boot 3.5.16/JDK 21 đạt; JAR trên DB bài tập khởi động/GET `/` = 404, session TCP/NTLM/encrypt TRUE. [Report M1 chạy lại](evidence/2026-10-28-m2/run-05/fpt.edu.a2phantuanthanh_se1910.A2PhanTuanThanhSe1910ApplicationTests.txt), [JAR smoke](evidence/2026-10-28-m2/run-05/application-smoke.txt), [SQL session](evidence/2026-10-28-m2/run-05/sqlserver-application-session.txt). TC-M1-SCHEMA là lịch sử đúng phạm vi M1; M2 chủ động thay expectation thành 5 bảng, không yêu cầu 0 bảng nữa. IntelliJ vẫn chưa có minh chứng.
 
 ## Setup và database
 
@@ -29,9 +31,11 @@ Test M1 chạy trên base `6a26a99` + working tree, sau đó lưu ở `db2e8e6`.
 |---|---|---|---|---|---|
 | TC-SETUP-02 | Quy ước tên; REQ-01 | Xem BE, React folder/npm package và DB | Đúng tên theo requirements | BE/DB đạt; React chưa tạo | Partial |
 | TC-SETUP-03 | IntelliJ; REQ-19 | Sinh viên mở project và chạy main bằng JDK 21 | Chạy được, có ảnh/log IDE thật | Chưa có evidence sinh viên chạy | Not run |
-| TC-DB-01 | JPA tạo schema; REQ-03,05 | Khởi động với DB rỗng và entity | Đủ 5 bảng, fields, PK/FK/unique | Chưa chạy | Not run |
-| TC-DB-02 | Unicode/persistence; REQ-03 | Lưu tiếng Việt, restart BE, đọc lại | Đúng tiếng Việt và dữ liệu còn | Chưa chạy | Not run |
-| TC-DB-03 | Constraint; REQ-05,17 | Gửi FK sai, link trùng, role/status sai | Chặn lưu, không có dữ liệu dở dang | Chưa chạy | Not run |
+| TC-DB-01 | JPA tạo schema; REQ-03,05 | Khởi động DB test rỗng, đối chiếu sys catalog; kiểm tra lại sau restart | Đủ 5 bảng/26 cột đúng kiểu/nullable, 5 PK/6 FK, 2 unique và 3 CHECK | Run-05 đạt toàn bộ; NewsTag PK ghép, unique TagID/email, FK NO_ACTION/trusted; 4 user identity; NewsContent nvarchar(max) NOT NULL giữ nguyên sau restart. [SQL schema](evidence/2026-10-28-m2/run-05/isolated-schema-data.txt) | Pass |
+| TC-DB-02 | Unicode/persistence; REQ-03 | Lưu fixture qua repository, đóng/mở context với validate/update; chạy hai JVM JAR riêng và so snapshot | Tiếng Việt/quan hệ/audit đúng, dữ liệu và schema còn nguyên | Run-05: 3 account/category/news/tag + 2 links, hai creator và hai status, nullable đúng; đọc content 5.800 ký tự qua repo. Hai snapshot trước/sau JVM có SHA256 giống nhau; [restart proof](evidence/2026-10-28-m2/run-05/process-restart-verification.txt) | Pass |
+| TC-DB-03 | Constraint/rollback; REQ-05,17 phần persistence | SQL sai cả 6 FK; xóa account/category có bài; link trùng, tái dùng tag, email trùng, role/status/self-parent/null sai; entity validation; flush title/Tag rồi cố lưu link sai | Chặn tại SQL hoặc Bean Validation; rollback toàn transaction, không lưu một phần | Run-05 đạt error 547/2627/515 như mong đợi; Bean Validation chặn blank/email/length/role/status/null relation; cả lỗi tag limit và lỗi FK đều rollback title đã flush + Tag mới, counts/quan hệ nguyên vẹn. [7 persistence tests](evidence/2026-10-28-m2/run-05/fpt.edu.a2phantuanthanh_se1910.persistence.NewsPersistenceTests.txt) | Pass |
+
+M2 chạy trên base `ea84544` + working tree được lưu cùng commit tính năng; DB biệt lập `A2PhanTuanThanh_SE1910_M2Test_20261028_182815_765a698b`, SQL Server 16.0.1000.6, Windows Authentication. [Build cuối](evidence/2026-10-28-m2/run-05/build-test.txt), [inspection](evidence/2026-10-28-m2/inspection.md). Run-01/02 fail compile/assertion; run-03 build pass nhưng SQL export lỗi; run-04 build/harness pass nhưng review snapshot phát hiện nullable sai sau update. Các lần này giữ nguyên và không dùng nghiệm thu cuối; DBG-002..005 có fix/retest thật. DB bài tập không seed, vẫn 0 record; có một lần sửa NOT NULL do bug M2 tạo ra, không sửa/xóa dữ liệu.
 
 ## Login và phân quyền
 
@@ -111,6 +115,6 @@ Test M1 chạy trên base `6a26a99` + working tree, sau đó lưu ở `db2e8e6`.
 
 ## Ghi kết quả cho các mốc tiếp theo
 
-Chuẩn bị Admin, hai Staff, account/category có và không có bài, bài active/inactive và tag tự do/đã gắn. Fixture nghiệp vụ chưa tồn tại.
+Đã có `PersistenceFixture` ở test source với Admin/hai Staff, account/category có và không có bài, bài active/inactive và tag tự do/đã gắn. Fixture dùng password ngẫu nhiên phục vụ persistence, chưa phải account đăng nhập/demo UI. Không tự seed DB bài tập; các test API/auth/UI cần chuẩn bị fixture phù hợp khi triển khai các mốc sau.
 
 Ghi actual, ngày/môi trường, revision và evidence sau khi chạy. Test service/API kiểm tra rule, validation và quyền; dùng SQL Server thật cho FK/transaction/Unicode/persistence. Kiểm tra browser riêng cho popup/confirmation/axios; mock/H2 hoặc API Pass không thay thế kiểm tra tích hợp/UI. Có thể dùng Postman CLI khi có endpoint; lỗi thực tế liên kết debug-log.

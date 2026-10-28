@@ -23,6 +23,21 @@ Thư mục lưu log/report và ảnh thực tế cho Assignment 02. Bổ sung sc
 
 M1 chưa có bảng nghiệp vụ. Chi tiết lệnh, môi trường và phạm vi ở inspection; log trên không thay thế minh chứng sinh viên chạy IntelliJ.
 
+## E01B - M2 persistence trên SQL Server
+
+Lần nghiệm thu cuối: **28/10/2026, run-05**, base `ea84544` + working tree M2; 9 tests pass (2 M1 + 7 M2), JAR smoke và hai JVM restart giữ nguyên schema/data. [Inspection M2](2026-10-28-m2/inspection.md) giải thích môi trường, lệnh, expected/actual, lỗi thật và các giới hạn.
+
+| Evidence | Test ID | Vị trí |
+|---|---|---|
+| Build/test cuối và reports | TC-SETUP-01, TC-M1-DB, TC-DB-01..03 | [Build](2026-10-28-m2/run-05/build-test.txt), [M1 regression](2026-10-28-m2/run-05/fpt.edu.a2phantuanthanh_se1910.A2PhanTuanThanhSe1910ApplicationTests.txt), [M2 tests](2026-10-28-m2/run-05/fpt.edu.a2phantuanthanh_se1910.persistence.NewsPersistenceTests.txt) |
+| 5 bảng/26 cột, keys, constraints, Unicode data | TC-DB-01,02 | [Isolated SQL snapshot](2026-10-28-m2/run-05/isolated-schema-data.txt), [DB bài tập](2026-10-28-m2/run-05/assignment-schema-data.txt) |
+| Dữ liệu còn qua hai JVM JAR độc lập | TC-DB-02 | [So sánh SHA256](2026-10-28-m2/run-05/process-restart-verification.txt), [snapshot sau restart](2026-10-28-m2/run-05/isolated-after-process-restarts.txt), restart-1/2-start.txt và smoke trong run-05 |
+| JAR/TCP/NTLM/encryption | TC-M1-HTTP, TC-M1-DB | [Startup](2026-10-28-m2/run-05/application-start.txt), [HTTP](2026-10-28-m2/run-05/application-smoke.txt), [SQL session](2026-10-28-m2/run-05/sqlserver-application-session.txt) |
+| Lỗi thật và retest | DBG-002..005 | run-01 compile; run-02 assertion/identity diagnostic; run-03 SQL keyword; run-04 snapshot nullable sai; run-05 đạt sau sửa. [Debug log](../debug-log.md) |
+| Sửa NOT NULL do lỗi M2 | DBG-005 | [SQL có guard](2026-10-28-m2/repair-content-nullability.sql), [output 0 dòng trước/sau](2026-10-28-m2/repair-content-nullability.txt) |
+
+**Provenance/header:** build/startup/SQL output, reports và checksum manifests là dữ liệu ghi lại hoặc sinh bằng Maven/sqlcmd/Java/PowerShell, giữ nguyên byte và không chèn comment Author vào log. `.gitattributes` đặt output TXT/manifest M2 thành `-text` để Git không chuẩn hóa line endings; whitespace gốc trong Maven log được giữ, không tính là lỗi định dạng source. `inspection.md` và script SQL repair do project viết có header. Baseline/M1 và Maven Wrapper giữ nguyên; không sửa author vào output cũ. Fixture chỉ lưu trong DB test mới, không có credential thật trong evidence. Thư viện/DLL và ảnh render PDF phục vụ đọc đề nằm trong tmp bị ignore, không commit. Manifest M2 ghi SHA256 source/evidence; không coi các lần fail/partial là Pass cuối.
+
 ## E02 - Login, quyền và public news
 
 | File đề xuất | Test ID | Nội dung cần chụp | Trạng thái |
@@ -47,11 +62,11 @@ M1 chưa có bảng nghiệp vụ. Chi tiết lệnh, môi trường và phạm 
 
 | Evidence | Vị trí | Trạng thái |
 |---|---|---|
-| E04 - Test matrix | [test-matrix](../test-matrix.md) | Có; mới có kết quả baseline/M1 |
-| E05 - Debug log | [debug-log](../debug-log.md) | Có lỗi version đã sửa và quan sát warning |
-| E06 - Thiết kế và code-flow | [design](../design.md), [code-flow](../code-flow.md) | Có; nghiệp vụ còn dự kiến |
+| E04 - Test matrix | [test-matrix](../test-matrix.md) | Có kết quả baseline/M1 và persistence M2; API/UI chưa chạy |
+| E05 - Debug log | [debug-log](../debug-log.md) | Có lỗi version và DBG-002..005 với fix/retest thật, warning còn theo dõi |
+| E06 - Thiết kế và code-flow | [design](../design.md), [code-flow](../code-flow.md) | Startup/persistence M2 đã triển khai; API/nghiệp vụ còn dự kiến |
 | E07 - AI usage log | [ai-usage-log](../ai-usage-log.md) | Có |
-| E08 - Git/tiến độ | [development-plan](../development-plan.md) | Có baseline/M1; còn kiểm tra attribution/toàn tiến trình |
+| E08 - Git/tiến độ | [development-plan](../development-plan.md) | Có baseline/M1, commit quy ước riêng và M2; còn kiểm tra attribution/toàn tiến trình |
 | E09 - Hướng dẫn chạy | [README](../../README.md) | Có backend; frontend chưa triển khai |
 
 - [ ] Bổ sung IntelliJ, login và ảnh từng module khi đã kiểm tra.

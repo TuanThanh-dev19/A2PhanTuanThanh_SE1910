@@ -1,0 +1,61 @@
+[INFO] Scanning for projects...
+[INFO] Loaded 24270 auto-discovered prefixes for remote repository central (prefixes-central.txt)
+[INFO] 
+[INFO] -------------------< fpt.edu:A2PhanTuanThanh_SE1910 >-------------------
+[INFO] Building A2PhanTuanThanh_SE1910 0.0.1-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[WARNING] Could not transfer metadata /.meta/prefixes.txt from/to apache.snapshots (https://repository.apache.org/snapshots): Connect to repository.apache.org:443 [repository.apache.org/37.27.138.133] failed: Connection timed out: getsockopt
+[INFO] 
+[INFO] --- clean:3.4.1:clean (default-clean) @ A2PhanTuanThanh_SE1910 ---
+[INFO] Deleting D:\FA2026\SBA301\A2PhanTuanThanh_SE1910\target
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ A2PhanTuanThanh_SE1910 ---
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] Copying 0 resource from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.14.1:compile (default-compile) @ A2PhanTuanThanh_SE1910 ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 12 source files with javac [debug parameters release 21] to target\classes
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ A2PhanTuanThanh_SE1910 ---
+[INFO] skip non existing resourceDirectory D:\FA2026\SBA301\A2PhanTuanThanh_SE1910\src\test\resources
+[INFO] 
+[INFO] --- compiler:3.14.1:testCompile (default-testCompile) @ A2PhanTuanThanh_SE1910 ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 3 source files with javac [debug parameters release 21] to target\test-classes
+[INFO] -------------------------------------------------------------
+[ERROR] COMPILATION ERROR : 
+[INFO] -------------------------------------------------------------
+[ERROR] /D:/FA2026/SBA301/A2PhanTuanThanh_SE1910/src/test/java/fpt/edu/a2phantuanthanh_se1910/persistence/NewsPersistenceTests.java:[266,21] reference to Tag is ambiguous
+  both class org.junit.jupiter.api.Tag in org.junit.jupiter.api and class fpt.edu.a2phantuanthanh_se1910.entity.Tag in fpt.edu.a2phantuanthanh_se1910.entity match
+[ERROR] /D:/FA2026/SBA301/A2PhanTuanThanh_SE1910/src/test/java/fpt/edu/a2phantuanthanh_se1910/persistence/NewsPersistenceTests.java:[283,35] reference to Tag is ambiguous
+  both class org.junit.jupiter.api.Tag in org.junit.jupiter.api and class fpt.edu.a2phantuanthanh_se1910.entity.Tag in fpt.edu.a2phantuanthanh_se1910.entity match
+[ERROR] /D:/FA2026/SBA301/A2PhanTuanThanh_SE1910/src/test/java/fpt/edu/a2phantuanthanh_se1910/persistence/NewsPersistenceTests.java:[292,13] reference to Tag is ambiguous
+  both class org.junit.jupiter.api.Tag in org.junit.jupiter.api and class fpt.edu.a2phantuanthanh_se1910.entity.Tag in fpt.edu.a2phantuanthanh_se1910.entity match
+[ERROR] /D:/FA2026/SBA301/A2PhanTuanThanh_SE1910/src/test/java/fpt/edu/a2phantuanthanh_se1910/persistence/NewsPersistenceTests.java:[292,48] reference to Tag is ambiguous
+  both class org.junit.jupiter.api.Tag in org.junit.jupiter.api and class fpt.edu.a2phantuanthanh_se1910.entity.Tag in fpt.edu.a2phantuanthanh_se1910.entity match
+[INFO] 4 errors 
+[INFO] -------------------------------------------------------------
+[INFO] ------------------------------------------------------------------------
+[ERROR] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  28.206 s
+[INFO] Finished at: 2026-10-28T18:22:08+07:00
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.14.1:testCompile (default-testCompile) on project A2PhanTuanThanh_SE1910: Compilation failure: Compilation failure: 
+[ERROR] /D:/FA2026/SBA301/A2PhanTuanThanh_SE1910/src/test/java/fpt/edu/a2phantuanthanh_se1910/persistence/NewsPersistenceTests.java:[266,21] reference to Tag is ambiguous
+[ERROR]   both class org.junit.jupiter.api.Tag in org.junit.jupiter.api and class fpt.edu.a2phantuanthanh_se1910.entity.Tag in fpt.edu.a2phantuanthanh_se1910.entity match
+[ERROR] /D:/FA2026/SBA301/A2PhanTuanThanh_SE1910/src/test/java/fpt/edu/a2phantuanthanh_se1910/persistence/NewsPersistenceTests.java:[283,35] reference to Tag is ambiguous
+[ERROR]   both class org.junit.jupiter.api.Tag in org.junit.jupiter.api and class fpt.edu.a2phantuanthanh_se1910.entity.Tag in fpt.edu.a2phantuanthanh_se1910.entity match
+[ERROR] /D:/FA2026/SBA301/A2PhanTuanThanh_SE1910/src/test/java/fpt/edu/a2phantuanthanh_se1910/persistence/NewsPersistenceTests.java:[292,13] reference to Tag is ambiguous
+[ERROR]   both class org.junit.jupiter.api.Tag in org.junit.jupiter.api and class fpt.edu.a2phantuanthanh_se1910.entity.Tag in fpt.edu.a2phantuanthanh_se1910.entity match
+[ERROR] /D:/FA2026/SBA301/A2PhanTuanThanh_SE1910/src/test/java/fpt/edu/a2phantuanthanh_se1910/persistence/NewsPersistenceTests.java:[292,48] reference to Tag is ambiguous
+[ERROR]   both class org.junit.jupiter.api.Tag in org.junit.jupiter.api and class fpt.edu.a2phantuanthanh_se1910.entity.Tag in fpt.edu.a2phantuanthanh_se1910.entity match
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException

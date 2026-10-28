@@ -1,0 +1,16 @@
+Version
+-------
+16.0.1000.6
+name collation_name state_desc
+---- -------------- ----------
+A2PhanTuanThanh_SE1910 SQL_Latin1_General_CP1_CI_AS ONLINE
+Changed database context to 'A2PhanTuanThanh_SE1910'.
+name is_nullable max_length
+---- ----------- ----------
+NewsContent 0 -1
+ArticlesRemaining
+-----------------
+0
+ApplicationSessionsRemaining
+----------------------------
+0

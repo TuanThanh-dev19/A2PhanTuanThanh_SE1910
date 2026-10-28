@@ -1,0 +1,65 @@
+﻿DatabaseName ServerVersion
+------------ -------------
+A2PhanTuanThanh_SE1910 16.0.1000.6
+TableName ColumnName SqlType MaxBytes Nullable IsIdentity
+--------- ---------- ------- -------- -------- ----------
+Category CategoryID bigint 8 0 1
+Category CategoryDescription nvarchar 2000 1 0
+Category CategoryName nvarchar 200 0 0
+Category IsActive int 4 0 0
+Category ParentCategoryID bigint 8 1 0
+NewsArticle NewsArticleID bigint 8 0 1
+NewsArticle CreatedDate datetime2 8 0 0
+NewsArticle Headline nvarchar 600 0 0
+NewsArticle ModifiedDate datetime2 8 1 0
+NewsArticle NewsContent nvarchar -1 0 0
+NewsArticle NewsSource nvarchar 1000 1 0
+NewsArticle NewsStatus int 4 0 0
+NewsArticle NewsTitle nvarchar 400 0 0
+NewsArticle CategoryID bigint 8 0 0
+NewsArticle CreatedByID bigint 8 0 0
+NewsArticle UpdatedByID bigint 8 1 0
+NewsTag NewsArticleID bigint 8 0 0
+NewsTag TagID bigint 8 0 0
+SystemAccount AccountID bigint 8 0 1
+SystemAccount AccountEmail nvarchar 508 0 0
+SystemAccount AccountName nvarchar 200 0 0
+SystemAccount AccountPassword nvarchar 510 0 0
+SystemAccount AccountRole int 4 0 0
+Tag TagID bigint 8 0 1
+Tag Note nvarchar 1000 1 0
+Tag TagName nvarchar 200 0 0
+TableName KeyName IsPrimaryKey IsUniqueConstraint ColumnName KeyPosition
+--------- ------- ------------ ------------------ ---------- -----------
+Category PK__Category__19093A2BB8FB4BBB 1 0 CategoryID 1
+NewsArticle PK__NewsArti__4CD0926CF30651B9 1 0 NewsArticleID 1
+NewsTag PK__NewsTag__9A875DC83E843998 1 0 NewsArticleID 1
+NewsTag PK__NewsTag__9A875DC83E843998 1 0 TagID 2
+NewsTag UQ_NewsTag_TagID 0 1 TagID 1
+SystemAccount PK__SystemAc__349DA58636716C9F 1 0 AccountID 1
+SystemAccount UQ_SystemAccount_AccountEmail 0 1 AccountEmail 1
+Tag PK__Tag__657CFA4C2E5BDA9A 1 0 TagID 1
+ForeignKeyName ChildTable ChildColumn ParentTable ParentColumn DeleteAction is_disabled is_not_trusted
+-------------- ---------- ----------- ----------- ------------ ------------ ----------- --------------
+FK_Category_Parent Category ParentCategoryID Category CategoryID NO_ACTION 0 0
+FK_NewsArticle_Category NewsArticle CategoryID Category CategoryID NO_ACTION 0 0
+FK_NewsArticle_Creator NewsArticle CreatedByID SystemAccount AccountID NO_ACTION 0 0
+FK_NewsArticle_Updater NewsArticle UpdatedByID SystemAccount AccountID NO_ACTION 0 0
+FK_NewsTag_NewsArticle NewsTag NewsArticleID NewsArticle NewsArticleID NO_ACTION 0 0
+FK_NewsTag_Tag NewsTag TagID Tag TagID NO_ACTION 0 0
+CheckName CheckDefinition
+--------- ---------------
+CK_Category_StatusAndParent (([IsActive]=(1) OR [IsActive]=(0)) AND ([ParentCategoryID] IS NULL OR [ParentCategoryID]<>[CategoryID]))
+CK_NewsArticle_Status ([NewsStatus]=(1) OR [NewsStatus]=(0))
+CK_SystemAccount_Role ([AccountRole]=(2) OR [AccountRole]=(1))
+TableName TotalRows
+--------- ---------
+SystemAccount 0
+Category 0
+NewsArticle 0
+Tag 0
+NewsTag 0
+NewsArticleID NewsTitle CategoryID CreatedByID UpdatedByID NewsStatus CreatedDate ModifiedDate
+------------- --------- ---------- ----------- ----------- ---------- ----------- ------------
+NewsArticleID ContentBytes ContentSHA256
+------------- ------------ -------------

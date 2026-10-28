@@ -2,3 +2,7 @@
 
 /mvnw text eol=lf
 *.cmd text eol=crlf
+
+# Preserve recorded M2 output bytes, including native line endings and whitespace.
+docs/evidence/2026-10-28-m2/**/*.txt -text
+docs/evidence/2026-10-28-m2/manifest.json -text

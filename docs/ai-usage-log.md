@@ -12,6 +12,7 @@ Tài liệu ghi cách dùng AI, phần đã áp dụng và cách kiểm chứng.
 | 4 / AI-004 | Cập nhật docs theo hình thức/hướng của Assignment 01 | Đồng bộ tiêu đề/mục; code-flow theo Purpose → Input → Trigger → Transform → Output; bảng AI/debug; test có Steps/Expected/Actual; evidence index | Đối chiếu bộ docs tham chiếu, code/Git hiện tại, link/ID và checksum; thay đổi chỉ ở tài liệu | Hiểu khác biệt A1 mock storage và A2 API/SQL; review bản docs mới |
 | 5 / AI-005 | Xác định bước tiếp theo và thêm tên tác giả đầu file | Ghi quy ước trong AGENTS.md; thêm author header vào source/config/SQL/docs; xác định M2 là persistence | Kiểm tra header, cú pháp XML, liên kết và diff; đối chiếu checksum để giữ nguyên evidence/Wrapper | Review thay đổi; M2 và DEC-01/03 vẫn chưa được triển khai/chốt |
 | 6 / AI-006 | Quy ước code dễ hiểu, tường minh, tránh phức tạp không cần thiết | Bổ sung quy tắc tên/method, control flow, mapping, abstraction và React state trong AGENTS.md; đồng bộ design và bước review | Kiểm tra header, liên kết và diff; chỉ thay đổi hướng dẫn | Áp dụng khi làm M2 trở đi; giải thích được lý do nếu chọn cách làm phức tạp hơn |
+| 7 / AI-007 | Triển khai M2 theo PDF và kiểm chứng SQL Server thật | Review/commit riêng docs có sẵn; 5 entity, composite key, 5 repository, validation/constraint, fixture repository test, runner build/SQL/JAR restart; đồng bộ docs/evidence | Đọc đủ 5 trang PDF và hình tr.3; SQL2022 Windows auth; test/retest có log thật, gồm lỗi import, assertion, alias SQL và nullability sau update (DBG-002..005). Kết quả cuối: [inspection M2](evidence/2026-10-28-m2/inspection.md) | Giải thích @MapsId, lazy/no cascade, unique TagID tạm, Bean Validation/SQL constraint, transaction rollback, length vật lý của nvarchar(max) và test DB biệt lập. Tự chạy IntelliJ; hỏi giảng viên DEC-01/03 |
 
 ## Phạm vi và minh chứng
 
@@ -23,7 +24,10 @@ Tài liệu ghi cách dùng AI, phần đã áp dụng và cách kiểm chứng.
 | Quyết định sinh viên đã xác nhận | Dùng Windows Authentication cho SQL Server; AI/tool tạo DB rỗng và tải DLL vào thư mục tmp bị ignore |
 | Chưa có bằng chứng sinh viên tự làm | Chạy IntelliJ/build/demo và giải thích code; không chuyển kết quả AI/tool thành xác nhận sinh viên đã chạy |
 | Chưa kiểm chứng ở M1 | SQL login, TLS chứng chỉ tin cậy, checkout máy khác; entity/CRUD/auth/React; DEC-01/03 chưa chốt |
-| Các lần chỉnh docs/header 3–6 | Chưa tạo commit; không chạy lại test ứng dụng; giữ log/evidence lịch sử. Phiên 5 chỉ thêm comment tác giả vào source/config, phiên 6 bổ sung quy ước code |
+| Các lần chỉnh docs/header 3–6 | Đã review/lưu riêng trước M2 ở ea84544; không chạy lại ứng dụng trong commit docs; giữ log/evidence lịch sử. Phiên 5 chỉ thêm comment tác giả vào source/config, phiên 6 bổ sung quy ước code |
+| M2 / DEC | Áp dụng tạm unique TagID và script DB rỗng + JPA tạo bảng/FK theo yêu cầu sinh viên trong chat; chưa có xác nhận giảng viên. DEC-02 là lựa chọn triển khai; SQL login/TLS tin cậy/máy khác chưa kiểm chứng |
+| M2 / fixture và dữ liệu | Fixture chỉ ở test source, password ngẫu nhiên không phải credential thật; không seed startup, không drop/reset DB. DB test được giữ lại; sửa một lần nullability DB bài tập do lỗi M2 tạo ra, 0 dòng trước/sau |
+| M2 / kết quả cuối | Run-05: clean verify 9 tests pass, schema/nullable đúng sau context và hai JVM restart, HTTP 404 và session thật; tất cả thao tác do AI/tool chạy. Chưa có xác nhận sinh viên tự chạy/giải thích; chưa push |
 
 ## Cách ghi các lần tiếp theo
 

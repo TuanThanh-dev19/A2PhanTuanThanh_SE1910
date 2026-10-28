@@ -1,0 +1,10 @@
+Changed database context to 'A2PhanTuanThanh_SE1910'.
+ArticlesBeforeRepair
+--------------------
+0
+name is_nullable max_length
+---- ----------- ----------
+NewsContent 0 -1
+ArticlesAfterRepair
+-------------------
+0

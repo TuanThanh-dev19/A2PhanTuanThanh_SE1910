@@ -1,0 +1,12 @@
+program_name DatabaseName net_transport auth_scheme encrypt_option
+------------ ------------ ------------- ----------- --------------
+A2PhanTuanThanh_SE1910 A2PhanTuanThanh_SE1910 TCP NTLM TRUE
+A2PhanTuanThanh_SE1910 A2PhanTuanThanh_SE1910 TCP NTLM TRUE
+A2PhanTuanThanh_SE1910 A2PhanTuanThanh_SE1910 TCP NTLM TRUE
+A2PhanTuanThanh_SE1910 A2PhanTuanThanh_SE1910 TCP NTLM TRUE
+A2PhanTuanThanh_SE1910 A2PhanTuanThanh_SE1910 TCP NTLM TRUE
+A2PhanTuanThanh_SE1910 A2PhanTuanThanh_SE1910 TCP NTLM TRUE
+A2PhanTuanThanh_SE1910 A2PhanTuanThanh_SE1910 TCP NTLM TRUE
+A2PhanTuanThanh_SE1910 A2PhanTuanThanh_SE1910 TCP NTLM TRUE
+A2PhanTuanThanh_SE1910 A2PhanTuanThanh_SE1910 TCP NTLM TRUE
+A2PhanTuanThanh_SE1910 A2PhanTuanThanh_SE1910 TCP NTLM TRUE
