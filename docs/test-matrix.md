@@ -147,3 +147,4 @@ Các kết quả M3 ở `api/M3ApiTests.java`, chạy SQL Server DB biệt lập
 |---|---|---|---|---|
 | TC-M4P2-BASE | Chạy lại Phần 1 trước khi sửa | Login và bảng account hoạt động | Chrome/BE thật: khách về login, Admin đọc đúng 2 account SQL | Pass |
 | TC-M4P2-SEARCH | Tên/email, hoa thường, trống, không khớp | Lọc đúng; xóa keyword trả đủ | 13 API tests pass trên SQL; Chrome tìm ADMIN.M3 được 1 dòng, no-match hiện thông báo, xóa ô trả 2 dòng; FE lint/build đạt | Pass |
+| TC-M4P2-CREATE | Popup, field sai, trùng email, role 1/2 và BCrypt | 201 DTO an toàn; lỗi 400/409 giữ form; hash trong DB | 15 API tests pass; Chrome form trống báo field, email trùng giữ nội dung, sửa email tạo thành công và bảng thêm dòng; SQL xác nhận BCrypt; lint/build đạt | Pass |

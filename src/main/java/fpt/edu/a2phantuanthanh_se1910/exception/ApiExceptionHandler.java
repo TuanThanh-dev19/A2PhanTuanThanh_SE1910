@@ -4,6 +4,7 @@ package fpt.edu.a2phantuanthanh_se1910.exception;
 import fpt.edu.a2phantuanthanh_se1910.dto.response.ApiError;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -51,8 +52,17 @@ public class ApiExceptionHandler {
             code = "NOT_FOUND";
         } else if (status == 400) {
             code = "VALIDATION_ERROR";
+        } else if (status == 409) {
+            code = "CONFLICT";
         }
         return ResponseEntity.status(status).body(ApiError.of(status, code,
                 exception.getReason(), request.getRequestURI()));
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ApiError> dataConflict(HttpServletRequest request) {
+        return ResponseEntity.status(409).body(ApiError.of(409, "CONFLICT",
+                "Data conflicts with an existing account or news reference. Reload and try again.",
+                request.getRequestURI()));
     }
 }

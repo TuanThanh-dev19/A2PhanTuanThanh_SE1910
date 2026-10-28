@@ -211,6 +211,55 @@ class M3ApiTests {
     }
 
     @Test
+    void createAccountNormalizesEmailHashesPasswordAndReturnsSafeDto() throws Exception {
+        String token = login(admin.getAccountEmail(), password).path("accessToken").asText();
+        for (int role : new int[]{1, 2}) {
+            String email = "created" + role + "@example.com";
+            String body = json.writeValueAsString(Map.of("accountName", "  Tài khoản mới  ",
+                    "accountEmail", "  " + email.toUpperCase() + "  ", "accountRole", role, "password", "p"));
+            String response = mvc.perform(post("/api/accounts").header("Authorization", "Bearer " + token)
+                            .contentType(MediaType.APPLICATION_JSON).content(body))
+                    .andExpect(status().isCreated()).andExpect(jsonPath("accountName").value("Tài khoản mới"))
+                    .andExpect(jsonPath("accountEmail").value(email)).andExpect(jsonPath("accountRole").value(role))
+                    .andExpect(header().exists("Location")).andReturn().getResponse().getContentAsString();
+            assertThat(json.readTree(response).size()).isEqualTo(4);
+            SystemAccount saved = accounts.findByAccountEmailIgnoreCase(email).orElseThrow();
+            assertThat(saved.getAccountPassword()).startsWith("$2");
+            assertThat(passwords.matches("p", saved.getAccountPassword())).isTrue();
+            assertThat(login(email, "p").path("account").path("accountId").asLong()).isEqualTo(saved.getAccountId());
+        }
+    }
+
+    @Test
+    void createAccountRejectsDuplicateEmailAndInvalidFieldsAndTypes() throws Exception {
+        String token = login(admin.getAccountEmail(), password).path("accessToken").asText();
+        var valid = new java.util.LinkedHashMap<String, Object>(Map.of("accountName", "New account",
+                "accountEmail", "new@example.com", "accountRole", 2, "password", password));
+        var duplicate = new java.util.LinkedHashMap<>(valid);
+        duplicate.put("accountEmail", " STAFF.TEST@EXAMPLE.COM ");
+        mvc.perform(post("/api/accounts").header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON).content(json.writeValueAsString(duplicate)))
+                .andExpect(status().isConflict()).andExpect(jsonPath("code").value("CONFLICT"));
+        mvc.perform(post("/api/accounts").header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON).content("{}"))
+                .andExpect(status().isBadRequest()).andExpect(jsonPath("fieldErrors.accountName").exists())
+                .andExpect(jsonPath("fieldErrors.accountEmail").exists()).andExpect(jsonPath("fieldErrors.password").exists())
+                .andExpect(jsonPath("fieldErrors.accountRole").exists());
+        Object[][] invalidValues = {{"accountName", " "}, {"accountName", "x".repeat(101)},
+                {"accountEmail", "not-email"}, {"accountEmail", "a".repeat(250) + "@x.com"},
+                {"accountRole", 0}, {"accountRole", 3}, {"accountRole", 1.5}, {"accountRole", "1"},
+                {"password", " "}, {"password", "é".repeat(37)}, {"password", "x".repeat(73)}};
+        for (Object[] invalid : invalidValues) {
+            var body = new java.util.LinkedHashMap<>(valid);
+            body.put((String) invalid[0], invalid[1]);
+            mvc.perform(post("/api/accounts").header("Authorization", "Bearer " + token)
+                            .contentType(MediaType.APPLICATION_JSON).content(json.writeValueAsString(body)))
+                    .andExpect(status().isBadRequest());
+        }
+        assertThat(accounts.count()).isEqualTo(2);
+    }
+
+    @Test
     void currentDatabaseRoleOverridesOldTokenAndDeletedAccountIsRejected() throws Exception {
         SystemAccount temporary = accounts.saveAndFlush(new SystemAccount("Temporary", "temp@example.com", 1,
                 passwords.encode(password)));

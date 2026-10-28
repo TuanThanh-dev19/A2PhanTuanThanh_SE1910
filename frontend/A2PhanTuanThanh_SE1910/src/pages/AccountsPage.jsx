@@ -1,6 +1,7 @@
 // Author: Phan Tuan Thanh - CE190595
 import { useEffect, useState } from 'react'
 import client from '../api/client'
+import AccountFormDialog from '../components/AccountFormDialog'
 
 export default function AccountsPage() {
   const [accounts, setAccounts] = useState([])
@@ -9,6 +10,8 @@ export default function AccountsPage() {
   const [reloadCount, setReloadCount] = useState(0)
   const [keyword, setKeyword] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
+  const [showCreateForm, setShowCreateForm] = useState(false)
+  const [success, setSuccess] = useState('')
 
   useEffect(() => {
     const controller = new AbortController()
@@ -61,6 +64,12 @@ export default function AccountsPage() {
     }
   }
 
+  function accountCreated() {
+    setShowCreateForm(false)
+    setSuccess('Đã thêm tài khoản.')
+    reloadAccounts()
+  }
+
   return (
     <>
       <p className="eyebrow">Quản trị hệ thống</p>
@@ -73,7 +82,13 @@ export default function AccountsPage() {
         <button type="submit" className="button-primary" disabled={loading}>Tìm kiếm</button>
         {(keyword || searchQuery) && <button type="button" className="button-secondary"
           onClick={clearSearch}>Xóa tìm kiếm</button>}
+        <button type="button" className="button-primary" onClick={() => {
+          setSuccess('')
+          setShowCreateForm(true)
+        }}>Thêm tài khoản</button>
       </form>
+      {success && <p className="notice" role="status">{success}</p>}
+      {showCreateForm && <AccountFormDialog onClose={() => setShowCreateForm(false)} onSaved={accountCreated} />}
       <section className="card" aria-labelledby="accounts-title" aria-busy={loading}>
         <div className="card-heading">
           <h2 id="accounts-title">Danh sách tài khoản</h2>
