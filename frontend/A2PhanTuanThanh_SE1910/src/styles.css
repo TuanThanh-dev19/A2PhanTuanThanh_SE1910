@@ -354,7 +354,7 @@ tbody tr:hover {
   font-weight: 600;
   margin: 16px 0 8px;
 }
-.account-dialog input, .account-dialog select {
+.account-dialog input, .account-dialog select, .account-dialog textarea {
   width: 100%;
   padding: 10px 12px;
   border: 1px solid #c3cddb;

@@ -2,6 +2,7 @@
 package fpt.edu.a2phantuanthanh_se1910.service;
 
 import fpt.edu.a2phantuanthanh_se1910.dto.response.CategoryResponse;
+import fpt.edu.a2phantuanthanh_se1910.dto.request.CategoryRequest;
 import fpt.edu.a2phantuanthanh_se1910.entity.Category;
 import fpt.edu.a2phantuanthanh_se1910.repository.CategoryRepository;
 import org.springframework.http.HttpStatus;
@@ -42,6 +43,22 @@ public class CategoryService {
         Category category = categories.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Category not found"));
         return mapCategory(category);
+    }
+
+    @Transactional
+    public CategoryResponse create(CategoryRequest request) {
+        Category parent = findParent(request.parentCategoryId());
+        Category category = new Category(request.categoryName(), request.categoryDescription(),
+                parent, request.isActive());
+        categories.saveAndFlush(category);
+        return mapCategory(category);
+    }
+
+    private Category findParent(Long parentId) {
+        if (parentId == null) return null;
+        return categories.findById(parentId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Danh mục cha không tồn tại. Vui lòng chọn lại."));
     }
 
     private CategoryResponse mapCategory(Category category) {

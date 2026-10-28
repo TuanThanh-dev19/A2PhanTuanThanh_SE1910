@@ -160,3 +160,10 @@ Các kết quả M3 ở `api/M3ApiTests.java`, chạy SQL Server DB biệt lập
 | TC-M5P1-SEARCH | Tên/mô tả, hoa thường, trim, trống/no-match | Lọc đúng; trống trả đủ; không khớp trả []; không sửa dữ liệu | API đạt cả literal wildcard và q > 200 trả 400; Chrome tên tiếng Việt/mô tả khác hoa thường đúng, clear trả đủ 3 dòng | Pass |
 | TC-M5P1-UI | Menu/route Staff, loading/empty/no-result/error | Staff xem bảng; Admin bị chặn; khách về login; feedback và retry đúng | Chrome + JAR/SQL thật: đủ field; Admin URL về /accounts, khách về /login; chờ khóa SQL hiện loading; DB test rỗng/no-match đúng thông báo; dừng/chạy lại BE và Thử lại đạt | Pass |
 | TC-M5P1-BUILD | Backend regression và frontend | Build/test/lint thành công | mvnw verify: 32 tests, 0 failure/error/skipped; npm run lint và npm run build đạt | Pass |
+
+## M5 - Phần 2: tạo, sửa và xóa Category (28-10-2026)
+
+| ID | Trường hợp | Expected | Actual | Trạng thái |
+|---|---|---|---|---|
+| TC-M5P2-BASE | Chạy lại Phần 1 | Staff đọc/search được | 23 API tests đạt; Chrome/JAR/SQL riêng: bảng và search DEMO đúng | Pass |
+| TC-M5P2-CREATE | Tạo hợp lệ/sai field/parent, quyền và search | 201 DTO; sai 400; khách 401/Admin 403; lỗi giữ form; lưu giữ search | 3 Category API tests đạt, 23 regression API đạt; Chrome form rỗng báo lỗi, tạo root/child inactive khớp SQL, parent đủ dù search không khớp, lưu đóng popup và giữ keyword; lint/build đạt | Pass |

@@ -1,6 +1,7 @@
 // Author: Phan Tuan Thanh - CE190595
 import { useEffect, useState } from 'react'
 import client from '../api/client'
+import CategoryFormDialog from '../components/CategoryFormDialog'
 
 export default function CategoriesPage() {
   const [categories, setCategories] = useState([])
@@ -9,6 +10,8 @@ export default function CategoriesPage() {
   const [reloadCount, setReloadCount] = useState(0)
   const [keyword, setKeyword] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
+  const [showForm, setShowForm] = useState(false)
+  const [success, setSuccess] = useState('')
 
   useEffect(() => {
     const controller = new AbortController()
@@ -73,7 +76,17 @@ export default function CategoriesPage() {
         <button type="submit" className="button-primary" disabled={loading}>Tìm kiếm</button>
         {(keyword || searchQuery) && <button type="button" className="button-secondary"
           onClick={clearSearch}>Xóa tìm kiếm</button>}
+        <button type="button" className="button-primary" onClick={() => {
+          setSuccess('')
+          setShowForm(true)
+        }}>Thêm danh mục</button>
       </form>
+      {success && <p className="notice" role="status">{success}</p>}
+      {showForm && <CategoryFormDialog onClose={() => setShowForm(false)} onSaved={() => {
+        setShowForm(false)
+        setSuccess('Đã thêm danh mục.')
+        reloadCategories()
+      }} />}
       <section className="card" aria-labelledby="categories-title" aria-busy={loading}>
         <div className="card-heading">
           <h2 id="categories-title">Danh sách danh mục</h2>
