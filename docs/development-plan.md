@@ -1,8 +1,8 @@
 # Tiến trình cá nhân và Git
 
-Ngày lập: 28/10/2026. Đây là kế hoạch triển khai, không phải lịch sử đã thực hiện. Các mốc không có hạn ngày hoặc số commit bắt buộc do đề không cung cấp các tiêu chí đó.
+Ngày lập: 28/10/2026. Đây là kế hoạch triển khai kèm cập nhật tiến độ thực tế M0/M1 ở phần 3; bảng lộ trình không tự chứng minh các mốc đã xong. Các mốc không có hạn ngày hoặc số commit bắt buộc do đề không cung cấp các tiêu chí đó.
 
-## 1. Baseline đã kiểm tra
+## 1. Baseline khảo sát ban đầu (giữ nguyên ghi nhận)
 
 | Hạng mục | Kết quả thực tế |
 |---|---|
@@ -46,11 +46,16 @@ Tên commit chỉ là ví dụ cho nội dung tương ứng khi thật sự hoà
 
 M4-M7 có thể tách BE, FE và test thành các commit tự nhiên nếu mỗi phần có diff rõ và trạng thái được ghi đúng. Không cần đợi hết M8 mới test. Các test xóa, phân quyền và validation phải xuất hiện cùng lúc chức năng được thêm; sửa lỗi được ghi tại mốc phát hiện, không phải chờ “giai đoạn sửa lỗi”.
 
-Hiện M0 mới hoàn thành phần đọc/khảo sát/tài liệu; **chưa hoàn tất phần Git local/remote**. M1-M8 chưa thực hiện.
+Tại khảo sát ban đầu, M0 mới hoàn thành phần đọc/khảo sát/tài liệu, chưa có Git local/remote. Cập nhật sau baseline ngày 28/10/2026:
 
-## 4. Khởi tạo Git ở bước triển khai
+- **M0 đã có Git:** commit `6a26a997173085c5e6eaeb3dbdf7fc44eefc0be9`, nhánh `main`, author `Phan Tuan Thanh <phanthanh19112005@gmail.com>`; origin `https://github.com/TuanThanh-dev19/A2PhanTuanThanh_SE1910.git`. Working tree sạch khi bắt đầu M1. Đây là kiểm tra local; chưa xác minh quyền push/attribution trên GitHub trong phiên M1.
+- **M1 đã kiểm chứng phần CLI/SQL Server:** Boot 3.5.16/JDK 21; Web/JPA/Validation/JDBC; cấu hình môi trường và native DLL cho Windows Authentication; `clean verify` 2 tests pass; JAR chạy và SQL metadata xác nhận session đúng DB qua TCP/NTLM/mã hóa. DBG-001 VERIFIED. [Evidence M1](evidence/2026-10-28-m1/inspection.md), thuộc **cùng commit này**.
+- **M1 chưa nghiệm thu đầy đủ:** TC-SETUP-03 mở/chạy IntelliJ do sinh viên thực hiện vẫn NOT RUN, chưa có evidence. Không xem CLI test là xác nhận thao tác IDE.
+- M2-M8 chưa thực hiện. M1 chỉ tạo DB rỗng đúng tên, `ddl-auto=none`; chưa chốt DEC-01/03, chưa entity/CRUD/auth/React.
 
-Các lệnh dưới đây là hướng dẫn chưa được thực thi trong phiên phân tích này. Chỉ thực hiện khi đã kiểm tra đúng thư mục và tài khoản. Không đưa ảnh render tạm, build output, `.env`, token hoặc mật khẩu vào staging.
+## 4. Hướng dẫn Git ban đầu và trạng thái tiếp nối
+
+Các lệnh dưới đây được viết ở phiên phân tích khi chưa có Git. Nay đã có repository và baseline `6a26a99`; không chạy lại `git init` hay tạo lại baseline. Giữ hướng dẫn để truy vết; không đưa ảnh render tạm, build output, `.env`, token hoặc mật khẩu vào staging.
 
 ```powershell
 git init -b main
@@ -71,7 +76,7 @@ git commit -m "chore: establish initial scaffold and assignment baseline"
 git show --no-patch --format=fuller HEAD
 ```
 
-Tạo/chọn repository cá nhân của `TuanThanh-dev19`, kiểm tra quyền và URL trước khi thêm `origin`. Chưa có URL đã xác minh nên tài liệu không đưa lệnh push tới một repository suy đoán. Sau khi thêm remote thật, kiểm tra `git remote -v`, push `main`, mở commit trên GitHub để kiểm tra author gắn đúng profile. Không ghi token vào URL remote hoặc docs.
+Origin local hiện trỏ tới URL đã ghi ở tiến độ M0. URL owner khớp tên account dự kiến nhưng chưa xác minh quyền/attribution GitHub trong phiên M1. Chưa push theo yêu cầu sinh viên. Khi sinh viên cho phép push sau này, kiểm tra remote/account thực tế và mở commit trên GitHub để xác nhận author. Không ghi token vào URL remote hoặc docs.
 
 Một người làm có thể dùng `main` với commit nhỏ đã kiểm tra. Với thay đổi lớn, dùng nhánh ngắn như `feat/news-management`, merge giữ các commit có giá trị minh chứng. Không cần GitFlow nhiều nhánh. Tránh squash toàn bộ tiến trình thành một commit trước khi nộp, hoặc rewrite các commit đã được dùng làm evidence.
 

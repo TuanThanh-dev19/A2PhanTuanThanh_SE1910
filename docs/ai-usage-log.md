@@ -21,6 +21,23 @@ Mục đích: ghi minh bạch AI đã hỗ trợ gì, đầu ra nào được d�
 | Việc sinh viên cần kiểm tra tiếp | Đọc từng REQ/DEC; xác nhận với giảng viên các điểm mơ hồ; tự chạy skeleton; thiết lập repo cá nhân; tự giải thích và thực hiện các mốc tiếp theo |
 | Commit | Chưa có Git repository/commit; không ghi SHA giả |
 
+## AI-002: Triển khai nền tảng M1
+
+| Thuộc tính | Ghi nhận thực tế |
+|---|---|
+| Ngày / công cụ | 28/10/2026, UTC+07:00; Codex và terminal tools |
+| Yêu cầu sinh viên | Triển khai M1 từ baseline 6a26a99; Boot 3/JDK 21, Web/JPA/Validation/JDBC, DB đúng tên, config môi trường, kết nối SQL thật, docs/evidence và commit; chưa push/nghiệp vụ |
+| Đầu vào đã đọc | AGENTS do chat cung cấp (Postman CLI); không thấy AGENTS.md trên đĩa ở repo/ancestor đã kiểm tra; README, toàn bộ docs/evidence, Java/POM/config, Git thực tế |
+| Quyết định có sinh viên trả lời | Sau kiểm tra SQL2022/Windows auth hoạt động và thiếu cấu hình JDBC, AI hỏi phương thức auth. Sinh viên chọn **Windows Authentication hiện tại**; không đoán username/password SQL |
+| AI sửa/tạo | POM 3.5.16 và dependencies; application.properties; test context + JDBC assertions; .gitignore, .env.example; scripts/create-database.sql; README, requirements, design, code-flow, development-plan, test-matrix, debug-log, AI log và evidence M1 |
+| Thao tác máy/DB | Khảo sát instance/TCP/listener; tạo DB rỗng đúng tên bằng Windows identity; tải native DLL 12.10.2 x64 từ Microsoft GitHub vào tmp bị ignore, kiểm tra chữ ký Valid; không commit DLL/secret |
+| Nguồn kiểm tra | Spring Boot 3.5 system requirements/release notes; Microsoft JDBC connection URL/native DLL và release notes 12.10.2 (liên kết ở README/design/evidence) |
+| AI/tool đã chạy | `mvnw -version`, dependency tree, `mvnw -B clean verify` (2 pass), `java -jar ... --server.port=0`, HTTP GET / = 404 expected; SQL metadata đối chiếu PID Java, DB đúng tên, TCP/NTLM/encrypt TRUE, 0 bảng nghiệp vụ; review diff/secret/baseline checks trước commit |
+| Phạm vi kết quả | DBG-001 VERIFIED do build/runtime Boot 3 thật; nền tảng CLI/SQL pass. Giữ nguyên baseline Boot 4, AI-001 và khảo sát ban đầu; không dùng report cũ làm evidence mới |
+| Sinh viên tự thực hiện / chưa có evidence | Đã lựa chọn auth trong chat. **Chưa có bằng chứng sinh viên tự chạy build, IntelliJ, demo hoặc giải thích diff**; TC-SETUP-03 NOT RUN, M1 còn điều kiện này |
+| Chưa kiểm chứng | SQL login, TLS với chứng chỉ tin cậy, graceful shutdown, checkout sạch trên máy khác; toàn bộ schema JPA nghiệp vụ/CRUD/auth/React. DEC-01/03 chưa chốt |
+| Evidence / commit | [M1 inspection](evidence/2026-10-28-m1/inspection.md), manifest/logs cùng thư mục; tests chạy trên base `6a26a99` + file thay đổi, không giả là checkout sạch. Thuộc **cùng commit này**: `fix: align backend with Spring Boot 3 assignment requirement`; chưa push |
+
 ## Nguyên tắc cập nhật
 
 - Mỗi lần AI hỗ trợ code, ghi module/file liên quan, yêu cầu đã hỏi, đề xuất dùng/không dùng và lý do.

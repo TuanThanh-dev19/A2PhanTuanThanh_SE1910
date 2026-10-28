@@ -10,6 +10,15 @@ Chỉ lưu artifact từ hành động đã thực hiện. File kế hoạch ho�
 
 Baseline chỉ chứng minh trạng thái skeleton đã kiểm tra; chưa chứng minh SQL Server, UI, API nghiệp vụ, Git history hay quyền sở hữu remote.
 
+## M1 đã chạy
+
+- [Inspection M1](2026-10-28-m1/inspection.md): base 6a26a99 + working tree, môi trường, lệnh và giới hạn.
+- [Build/test Boot 3](2026-10-28-m1/build-test.txt), [Surefire](2026-10-28-m1/context-test.txt), [dependencies](2026-10-28-m1/dependencies.txt).
+- [JAR startup](2026-10-28-m1/application-start.txt), [HTTP smoke](2026-10-28-m1/runtime-smoke.txt), [session SQL Server theo PID Java](2026-10-28-m1/sqlserver-application-session.txt).
+- [Manifest SHA-256](2026-10-28-m1/manifest.json) cố định code/config/test và artifact mới, không ghi mật khẩu.
+
+M1 do AI/tool chạy bằng Windows Authentication theo sinh viên lựa chọn. Chưa có evidence sinh viên chạy IntelliJ, entity/schema/CRUD/auth/React hoặc SQL login. Giữ nguyên toàn bộ thư mục baseline Boot 4.
+
 ## Cấu trúc cho các lần chạy sau
 
 Mỗi lần chạy dùng thư mục theo ngày và mục đích, ví dụ `YYYY-MM-DD-category-delete/`. Tên thư mục ví dụ này chưa phải evidence đã tồn tại.

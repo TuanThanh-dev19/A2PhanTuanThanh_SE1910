@@ -1,0 +1,31 @@
+Review snapshot at: 2026-10-28T14:17:13.9259210+07:00
+Status after docs updates, before staging; not test-start status:
+ M .gitignore
+ M README.md
+ M docs/ai-usage-log.md
+ M docs/code-flow.md
+ M docs/debug-log.md
+ M docs/design.md
+ M docs/development-plan.md
+ M docs/evidence/README.md
+ M docs/requirements.md
+ M docs/test-matrix.md
+ M pom.xml
+ M src/main/resources/application.properties
+ M src/test/java/fpt/edu/a2phantuanthanh_se1910/A2PhanTuanThanhSe1910ApplicationTests.java
+?? .env.example
+?? docs/evidence/2026-10-28-m1/application-start.txt
+?? docs/evidence/2026-10-28-m1/application-stderr.txt
+?? docs/evidence/2026-10-28-m1/build-test.txt
+?? docs/evidence/2026-10-28-m1/context-test.txt
+?? docs/evidence/2026-10-28-m1/database-create.txt
+?? docs/evidence/2026-10-28-m1/dependencies.txt
+?? docs/evidence/2026-10-28-m1/environment.txt
+?? docs/evidence/2026-10-28-m1/git-status.txt
+?? docs/evidence/2026-10-28-m1/inspection.md
+?? docs/evidence/2026-10-28-m1/manifest.json
+?? docs/evidence/2026-10-28-m1/native-driver.txt
+?? docs/evidence/2026-10-28-m1/runtime-smoke.txt
+?? docs/evidence/2026-10-28-m1/sqlserver-application-session.txt
+?? docs/evidence/2026-10-28-m1/sqlserver-before.txt
+?? scripts/create-database.sql

@@ -1,0 +1,8 @@
+Recorded at: 2026-10-28T14:10:19.4905777+07:00
+Command: java -jar target/A2PhanTuanThanh_SE1910-0.0.1-SNAPSHOT.jar --server.port=0
+PID: 44728
+GET http://localhost:53663/ => 404
+Expected: 404 because M1 has no business controller.
+Result: PASS for embedded HTTP startup only.
+Process will be stopped by tool after SQL session verification.
+Tool stopped the smoke-test process; graceful shutdown was not tested.

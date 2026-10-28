@@ -1,0 +1,5 @@
+Source: https://github.com/microsoft/mssql-jdbc/releases/download/v12.10.2/mssql-jdbc_auth.zip
+Local ignored DLL: D:\FA2026\SBA301\A2PhanTuanThanh_SE1910\tmp\mssql-jdbc-12.10.2\x64\mssql-jdbc_auth-12.10.2.x64.dll
+SHA256: 8B3EB5197BA1341A2FF5029F8707FA562B0515BC806B939B8A02608861977A1D
+Authenticode: Valid
+Signer: CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US

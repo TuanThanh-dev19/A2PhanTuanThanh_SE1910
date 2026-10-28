@@ -1,0 +1,14 @@
+Recorded at: 2026-10-28T14:08:18.3326440+07:00
+Agent/tool inspection; not student IntelliJ verification.
+Git base: 6a26a997173085c5e6eaeb3dbdf7fc44eefc0be9
+Before: required database absent; SQL2022 running; TCP port 1433 observed in listener metadata.
+Authentication: Windows integrated identity; no SQL username/password configured.
+No on-disk AGENTS.md found in repository or checked ancestor directories; chat AGENTS instruction permits Postman CLI.
+java version "21.0.8" 2025-07-15 LTS
+Java(TM) SE Runtime Environment (build 21.0.8+12-LTS-250)
+Java HotSpot(TM) 64-Bit Server VM (build 21.0.8+12-LTS-250, mixed mode, sharing)
+Apache Maven 3.10.0 (c43a36b8d67be7e0805a411bc0898af1a51f5472)
+Maven home: C:\Users\FPT\.m2\wrapper\dists\apache-maven-3.10.0\2aaba761688b1a6ea5a46e7e5f4d5406ed7a75ee8da95e5e3079863a23461c9b
+Java version: 21.0.8, vendor: Oracle Corporation, runtime: C:\Program Files\Java\jdk-21
+Default locale: en_US, platform encoding: UTF-8, time zone: Asia/Bangkok
+OS name: "windows 11", version: "10.0", arch: "amd64", family: "windows"

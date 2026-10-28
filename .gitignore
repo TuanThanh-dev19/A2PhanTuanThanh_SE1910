@@ -31,3 +31,13 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Local configuration, tools and runtime output ###
+.env
+.env.*
+!.env.example
+*.local.properties
+tmp/
+*.log
+node_modules/
+dist/

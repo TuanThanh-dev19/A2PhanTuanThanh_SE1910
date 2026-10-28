@@ -1,17 +1,21 @@
 # Luồng code và truy vết
 
-Trạng thái: baseline 28/10/2026. Phần 1 mô tả code có thật; các phần còn lại là thiết kế chờ triển khai.
+Trạng thái: sau triển khai nền tảng M1 ngày 28/10/2026. Phần 1 mô tả code có thật; các phần còn lại là thiết kế chờ triển khai.
 
 ## 1. Luồng hiện có
 
-`A2PhanTuanThanhSe1910Application.main()` gọi `SpringApplication.run(...)` để tạo Spring application context. `application.properties` mới có tên ứng dụng. Chưa có controller, service, repository, entity hoặc datasource.
+`A2PhanTuanThanhSe1910Application.main()` gọi `SpringApplication.run(...)`. Boot 3.5.16 nạp `application.properties` và biến môi trường, cấu hình Tomcat/Spring MVC, Hikari datasource và JPA EntityManagerFactory. Microsoft JDBC dùng TCP tới SQL Server; lần chạy thật dùng Windows Authentication qua native DLL. DB cố định `A2PhanTuanThanh_SE1910`. Chưa có controller, service, repository hoặc entity nghiệp vụ; scan thấy 0 repository, `ddl-auto=none`, DB vẫn 0 bảng. GET `/` của JAR trả 404 như dự kiến.
 
 Code hiện tại:
 
 - [Main application](../src/main/java/fpt/edu/a2phantuanthanh_se1910/A2PhanTuanThanhSe1910Application.java).
 - [Cấu hình ứng dụng](../src/main/resources/application.properties).
-- [POM](../pom.xml): Boot 4.1.2, Java 21; starter cơ bản và test.
-- [Context test](../src/test/java/fpt/edu/a2phantuanthanh_se1910/A2PhanTuanThanhSe1910ApplicationTests.java): `@SpringBootTest` và `contextLoads()` rỗng; xác nhận context khởi tạo không lỗi, không xác nhận nghiệp vụ.
+- [POM](../pom.xml): Boot 3.5.16, Java 21; Web, Data JPA, Validation, SQL Server runtime driver và Test.
+- [Context/SQL test](../src/test/java/fpt/edu/a2phantuanthanh_se1910/A2PhanTuanThanhSe1910ApplicationTests.java): `@SpringBootTest`, inject DataSource/EntityManagerFactory. `contextLoads()` kiểm tra JPA factory mở; `connectsToAssignmentDatabaseOnSqlServer()` mở JDBC connection, kiểm tra product `Microsoft SQL Server`, chạy `SELECT DB_NAME(), 1`, assert tên DB và giá trị 1. Không ghi dữ liệu nghiệp vụ.
+- [Script DB](../scripts/create-database.sql): tạo database rỗng nếu thiếu; chạy riêng trước app/tests bằng danh tính được cấp quyền. Hibernate chưa tạo schema trong M1.
+- [Mẫu biến môi trường](../.env.example) và [README](../README.md): cấu hình local, DLL đúng version/kiến trúc, cách chạy; file `.env` không được Boot tự nạp.
+
+Luồng kiểm chứng: `mvnw clean verify → Spring context/JPA → JDBC SELECT → Surefire → executable JAR`; sau đó `java -jar → Tomcat → GET / (404)`, SQL metadata đối chiếu `applicationName + host_process_id` với đúng PID Java, DB/TCP/NTLM/encryption. [Evidence mới](evidence/2026-10-28-m1/inspection.md) không thay evidence Boot 4. IntelliJ và toàn bộ luồng nghiệp vụ bên dưới chưa được chạy.
 
 ## 2. Luồng request dự kiến
 
@@ -73,11 +77,11 @@ Account delete tương tự nhưng yêu cầu Admin, kiểm tra `CreatedByID` v�
 
 ## 6. Bảng truy vết dự kiến
 
-Tên lớp/file ngoài phần 1 dưới đây **chưa tồn tại**; sẽ thay bằng đường dẫn và method chính xác khi code được tạo. Cột SHA chỉ điền khi có commit thật.
+Ngoài nền tảng ở phần 1, tên lớp nghiệp vụ dưới đây **chưa tồn tại**; sẽ thay bằng đường dẫn/method khi code được tạo. Không ghi SHA dự đoán.
 
 | Yêu cầu | Điểm code dự kiến | Test | Mốc | Implementation/SHA |
 |---|---|---|---|---|
-| REQ-01,02,19 | pom.xml, main package, tên React/DB, IntelliJ | TC-SETUP-01..03 | M1 | Chưa thực hiện / chưa có |
+| REQ-01,02,19 (phần nền tảng) | pom.xml, application.properties, application test, scripts/create-database.sql | TC-SETUP-01 PASS; TC-SETUP-02 BE/DB PASS, FE NOT RUN; TC-SETUP-03 NOT RUN; TC-M1-DB/HTTP PASS | M1 | Cùng commit này; evidence/2026-10-28-m1/inspection.md; chưa nghiệm thu đầy đủ REQ |
 | REQ-03,05 | entity/, repository/, datasource/bootstrap | TC-DB-01..03 | M2 | Chưa thực hiện / chưa có |
 | REQ-04 | React api client và các page | TC-E2E-01 | M4-M7 | Chưa thực hiện / chưa có |
 | REQ-06 | PublicNewsController/Service, PublicNewsPage | TC-PUB-01..03 | M3,M6 | Chưa thực hiện / chưa có |
@@ -89,6 +93,6 @@ Tên lớp/file ngoài phần 1 dưới đây **chưa tồn tại**; sẽ thay b
 | REQ-15,16 | Các dialog create/update và ConfirmDialog | TC-UI-01..03 | M4-M6 | Chưa thực hiện / chưa có |
 | REQ-17 | DTO constraints, service rules, GlobalExceptionHandler | TC-VAL-01..03 và negative tests module | M2-M7 | Chưa thực hiện / chưa có |
 | REQ-18 | Full FE/BE trên SQL Server | TC-E2E-01..02 | M8 | Chưa thực hiện / chưa có |
-| GIT-01,02,DOC-01 | Git remote/log và docs/evidence | TC-PROC-01..02 | M0-M8 | Chưa hoàn tất / chưa có |
+| GIT-01,02,DOC-01 | Git remote/log và docs/evidence | TC-PROC-01..02 | M0-M8 | Baseline 6a26a99 đã có Git; M1 cùng commit này; chưa push/xác minh GitHub và chưa full lifecycle |
 
 Khi đổi route, signature, validation hoặc quyền, cập nhật mục luồng liên quan và test tương ứng trong cùng commit. Không giữ mô tả “service kiểm tra…” nếu code thực tế chưa có kiểm tra đó.

@@ -1,6 +1,16 @@
 # Thiết kế dự kiến
 
-Trạng thái 28/10/2026: chưa có các lớp nghiệp vụ/API/React được mô tả bên dưới. Yêu cầu và các quyết định DEC tham chiếu [requirements.md](requirements.md).
+Trạng thái 28/10/2026 sau M1: nền tảng Boot 3/SQL Server đã chạy bằng CLI; chưa có các lớp nghiệp vụ/API/React được mô tả bên dưới. Yêu cầu và các quyết định DEC tham chiếu [requirements.md](requirements.md).
+
+## Nền tảng M1 đã triển khai
+
+- POM dùng Spring Boot **3.5.16**, Java 21; Web, Data JPA, Validation, Test; JDBC `12.10.2.jre11` và Hibernate `6.6.53.Final` do BOM quản lý, không override version rời. [System requirements](https://docs.spring.io/spring-boot/3.5/system-requirements.html) xác nhận JDK 21 nằm trong dải tương thích. [Release notes](https://spring.io/blog/2026/06/25/spring-boot-3-5-16-available-now/) ghi bản OSS cuối nhánh 3.5; chọn major 3 theo đề.
+- `application.properties` ghép URL từ `SQLSERVER_HOST` (bắt buộc), `SQLSERVER_PORT` (mặc định 1433), tên DB cố định `A2PhanTuanThanh_SE1910`; credentials tách qua `SQLSERVER_USERNAME/PASSWORD`. `SQLSERVER_INTEGRATED_SECURITY` mặc định false; lần chạy thật dùng true theo sinh viên, danh tính Windows hiện tại và native DLL x64 cùng version JDBC.
+- TLS mặc định `SQLSERVER_ENCRYPT=true`, `SQLSERVER_TRUST_SERVER_CERTIFICATE=false`; lần chạy local bật trust certificate tường minh. `applicationName` cho phép đối chiếu session SQL với PID Java. Không có credential hard-code hoặc trong URL mẫu.
+- `scripts/create-database.sql` chỉ tạo DB nếu chưa tồn tại. Khảo sát thật thấy DB chưa có; tool tạo DB, sau đó JDBC và SQL metadata xác nhận đúng tên, SQL Server 16.0.1000.6, TCP/NTLM/encryption TRUE. DB có 0 user tables trước và sau chạy. Đây chưa nghiệm thu phần JPA sinh schema của REQ-03/DEC-03.
+- `ddl-auto=none` cho M1; `open-in-view=false` để không kéo truy vấn persistence sang web view. Khi triển khai M2 mới chốt entity/schema và đổi chính sách DDL với test riêng.
+- Tests cần DB thật và môi trường hợp lệ; không có H2, mock datasource hoặc profile né kiểm tra kết nối. README có cách cài native DLL, cấu hình PowerShell/IntelliJ và mẫu `.env.example` không tự nạp.
+- [Evidence M1](evidence/2026-10-28-m1/inspection.md): 2 tests pass và JAR HTTP smoke pass. IntelliJ do sinh viên chạy vẫn chưa kiểm chứng; SQL login và TLS với chứng chỉ tin cậy chưa chạy.
 
 ## 1. Kiến trúc SBA301
 
@@ -20,7 +30,7 @@ Giữ main application trong `fpt.edu.a2phantuanthanh_se1910`, các package ứn
 
 ```text
 A2PhanTuanThanh_SE1910/                 # repo và backend hiện có
-├── pom.xml                            # đổi sang phiên bản cụ thể thuộc Boot 3.x ở mốc M1
+├── pom.xml                            # hiện đã Boot 3.5.16 ở M1
 ├── mvnw, mvnw.cmd, .mvn/
 ├── src/main/java/fpt/edu/a2phantuanthanh_se1910/
 │   ├── A2PhanTuanThanhSe1910Application.java
@@ -55,7 +65,7 @@ A2PhanTuanThanh_SE1910/                 # repo và backend hiện có
 
 Frontend là project riêng trong cùng repo, không nằm trong Java package hay template Thymeleaf. Folder giữ `A2PhanTuanThanh_SE1910`; `package.json.name` dự kiến `a2phantuanthanh-se1910`. Tên DB là `A2PhanTuanThanh_SE1910`.
 
-Dependency dự kiến: Spring Web, Data JPA, Validation, Security, Microsoft SQL Server JDBC driver, Spring Boot Test, Spring Security Test; thư viện JWT được chọn và khóa version khi triển khai. JDK 21 đã có. POM hiện là 4.1.2; phải đổi và kiểm tra lại với Boot 3 trước khi triển khai. Không trộn namespace `javax.persistence` với `jakarta.persistence`.
+Đã có ở M1: Spring Web, Data JPA, Validation, Microsoft SQL Server JDBC driver và Spring Boot Test. Security, Spring Security Test và JWT còn dự kiến ở M3; thư viện JWT được chọn/khóa version khi triển khai. POM hiện là 3.5.16, JDK 21. Không trộn namespace `javax.persistence` với `jakarta.persistence`; `javax.sql.DataSource` trong test là API Java SE hợp lệ.
 
 ## 2. Entity và trường dữ liệu
 
@@ -150,4 +160,4 @@ JWT: khóa ký qua biến môi trường, expiration hữu hạn; request axios 
 
 ## 7. Chưa chốt/chưa kiểm chứng
 
-DEC-01 và DEC-03 cần làm rõ; version Boot 3 cụ thể và JWT library được khóa ở mốc triển khai. Chưa có kết nối SQL Server, mapping JPA, token, DTO, route hoặc React để kiểm chứng thiết kế này. Mọi thay đổi thiết kế sau đó phải cập nhật requirements, test matrix và code-flow trong cùng nhịp triển khai.
+DEC-01 và DEC-03 cần làm rõ; Boot đã khóa 3.5.16, JWT library chưa chọn. SQL Server connectivity đã kiểm chứng ở M1; mapping JPA nghiệp vụ, sinh schema, token, DTO, route và React chưa triển khai. Chưa xác nhận thao tác IntelliJ của sinh viên. Mọi thay đổi thiết kế sau đó phải cập nhật requirements, test matrix và code-flow trong cùng nhịp triển khai.

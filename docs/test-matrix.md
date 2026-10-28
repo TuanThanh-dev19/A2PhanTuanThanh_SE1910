@@ -1,6 +1,6 @@
 # Ma trận kiểm thử
 
-Trạng thái 28/10/2026: mới chạy TC-BASE-01 trên skeleton có sẵn. Các case nghiệp vụ đều **NOT RUN** vì chưa có implementation. “Kỳ vọng” là tiêu chí thiết kế, không phải kết quả quan sát.
+Trạng thái 28/10/2026 sau M1: giữ TC-BASE-01 Boot 4; đã chạy setup Boot 3 và kết nối SQL Server thật như bảng M1 bên dưới. Các case nghiệp vụ và IntelliJ vẫn **NOT RUN**. “Kỳ vọng” là tiêu chí thiết kế, không phải kết quả quan sát.
 
 ## 1. Quy ước
 
@@ -20,13 +20,25 @@ Fixture dự kiến: Admin A; Staff S1/S2; account U chưa tạo bài; category 
 
 TC-BASE-01 không nghiệm thu REQ-02/03/18. Sai major version được ghi DBG-001. Chưa chạy bài test nghiệp vụ hoặc FE/BE.
 
+### Kết quả M1 thực tế (AI/tool chạy, base `6a26a99` + working tree)
+
+| ID | Expected | Actual | Kết quả / evidence |
+|---|---|---|---|
+| TC-SETUP-01 | Boot 3, đúng dependencies, build/test pass trên JDK 21 | Boot 3.5.16; Web/JPA/Validation/JDBC 12.10.2.jre11; `mvnw -B clean verify` exit 0, 2 tests, 0 failure/error/skipped, JAR được repackage | PASS; [build-test.txt](evidence/2026-10-28-m1/build-test.txt), [dependencies.txt](evidence/2026-10-28-m1/dependencies.txt), [context-test.txt](evidence/2026-10-28-m1/context-test.txt) |
+| TC-SETUP-02-BE-DB | Backend và DB đúng tên | artifact/application/`DB_NAME()` = A2PhanTuanThanh_SE1910 | PASS phần BE/DB; [sqlserver-before.txt](evidence/2026-10-28-m1/sqlserver-before.txt); phần FE NOT RUN |
+| TC-M1-DB | App JDBC kết nối SQL Server thật, đúng DB, query thành công | Test assert product Microsoft SQL Server, `SELECT DB_NAME(), 1`; JPA factory mở. SQL session của JAR PID 44728: DB đúng, TCP 1433, NTLM, encrypt TRUE | PASS; [test source](../src/test/java/fpt/edu/a2phantuanthanh_se1910/A2PhanTuanThanhSe1910ApplicationTests.java), [SQL session](evidence/2026-10-28-m1/sqlserver-application-session.txt), [application log](evidence/2026-10-28-m1/application-start.txt) |
+| TC-M1-HTTP | Executable JAR khởi động Tomcat, chưa có controller nên GET / trả 404 | `java -jar ... --server.port=0`, Tomcat port 53663; GET / = 404 | PASS phạm vi HTTP startup; [runtime-smoke.txt](evidence/2026-10-28-m1/runtime-smoke.txt) |
+| TC-M1-SCHEMA | M1 không tạo bảng nghiệp vụ | sys.tables có 0 user tables trước và sau; `ddl-auto=none` | PASS phạm vi M1; [trước](evidence/2026-10-28-m1/sqlserver-before.txt), [sau](evidence/2026-10-28-m1/sqlserver-application-session.txt) |
+
+[Inspection/manifest M1](evidence/2026-10-28-m1/inspection.md) ghi thời gian + checksum; baseline Boot 4 không bị thay đổi. Các kết quả này không nghiệm thu schema/CRUD/JPA persistence ở M2, SQL login, TLS với chứng chỉ tin cậy, IntelliJ hoặc FE/BE. OBS-001 vẫn có cảnh báo Maven snapshots/Mockito/JVM; build pass, chưa sửa các cảnh báo đó.
+
 ## 3. Setup và dữ liệu
 
 | ID | REQ | Bước/đầu vào | Kỳ vọng | Cách kiểm tra | Trạng thái |
 |---|---|---|---|---|---|
-| TC-SETUP-01 | 02 | Kiểm tra POM/dependency và chạy test sau đổi Boot | Major version 3; context/build pass | Maven + kiểm tra source | NOT RUN |
-| TC-SETUP-02 | 01 | Xem tên BE, folder FE, package npm và DB thực tế | Đúng quy ước trong design | File + SQL metadata | NOT RUN |
-| TC-SETUP-03 | 19 | Mở project trong IntelliJ, chạy main | Chạy được bằng JDK cấu hình, có evidence IDE thật | Manual | NOT RUN |
+| TC-SETUP-01 | 02 | Kiểm tra POM/dependency và chạy test sau đổi Boot | Major version 3; context/build pass | Maven + kiểm tra source | PASS, bảng M1 |
+| TC-SETUP-02 | 01 | Xem tên BE, folder FE, package npm và DB thực tế | Đúng quy ước trong design | File + SQL metadata | BE/DB PASS theo case con; FE NOT RUN, chưa PASS toàn hàng |
+| TC-SETUP-03 | 19 | Sinh viên mở project trong IntelliJ, chạy main | Chạy được bằng JDK cấu hình, có evidence IDE thật | Manual | NOT RUN; điều kiện M1 còn thiếu, CLI không thay thế |
 | TC-DB-01 | 03,05 | Khởi động JPA với database rỗng đúng tên | Tạo đủ 5 bảng, fields, PK/FK/unique đúng thiết kế đã chốt | Integration SQL Server | NOT RUN |
 | TC-DB-02 | 03 | Tạo dữ liệu tiếng Việt, restart BE và đọc lại | Không mất dữ liệu hoặc lỗi Unicode | API + SQL Server | NOT RUN |
 | TC-DB-03 | 05,17 | Lưu FK không tồn tại, duplicate link, trạng thái/role sai | Constraint/validation chặn; không lưu dữ liệu dở dang | Integration SQL Server | NOT RUN |
@@ -84,11 +96,12 @@ TC-BASE-01 không nghiệm thu REQ-02/03/18. Sai major version được ghi DBG-
 | TC-VAL-03 | 17 | FK không tồn tại, duplicate tag ID, race xóa/tạo tham chiếu hoặc trùng email | Rollback và 4xx có nghĩa; DB giữ toàn vẹn | Integration SQL Server | NOT RUN |
 | TC-E2E-01 | 04,18 | React qua axios tới BE thật: login → từng module → CRUD/search → profile/history → public | Request/response và UI/DB nhất quán; CORS hoạt động | Browser + API + SQL | NOT RUN |
 | TC-E2E-02 | 18 | Checkout sạch, cấu hình theo README, khởi động FE/BE với SQL Server và chạy regression | Người khác tái hiện được, không phụ thuộc file local thiếu trong repo | Manual integration | NOT RUN |
-| TC-PROC-01 | GIT-01,GIT-02 | Đối chiếu remote owner, author email/profile, diff qua các mốc | Đúng cá nhân và lịch sử thể hiện phát triển thật | git log/show + GitHub | NOT RUN |
-| TC-PROC-02 | DOC-01 | Kiểm tra REQ → code → tests → evidence → commit và AI/debug log | Không có PASS thiếu evidence, route/file/SHA giả hoặc mô tả chức năng chưa tồn tại là đã xong | Review docs/code/Git | NOT RUN |
+| TC-PROC-01 | GIT-01,GIT-02 | Đối chiếu remote owner, author email/profile, diff qua các mốc | Đúng cá nhân và lịch sử thể hiện phát triển thật | git log/show + GitHub | Đã đọc Git local/baseline/origin; GitHub attribution/quyền push NOT RUN, chưa PASS toàn hàng |
+| TC-PROC-02 | DOC-01 | Kiểm tra REQ → code → tests → evidence → commit và AI/debug log | Không có PASS thiếu evidence, route/file/SHA giả hoặc mô tả chức năng chưa tồn tại là đã xong | Review docs/code/Git | Đã review phạm vi M1, xem inspection/manifest; full lifecycle M0-M8 NOT RUN |
 
 ## 8. Cách chạy khi có implementation
 
+- M1 hiện tại: làm các bước SQL Server/native DLL/biến môi trường trong README rồi chạy `./mvnw.cmd -B clean verify`. Hai tests đều dùng context thật, cần SQL Server, không tự skip nếu thiếu kết nối.
 - Unit/service tests: nghiệp vụ xóa bị chặn, profile ownership, query history và transaction boundary cần thiết.
 - Controller/security tests: payload validation, response status, 401/403, không lộ password.
 - Integration: SQL Server thật hoặc SQL Server test instance biệt lập; không dùng H2 làm bằng chứng thay thế hành vi SQL Server.

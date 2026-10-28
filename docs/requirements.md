@@ -39,7 +39,7 @@ Phần Introduction mô tả bối cảnh hệ thống tin tức. Approval workf
 | GIT-02 | Lịch sử phản ánh tiến trình phát triển thật | S2 | Có baseline, chức năng tăng dần, kiểm thử và sửa lỗi/cải tiến có căn cứ; giữ timestamp thực tế |
 | DOC-01 | Đủ bộ docs theo ảnh và đồng bộ với code/Git | S3,S4 | Mỗi yêu cầu truy vết được đến code/test/evidence/commit; trạng thái chưa làm thể hiện rõ |
 
-Tất cả REQ hiện ở trạng thái **chưa nghiệm thu**. REQ-01 mới có tên backend đúng mẫu; không đồng nghĩa frontend/database đã tồn tại. Test skeleton PASS không đóng REQ-02 vì đang dùng Boot 4.
+Tại baseline, tất cả REQ **chưa nghiệm thu**; REQ-01 mới có tên backend, test Boot 4 không đóng REQ-02. Cập nhật M1 ngày 28/10/2026: backend/DB đã đúng tên, Boot 3.5.16 + JDK 21 build/test pass và JDBC kết nối SQL Server thật. REQ-01 còn FE; REQ-02 còn API/ba lớp nghiệp vụ; REQ-03 còn entity/schema/persistence; REQ-19 còn sinh viên tự mở/chạy IntelliJ và evidence. Vì vậy các REQ vẫn chưa nghiệm thu đầy đủ. Xem [test-matrix](test-matrix.md) và [evidence M1](evidence/2026-10-28-m1/inspection.md).
 
 ## 3. Ma trận quyền dự kiến
 
