@@ -1,0 +1,46 @@
+{
+  "baseline_date": "2026-10-28",
+  "timezone": "Asia/Bangkok",
+  "code_revision": null,
+  "revision_note": "No Git repository at inspection; code unchanged during documentation work.",
+  "test_command": ".\\mvnw.cmd test",
+  "test_finished_at": "2026-10-28T13:37:48+07:00",
+  "test_result": {
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "exit_code": 0,
+    "scope": "Existing Spring Boot 4.1.2 skeleton context test only"
+  },
+  "files": [
+    {
+      "path": "pom.xml",
+      "sha256": "6130a067dd118ad9d973244ec83267ee3030940fb77c83526bdbe69a22c8f03c"
+    },
+    {
+      "path": "src/main/java/fpt/edu/a2phantuanthanh_se1910/A2PhanTuanThanhSe1910Application.java",
+      "sha256": "978d518314854a349f185d609dadb52598db177d101f73fa3915618b8106a562"
+    },
+    {
+      "path": "src/main/resources/application.properties",
+      "sha256": "e35eb064f7baeef95d500500b09064f083870e29ba05ce5dbb1eadd4c7fa45fd"
+    },
+    {
+      "path": "src/test/java/fpt/edu/a2phantuanthanh_se1910/A2PhanTuanThanhSe1910ApplicationTests.java",
+      "sha256": "a95526641fdb5323041fe40a86310b70097c4d6249881c3095d6babae6e476e6"
+    },
+    {
+      "path": ".mvn/wrapper/maven-wrapper.properties",
+      "sha256": "e475c49e0cb54793fef372f979672f56bfe7d272b981ad6f5ebd5e50e08ee1dd"
+    },
+    {
+      "path": "D:/FA2026/SBA301/Assignment 02_Implement CRUD Application with RESTful Web Service and ReactJS.pdf",
+      "sha256": "07f97545ec34344e3ecaf154fd1aa22b0692c4e45ca6b656c7dfdb9c7d42f522"
+    },
+    {
+      "path": "docs/evidence/2026-10-28-baseline/context-test.txt",
+      "sha256": "5d22f16e5d0c307f8c01899a3a13185c788c79b88c4e36c20ff3832dff00ef77"
+    }
+  ]
+}
