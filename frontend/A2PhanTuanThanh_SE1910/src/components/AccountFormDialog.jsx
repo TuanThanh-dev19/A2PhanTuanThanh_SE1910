@@ -2,11 +2,12 @@
 import { useEffect, useRef, useState } from 'react'
 import client from '../api/client'
 
-export default function AccountFormDialog({ onClose, onSaved }) {
+export default function AccountFormDialog({ account, onClose, onSaved }) {
   const dialogRef = useRef(null)
-  const [accountName, setAccountName] = useState('')
-  const [accountEmail, setAccountEmail] = useState('')
-  const [accountRole, setAccountRole] = useState('2')
+  const isEditing = Boolean(account)
+  const [accountName, setAccountName] = useState(account?.accountName || '')
+  const [accountEmail, setAccountEmail] = useState(account?.accountEmail || '')
+  const [accountRole, setAccountRole] = useState(String(account?.accountRole || 2))
   const [password, setPassword] = useState('')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
@@ -31,10 +32,12 @@ export default function AccountFormDialog({ onClose, onSaved }) {
     } else if (event.currentTarget.elements.accountEmail.validity.typeMismatch) {
       errors.accountEmail = 'Email không đúng định dạng.'
     }
-    if (!password.trim()) {
-      errors.password = 'Vui lòng nhập mật khẩu.'
-    } else if (new TextEncoder().encode(password).length > 72) {
-      errors.password = 'Mật khẩu tối đa 72 byte UTF-8.'
+    if (!isEditing || password !== '') {
+      if (!password.trim()) {
+        errors.password = 'Mật khẩu không được chỉ chứa khoảng trắng.'
+      } else if (new TextEncoder().encode(password).length > 72) {
+        errors.password = 'Mật khẩu tối đa 72 byte UTF-8.'
+      }
     }
     setFieldErrors(errors)
     setError('')
@@ -42,11 +45,18 @@ export default function AccountFormDialog({ onClose, onSaved }) {
 
     setSaving(true)
     try {
-      await client.post('/accounts', {
+      const body = {
         accountName: accountName.trim(), accountEmail: accountEmail.trim(),
-        accountRole: Number(accountRole), password,
-      })
-      onSaved()
+        accountRole: Number(accountRole),
+      }
+      if (!isEditing || password !== '') body.password = password
+      let response
+      if (isEditing) {
+        response = await client.put(`/accounts/${account.accountId}`, body)
+      } else {
+        response = await client.post('/accounts', body)
+      }
+      onSaved(response.data)
     } catch (requestError) {
       if (requestError.response?.status === 409) {
         setError('Không lưu được tài khoản. Email có thể đã được sử dụng; vui lòng kiểm tra lại.')
@@ -62,7 +72,7 @@ export default function AccountFormDialog({ onClose, onSaved }) {
   return (
     <dialog ref={dialogRef} className="account-dialog" aria-labelledby="account-form-title" onCancel={handleCancel}>
       <form onSubmit={handleSubmit} noValidate aria-busy={saving}>
-        <h2 id="account-form-title">Thêm tài khoản</h2>
+        <h2 id="account-form-title">{isEditing ? 'Sửa tài khoản' : 'Thêm tài khoản'}</h2>
         {error && <p className="error-message" role="alert">{error}</p>}
         <fieldset disabled={saving}>
           <label htmlFor="account-name">Tên</label>
@@ -81,10 +91,13 @@ export default function AccountFormDialog({ onClose, onSaved }) {
             <option value="1">Admin</option><option value="2">Staff</option>
           </select>
           {fieldErrors.accountRole && <p id="account-role-error" className="field-error" role="alert">{fieldErrors.accountRole}</p>}
-          <label htmlFor="account-password">Mật khẩu</label>
-          <input id="account-password" type="password" autoComplete="new-password" required maxLength={72}
+          <label htmlFor="account-password">{isEditing ? 'Mật khẩu mới' : 'Mật khẩu'}</label>
+          <input id="account-password" type="password" autoComplete="new-password" required={!isEditing} maxLength={72}
             value={password} onChange={(event) => setPassword(event.target.value)} aria-invalid={Boolean(fieldErrors.password)}
-            aria-describedby={fieldErrors.password ? 'account-password-error' : undefined} />
+            aria-describedby={fieldErrors.password ? 'account-password-error' : 'account-password-hint'} />
+          <p id="account-password-hint" className="muted field-hint">
+            {isEditing ? 'Để trống để giữ nguyên mật khẩu hiện tại.' : 'Mật khẩu tối đa 72 byte UTF-8.'}
+          </p>
           {fieldErrors.password && <p id="account-password-error" className="field-error" role="alert">{fieldErrors.password}</p>}
         </fieldset>
         <div className="dialog-actions">

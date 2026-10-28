@@ -1,17 +1,21 @@
 // Author: Phan Tuan Thanh - CE190595
-import { useEffect, useState } from 'react'
+import { useContext, useEffect, useState } from 'react'
 import client from '../api/client'
 import AccountFormDialog from '../components/AccountFormDialog'
+import { AuthContext } from '../auth/AuthContext'
 
 export default function AccountsPage() {
+  const { session, startSession } = useContext(AuthContext)
   const [accounts, setAccounts] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [reloadCount, setReloadCount] = useState(0)
   const [keyword, setKeyword] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
-  const [showCreateForm, setShowCreateForm] = useState(false)
+  const [formState, setFormState] = useState(null)
   const [success, setSuccess] = useState('')
+  const [actionError, setActionError] = useState('')
+  const [editingId, setEditingId] = useState(null)
 
   useEffect(() => {
     const controller = new AbortController()
@@ -64,10 +68,28 @@ export default function AccountsPage() {
     }
   }
 
-  function accountCreated() {
-    setShowCreateForm(false)
-    setSuccess('Đã thêm tài khoản.')
+  function accountSaved(savedAccount) {
+    const wasEditing = Boolean(formState.account)
+    setFormState(null)
+    setSuccess(wasEditing ? 'Đã cập nhật tài khoản.' : 'Đã thêm tài khoản.')
+    if (savedAccount.accountId === session.account.accountId) {
+      startSession({ ...session, account: savedAccount })
+    }
     reloadAccounts()
+  }
+
+  async function openEditForm(accountId) {
+    setEditingId(accountId)
+    setActionError('')
+    setSuccess('')
+    try {
+      const response = await client.get(`/accounts/${accountId}`)
+      setFormState({ account: response.data })
+    } catch (requestError) {
+      setActionError(requestError.response?.data?.message || 'Không tải được tài khoản. Vui lòng thử lại.')
+    } finally {
+      setEditingId(null)
+    }
   }
 
   return (
@@ -84,11 +106,14 @@ export default function AccountsPage() {
           onClick={clearSearch}>Xóa tìm kiếm</button>}
         <button type="button" className="button-primary" onClick={() => {
           setSuccess('')
-          setShowCreateForm(true)
-        }}>Thêm tài khoản</button>
+          setActionError('')
+          setFormState({ account: null })
+        }} disabled={editingId !== null}>Thêm tài khoản</button>
       </form>
       {success && <p className="notice" role="status">{success}</p>}
-      {showCreateForm && <AccountFormDialog onClose={() => setShowCreateForm(false)} onSaved={accountCreated} />}
+      {actionError && <p className="error-message" role="alert">{actionError}</p>}
+      {formState && <AccountFormDialog account={formState.account}
+        onClose={() => setFormState(null)} onSaved={accountSaved} />}
       <section className="card" aria-labelledby="accounts-title" aria-busy={loading}>
         <div className="card-heading">
           <h2 id="accounts-title">Danh sách tài khoản</h2>
@@ -106,7 +131,8 @@ export default function AccountsPage() {
         {!loading && !error && accounts.length > 0 && <div className="table-scroll">
           <table>
             <caption className="sr-only">ID, tên, email và vai trò của các tài khoản</caption>
-            <thead><tr><th scope="col">ID</th><th scope="col">Tên</th><th scope="col">Email</th><th scope="col">Vai trò</th></tr></thead>
+            <thead><tr><th scope="col">ID</th><th scope="col">Tên</th><th scope="col">Email</th>
+              <th scope="col">Vai trò</th><th scope="col">Thao tác</th></tr></thead>
             <tbody>{accounts.map((account) => <tr key={account.accountId}>
               <td className="id-cell">{account.accountId}</td>
               <td className="name-cell">{account.accountName}</td>
@@ -114,6 +140,10 @@ export default function AccountsPage() {
               <td><span className={`role-badge ${account.accountRole === 1 ? 'admin' : 'staff'}`}>
                 {account.accountRole === 1 ? 'Admin' : 'Staff'}
               </span></td>
+              <td><button type="button" className="button-secondary" disabled={editingId !== null}
+                aria-label={`Sửa ${account.accountEmail}`} onClick={() => openEditForm(account.accountId)}>
+                {editingId === account.accountId ? 'Đang tải…' : 'Sửa'}
+              </button></td>
             </tr>)}</tbody>
           </table>
         </div>}

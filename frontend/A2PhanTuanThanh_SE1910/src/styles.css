@@ -368,6 +368,10 @@ tbody tr:hover {
   gap: 12px;
   margin-top: 28px;
 }
+.field-hint {
+  font-size: 12px;
+  margin: 6px 0 0;
+}
 .account-toolbar input {
   flex: 1;
   min-width: 220px;

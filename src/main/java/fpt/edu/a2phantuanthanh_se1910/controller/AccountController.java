@@ -3,8 +3,10 @@ package fpt.edu.a2phantuanthanh_se1910.controller;
 
 import fpt.edu.a2phantuanthanh_se1910.dto.response.AccountResponse;
 import fpt.edu.a2phantuanthanh_se1910.dto.request.CreateAccountRequest;
+import fpt.edu.a2phantuanthanh_se1910.dto.request.UpdateAccountRequest;
 import fpt.edu.a2phantuanthanh_se1910.service.AccountService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import org.springframework.http.CacheControl;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -36,5 +40,16 @@ public class AccountController {
         AccountResponse response = accountService.create(request);
         return ResponseEntity.created(URI.create("/api/accounts/" + response.accountId()))
                 .cacheControl(CacheControl.noStore()).body(response);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<AccountResponse> findById(@PathVariable @Positive long id) {
+        return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(accountService.findById(id));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<AccountResponse> update(@PathVariable @Positive long id,
+                                                  @Valid @RequestBody UpdateAccountRequest request) {
+        return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(accountService.update(id, request));
     }
 }

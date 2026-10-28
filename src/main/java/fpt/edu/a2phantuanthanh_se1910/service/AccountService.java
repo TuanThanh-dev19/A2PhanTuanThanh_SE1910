@@ -3,6 +3,7 @@ package fpt.edu.a2phantuanthanh_se1910.service;
 
 import fpt.edu.a2phantuanthanh_se1910.dto.response.AccountResponse;
 import fpt.edu.a2phantuanthanh_se1910.dto.request.CreateAccountRequest;
+import fpt.edu.a2phantuanthanh_se1910.dto.request.UpdateAccountRequest;
 import fpt.edu.a2phantuanthanh_se1910.entity.SystemAccount;
 import fpt.edu.a2phantuanthanh_se1910.repository.SystemAccountRepository;
 import org.springframework.http.HttpStatus;
@@ -57,9 +58,39 @@ public class AccountService {
     }
 
     private void validatePassword(String password) {
+        if (password.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Password must not be blank");
+        }
         if (password.getBytes(StandardCharsets.UTF_8).length > 72) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Password must be at most 72 UTF-8 bytes");
         }
+    }
+
+    public AccountResponse findById(long id) {
+        return mapAccount(requireAccount(id));
+    }
+
+    @Transactional
+    public AccountResponse update(long id, UpdateAccountRequest request) {
+        SystemAccount account = requireAccount(id);
+        if (accounts.existsByAccountEmailIgnoreCaseAndAccountIdNot(request.accountEmail(), id)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Email is already in use");
+        }
+        // Missing or empty password preserves the existing BCrypt hash exactly.
+        if (request.password() != null && !request.password().isEmpty()) {
+            validatePassword(request.password());
+            account.setAccountPassword(passwordEncoder.encode(request.password()));
+        }
+        account.setAccountName(request.accountName());
+        account.setAccountEmail(request.accountEmail());
+        account.setAccountRole(request.accountRole());
+        accounts.saveAndFlush(account);
+        return mapAccount(account);
+    }
+
+    private SystemAccount requireAccount(long id) {
+        return accounts.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Account not found"));
     }
 
     private AccountResponse mapAccount(SystemAccount account) {

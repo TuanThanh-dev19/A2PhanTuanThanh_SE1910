@@ -152,10 +152,12 @@ class M3ApiTests {
             // No controller exists yet: reaching MVC's 404 proves the authorized request passed the filter.
             mvc.perform(get(route).header("Authorization", "Bearer " + staffToken)).andExpect(status().isNotFound());
         }
-        for (String route : new String[]{"/api/accounts", "/api/accounts/1"}) {
+        for (String route : new String[]{"/api/accounts", "/api/accounts/9223372036854775807"}) {
             for (String method : new String[]{"GET", "POST", "PUT", "DELETE"}) {
                 mvc.perform(request(org.springframework.http.HttpMethod.valueOf(method), route)
                                 .header("Authorization", "Bearer " + staffToken)).andExpect(status().isForbidden());
+                mvc.perform(request(org.springframework.http.HttpMethod.valueOf(method), route))
+                        .andExpect(status().isUnauthorized());
             }
             if (route.equals("/api/accounts")) {
                 mvc.perform(get(route).header("Authorization", "Bearer " + adminToken)).andExpect(status().isOk());
@@ -255,8 +257,65 @@ class M3ApiTests {
             mvc.perform(post("/api/accounts").header("Authorization", "Bearer " + token)
                             .contentType(MediaType.APPLICATION_JSON).content(json.writeValueAsString(body)))
                     .andExpect(status().isBadRequest());
+            mvc.perform(put("/api/accounts/" + staff.getAccountId()).header("Authorization", "Bearer " + token)
+                            .contentType(MediaType.APPLICATION_JSON).content(json.writeValueAsString(body)))
+                    .andExpect(status().isBadRequest());
         }
         assertThat(accounts.count()).isEqualTo(2);
+    }
+
+    @Test
+    void detailAndUpdateKeepPasswordUnlessANewPasswordIsSupplied() throws Exception {
+        String token = login(admin.getAccountEmail(), password).path("accessToken").asText();
+        String path = "/api/accounts/" + staff.getAccountId();
+        String detail = mvc.perform(get(path).header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk()).andExpect(jsonPath("accountEmail").value(staff.getAccountEmail()))
+                .andReturn().getResponse().getContentAsString();
+        assertThat(json.readTree(detail).size()).isEqualTo(4);
+        String originalHash = staff.getAccountPassword();
+        var body = new java.util.LinkedHashMap<String, Object>(Map.of("accountName", "  Staff đã sửa  ",
+                "accountEmail", " UPDATED@EXAMPLE.COM ", "accountRole", 2));
+        for (String passwordField : new String[]{"omitted", "empty", "null"}) {
+            if (passwordField.equals("empty")) body.put("password", "");
+            if (passwordField.equals("null")) body.put("password", null);
+            String response = mvc.perform(put(path).header("Authorization", "Bearer " + token)
+                            .contentType(MediaType.APPLICATION_JSON).content(json.writeValueAsString(body)))
+                    .andExpect(status().isOk()).andExpect(jsonPath("accountName").value("Staff đã sửa"))
+                    .andExpect(jsonPath("accountEmail").value("updated@example.com"))
+                    .andReturn().getResponse().getContentAsString();
+            assertThat(json.readTree(response).size()).isEqualTo(4);
+            assertThat(accounts.findById(staff.getAccountId()).orElseThrow().getAccountPassword()).isEqualTo(originalHash);
+            login("updated@example.com", password);
+        }
+        body.put("password", "Changed-password-2026!");
+        body.put("accountRole", 1);
+        mvc.perform(put(path).header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON).content(json.writeValueAsString(body)))
+                .andExpect(status().isOk()).andExpect(jsonPath("accountRole").value(1));
+        String changedHash = accounts.findById(staff.getAccountId()).orElseThrow().getAccountPassword();
+        assertThat(changedHash).isNotEqualTo(originalHash);
+        assertThat(passwords.matches("Changed-password-2026!", changedHash)).isTrue();
+        login("updated@example.com", "Changed-password-2026!");
+        mvc.perform(loginRequest("updated@example.com", password)).andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void updateRejectsDuplicateEmailAndInvalidOrMissingIds() throws Exception {
+        String token = login(admin.getAccountEmail(), password).path("accessToken").asText();
+        String body = json.writeValueAsString(Map.of("accountName", "Staff", "accountEmail",
+                admin.getAccountEmail().toUpperCase(), "accountRole", 2));
+        mvc.perform(put("/api/accounts/" + staff.getAccountId()).header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON).content(body))
+                .andExpect(status().isConflict());
+        assertThat(staff.getAccountEmail()).isEqualTo("staff.test@example.com");
+        for (String id : new String[]{"0", "-1", "abc", "1.5", "9223372036854775807"}) {
+            int expected = 400;
+            if (id.equals("9223372036854775807")) expected = 404;
+            mvc.perform(get("/api/accounts/" + id).header("Authorization", "Bearer " + token))
+                    .andExpect(status().is(expected));
+            mvc.perform(put("/api/accounts/" + id).header("Authorization", "Bearer " + token)
+                            .contentType(MediaType.APPLICATION_JSON).content(body)).andExpect(status().is(expected));
+        }
     }
 
     @Test
