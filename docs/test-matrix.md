@@ -29,7 +29,7 @@ Test M1 chạy trên base `6a26a99` + working tree, sau đó lưu ở `db2e8e6`.
 
 | ID | Trường hợp | Các bước | Kết quả mong đợi | Actual | Trạng thái |
 |---|---|---|---|---|---|
-| TC-SETUP-02 | Quy ước tên; REQ-01 | Xem BE, React folder/npm package và DB | Đúng tên theo requirements | BE/DB đạt; React chưa tạo | Partial |
+| TC-SETUP-02 | Quy ước tên; REQ-01 | Xem BE, React folder/npm package và DB | Đúng tên theo requirements | BE/DB A2PhanTuanThanh_SE1910; frontend/A2PhanTuanThanh_SE1910, npm a2phantuanthanh-se1910 | Pass |
 | TC-SETUP-03 | IntelliJ; REQ-19 | Sinh viên mở project và chạy main bằng JDK 21 | Chạy được, có ảnh/log IDE thật | Chưa có evidence sinh viên chạy | Not run |
 | TC-DB-01 | JPA tạo schema; REQ-03,05 | Khởi động DB test rỗng, đối chiếu sys catalog; kiểm tra lại sau restart | Đủ 5 bảng/26 cột đúng kiểu/nullable, 5 PK/6 FK, 2 unique và 3 CHECK | Run-05 đạt toàn bộ; NewsTag PK ghép, unique TagID/email, FK NO_ACTION/trusted; 4 user identity; NewsContent nvarchar(max) NOT NULL giữ nguyên sau restart. [SQL schema](evidence/2026-10-28-m2/run-05/isolated-schema-data.txt) | Pass |
 | TC-DB-02 | Unicode/persistence; REQ-03 | Lưu fixture qua repository, đóng/mở context với validate/update; chạy hai JVM JAR riêng và so snapshot | Tiếng Việt/quan hệ/audit đúng, dữ liệu và schema còn nguyên | Run-05: 3 account/category/news/tag + 2 links, hai creator và hai status, nullable đúng; đọc content 5.800 ký tự qua repo. Hai snapshot trước/sau JVM có SHA256 giống nhau; [restart proof](evidence/2026-10-28-m2/run-05/process-restart-verification.txt) | Pass |
@@ -134,3 +134,9 @@ Các kết quả M3 ở `api/M3ApiTests.java`, chạy SQL Server DB biệt lập
 | ID | Trường hợp | Expected | Actual | Trạng thái |
 |---|---|---|---|---|
 | TC-M4-API | GET accounts với Admin/Staff/khách | 200 DTO không password/hash; 403; 401 | SQL Server thật: 21 tests pass; so khớp đủ 4 field với repository, đúng quyền; mvnw verify thành công | Pass |
+| TC-M4-HTTP | JAR thật trên DB SQL Server riêng | Admin 200, Staff 403, khách 401; DTO đúng DB | HTTP lần lượt 200/403/401; 2 account, đủ 4 field khớp SQL, không password/hash | Pass |
+| TC-M4-FE-AUTH | Chrome: login sai/đúng, logout, URL trực tiếp | Báo sai credential; Admin vào accounts; Staff bị chặn; khách về login | Sai password báo lỗi; Admin /accounts, Staff /staff; reload giữ phiên; logout và khách mở /accounts về /login | Pass |
+| TC-M4-FE-SESSION | 401 và token hết hạn | Xóa phiên, về login kèm thông báo | Đổi key backend rồi thử lại: 401 về login; token thật hạn 15 giây tự kết thúc phiên | Pass |
+| TC-M4-FE-LIST | React gọi axios tới backend thật | ID/tên/email/role khớp; loading và lỗi rõ | 2 dòng khớp API/SQL; chờ SQL hiện loading; dừng backend hiện lỗi và nút Thử lại | Pass |
+| TC-M4-FE-EMPTY | UI khi API trả [] (mô phỏng) | Thông báo rỗng, không hiện bảng | Proxy tạm trả []; React hiện 0 tài khoản và Chưa có tài khoản nào; login vẫn qua backend thật | Pass |
+| TC-M4-FE-BUILD | Cài theo lockfile, lint/build | Cài/build thành công, không lỗi lint | npm ci, npm run lint (--max-warnings 0), npm run build đạt; npm audit 0 lỗ hổng | Pass |
