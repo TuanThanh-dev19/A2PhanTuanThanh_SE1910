@@ -187,6 +187,30 @@ class M3ApiTests {
     }
 
     @Test
+    void accountSearchMatchesNameEmailCaseAndLiteralWildcards() throws Exception {
+        String token = login(admin.getAccountEmail(), password).path("accessToken").asText();
+        for (String query : new String[]{" ADMIN TEST ", "ADMIN.TEST@EXAMPLE.COM"}) {
+            mvc.perform(get("/api/accounts").param("q", query).header("Authorization", "Bearer " + token))
+                    .andExpect(status().isOk()).andExpect(jsonPath("$.length()").value(1))
+                    .andExpect(jsonPath("$[0].accountId").value(admin.getAccountId()));
+        }
+        mvc.perform(get("/api/accounts").param("q", "no-such-account").header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.length()").value(0));
+        for (String query : new String[]{"", "  "}) {
+            mvc.perform(get("/api/accounts").param("q", query).header("Authorization", "Bearer " + token))
+                    .andExpect(status().isOk()).andExpect(jsonPath("$.length()").value(2));
+        }
+        accounts.saveAndFlush(new SystemAccount("100%_ [literal]!", "literal@example.com", 2,
+                passwords.encode(password)));
+        for (String query : new String[]{"%", "_", "[", "!"}) {
+            mvc.perform(get("/api/accounts").param("q", query).header("Authorization", "Bearer " + token))
+                    .andExpect(status().isOk()).andExpect(jsonPath("$.length()").value(1));
+        }
+        mvc.perform(get("/api/accounts").param("q", "x".repeat(201)).header("Authorization", "Bearer " + token))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
     void currentDatabaseRoleOverridesOldTokenAndDeletedAccountIsRejected() throws Exception {
         SystemAccount temporary = accounts.saveAndFlush(new SystemAccount("Temporary", "temp@example.com", 1,
                 passwords.encode(password)));

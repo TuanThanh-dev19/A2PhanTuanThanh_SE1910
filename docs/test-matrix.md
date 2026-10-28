@@ -140,3 +140,10 @@ Các kết quả M3 ở `api/M3ApiTests.java`, chạy SQL Server DB biệt lập
 | TC-M4-FE-LIST | React gọi axios tới backend thật | ID/tên/email/role khớp; loading và lỗi rõ | 2 dòng khớp API/SQL; chờ SQL hiện loading; dừng backend hiện lỗi và nút Thử lại | Pass |
 | TC-M4-FE-EMPTY | UI khi API trả [] (mô phỏng) | Thông báo rỗng, không hiện bảng | Proxy tạm trả []; React hiện 0 tài khoản và Chưa có tài khoản nào; login vẫn qua backend thật | Pass |
 | TC-M4-FE-BUILD | Cài theo lockfile, lint/build | Cài/build thành công, không lỗi lint | npm ci, npm run lint (--max-warnings 0), npm run build đạt; npm audit 0 lỗ hổng | Pass |
+
+## M4 - Phần 2: Account CRUD và Search
+
+| ID | Trường hợp | Expected | Actual | Trạng thái |
+|---|---|---|---|---|
+| TC-M4P2-BASE | Chạy lại Phần 1 trước khi sửa | Login và bảng account hoạt động | Chrome/BE thật: khách về login, Admin đọc đúng 2 account SQL | Pass |
+| TC-M4P2-SEARCH | Tên/email, hoa thường, trống, không khớp | Lọc đúng; xóa keyword trả đủ | 13 API tests pass trên SQL; Chrome tìm ADMIN.M3 được 1 dòng, no-match hiện thông báo, xóa ô trả 2 dòng; FE lint/build đạt | Pass |

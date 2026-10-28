@@ -7,12 +7,16 @@ export default function AccountsPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [reloadCount, setReloadCount] = useState(0)
+  const [keyword, setKeyword] = useState('')
+  const [searchQuery, setSearchQuery] = useState('')
 
   useEffect(() => {
     const controller = new AbortController()
     async function loadAccounts() {
       try {
-        const response = await client.get('/accounts', { signal: controller.signal })
+        const response = await client.get('/accounts', {
+          params: { q: searchQuery }, signal: controller.signal,
+        })
         if (!controller.signal.aborted) setAccounts(response.data)
       } catch (requestError) {
         if (!controller.signal.aborted) {
@@ -28,12 +32,33 @@ export default function AccountsPage() {
     }
     loadAccounts()
     return () => controller.abort()
-  }, [reloadCount])
+  }, [reloadCount, searchQuery])
 
   function reloadAccounts() {
     setLoading(true)
     setError('')
-    setReloadCount(reloadCount + 1)
+    setReloadCount((count) => count + 1)
+  }
+
+  function handleSearch(event) {
+    event.preventDefault()
+    setSearchQuery(keyword.trim())
+    reloadAccounts()
+  }
+
+  function clearSearch() {
+    setKeyword('')
+    setSearchQuery('')
+    reloadAccounts()
+  }
+
+  function changeKeyword(event) {
+    const value = event.target.value
+    setKeyword(value)
+    if (value.trim() === '' && searchQuery !== '') {
+      setSearchQuery('')
+      reloadAccounts()
+    }
   }
 
   return (
@@ -41,6 +66,14 @@ export default function AccountsPage() {
       <p className="eyebrow">Quản trị hệ thống</p>
       <h1>Tài khoản</h1>
       <p className="muted page-description">Danh sách tài khoản và vai trò trong hệ thống.</p>
+      <form className="account-toolbar" onSubmit={handleSearch}>
+        <label htmlFor="account-search" className="sr-only">Tìm tài khoản theo tên hoặc email</label>
+        <input id="account-search" type="search" maxLength={200} placeholder="Tìm theo tên hoặc email"
+          value={keyword} onChange={changeKeyword} />
+        <button type="submit" className="button-primary" disabled={loading}>Tìm kiếm</button>
+        {(keyword || searchQuery) && <button type="button" className="button-secondary"
+          onClick={clearSearch}>Xóa tìm kiếm</button>}
+      </form>
       <section className="card" aria-labelledby="accounts-title" aria-busy={loading}>
         <div className="card-heading">
           <h2 id="accounts-title">Danh sách tài khoản</h2>
@@ -52,7 +85,9 @@ export default function AccountsPage() {
           <button type="button" className="button-secondary" onClick={reloadAccounts}>Thử lại</button>
         </div>}
         {!loading && !error && accounts.length === 0 &&
-          <p className="state-message" role="status">Chưa có tài khoản nào.</p>}
+          <p className="state-message" role="status">
+            {searchQuery ? 'Không tìm thấy tài khoản phù hợp.' : 'Chưa có tài khoản nào.'}
+          </p>}
         {!loading && !error && accounts.length > 0 && <div className="table-scroll">
           <table>
             <caption className="sr-only">ID, tên, email và vai trò của các tài khoản</caption>
