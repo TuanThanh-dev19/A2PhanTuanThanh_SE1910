@@ -372,6 +372,23 @@ tbody tr:hover {
   font-size: 12px;
   margin: 6px 0 0;
 }
+.row-actions {
+  display: flex;
+  gap: 8px;
+}
+.row-actions button {
+  padding: 6px 12px;
+  font-size: 13px;
+  white-space: nowrap;
+}
+.button-danger {
+  background: #b42f3c;
+  border: 1px solid #b42f3c;
+  color: white;
+}
+.button-danger:hover {
+  background: #952331;
+}
 .account-toolbar input {
   flex: 1;
   min-width: 220px;

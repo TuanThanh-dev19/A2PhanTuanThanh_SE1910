@@ -59,11 +59,11 @@ M2 chạy trên base `ea84544` + working tree được lưu cùng commit tính n
 
 | ID | Trường hợp | Các bước | Kết quả mong đợi | Actual | Trạng thái |
 |---|---|---|---|---|---|
-| TC-ACC-01 | Create/Read/Update; REQ-08 | Admin tạo/sửa account cả role 1/2; thử sửa không gửi password | Lưu đúng, không trả hash; giữ password cũ khi không đổi | Chưa chạy | Not run |
-| TC-ACC-02 | Search/unique email; REQ-08,17 | Search tên/email, hoa thường/trống/no-result; tạo/sửa email trùng | Search đúng DEC-07; trùng email: 409 | Chưa chạy | Not run |
-| TC-ACC-03 | Delete bị chặn; REQ-09 | Xóa account có bài active, rồi chỉ có bài inactive | Cả hai 409, account/bài còn | Chưa chạy | Not run |
-| TC-ACC-04 | Delete hợp lệ; REQ-09 | Xóa account chưa tạo bài, không tham chiếu | 204, account biến mất | Chưa chạy | Not run |
-| TC-ACC-05 | Updater reference; REQ-09 | Xóa account không tạo bài nhưng có UpdatedByID | Xóa được, updater null, bài còn theo DEC-06 | Chưa chạy | Not run |
+| TC-ACC-01 | Create/Read/Update; REQ-08 | Admin tạo/sửa account cả role 1/2; thử sửa không gửi password | Lưu đúng, không trả hash; giữ password cũ khi không đổi | API/React tạo, đọc và sửa đạt; response chỉ DTO; không gửi/null/empty password giữ hash, mật khẩu cũ vẫn login được | Pass |
+| TC-ACC-02 | Search/unique email; REQ-08,17 | Search tên/email, hoa thường/trống/no-result; tạo/sửa email trùng | Search đúng DEC-07; trùng email: 409 | Search tên/email, hoa thường/trống/no-result đạt; Create/Update email trùng đều 409, không lưu sai | Pass |
+| TC-ACC-03 | Delete bị chặn; REQ-09 | Xóa account có bài active, rồi chỉ có bài inactive | Cả hai 409, account/bài còn | SQL/API: có active hoặc chỉ còn inactive đều 409; account, bài và updater còn nguyên; React giữ popup và báo lý do | Pass |
+| TC-ACC-04 | Delete hợp lệ; REQ-09 | Xóa account chưa tạo bài, không tham chiếu | 204, account biến mất | React Hủy: 0 DELETE; Confirm: 1 DELETE và 204; SQL account biến mất, bài vẫn còn | Pass |
+| TC-ACC-05 | Updater reference; REQ-09 | Xóa account không tạo bài nhưng có UpdatedByID | Xóa được, updater null, bài còn theo DEC-06 | React/API xóa updater-only thành công; SQL UpdatedByID của cả bài active/inactive thành NULL, CreatedByID và bài còn nguyên | Pass |
 
 ## Category CRUD và Search
 
@@ -149,3 +149,5 @@ Các kết quả M3 ở `api/M3ApiTests.java`, chạy SQL Server DB biệt lập
 | TC-M4P2-SEARCH | Tên/email, hoa thường, trống, không khớp | Lọc đúng; xóa keyword trả đủ | 13 API tests pass trên SQL; Chrome tìm ADMIN.M3 được 1 dòng, no-match hiện thông báo, xóa ô trả 2 dòng; FE lint/build đạt | Pass |
 | TC-M4P2-CREATE | Popup, field sai, trùng email, role 1/2 và BCrypt | 201 DTO an toàn; lỗi 400/409 giữ form; hash trong DB | 15 API tests pass; Chrome form trống báo field, email trùng giữ nội dung, sửa email tạo thành công và bảng thêm dòng; SQL xác nhận BCrypt; lint/build đạt | Pass |
 | TC-M4P2-UPDATE | Detail/prefill, sai field/email trùng, giữ/đổi password | DTO không hash; lỗi giữ form; password trống giữ hash, mới login được | 17 API tests pass; Chrome prefill đúng, ô password rỗng, lỗi tên/trùng email giữ popup; sửa tên/email khớp SQL và login mật khẩu cũ được; đổi password qua React: cũ bị từ chối, mới login Staff thành công; lint/build đạt | Pass |
+| TC-M4P2-DELETE | Cancel/Confirm, creator và updater-only | Cancel không DELETE; 204 hợp lệ; 409 creator; DEC-06 giữ bài | Chrome/SQL thật: counter 0 khi Hủy, 1 khi Confirm; creator bị chặn và giữ popup; xóa updater đặt NULL cho 2 bài còn nguyên | Pass |
+| TC-M4P2-VERIFY | Regression, quyền và build | Backend/FE chạy; khách 401, Staff 403 mọi thao tác | mvnw verify: 29 tests pass, 0 fail/error/skipped; lint/build FE đạt; HTTP thật list/detail/POST/PUT/DELETE đúng 401/403, Admin list 200. Delete UI thử cổng 5174, proxy chỉ đếm request rồi chuyển nguyên tới BE | Pass |

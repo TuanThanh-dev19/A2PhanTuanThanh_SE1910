@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -49,7 +50,13 @@ public class AccountController {
 
     @PutMapping("/{id}")
     public ResponseEntity<AccountResponse> update(@PathVariable @Positive long id,
-                                                  @Valid @RequestBody UpdateAccountRequest request) {
+                                                 @Valid @RequestBody UpdateAccountRequest request) {
         return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(accountService.update(id, request));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable @Positive long id) {
+        accountService.delete(id);
+        return ResponseEntity.noContent().build();
     }
 }

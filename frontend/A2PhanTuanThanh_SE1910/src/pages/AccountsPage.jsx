@@ -2,10 +2,11 @@
 import { useContext, useEffect, useState } from 'react'
 import client from '../api/client'
 import AccountFormDialog from '../components/AccountFormDialog'
+import AccountDeleteDialog from '../components/AccountDeleteDialog'
 import { AuthContext } from '../auth/AuthContext'
 
 export default function AccountsPage() {
-  const { session, startSession } = useContext(AuthContext)
+  const { session, startSession, logout } = useContext(AuthContext)
   const [accounts, setAccounts] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -16,6 +17,7 @@ export default function AccountsPage() {
   const [success, setSuccess] = useState('')
   const [actionError, setActionError] = useState('')
   const [editingId, setEditingId] = useState(null)
+  const [deleteAccount, setDeleteAccount] = useState(null)
 
   useEffect(() => {
     const controller = new AbortController()
@@ -92,6 +94,16 @@ export default function AccountsPage() {
     }
   }
 
+  function accountDeleted(accountId) {
+    setDeleteAccount(null)
+    if (accountId === session.account.accountId) {
+      logout()
+      return
+    }
+    setSuccess('Đã xóa tài khoản.')
+    reloadAccounts()
+  }
+
   return (
     <>
       <p className="eyebrow">Quản trị hệ thống</p>
@@ -114,6 +126,8 @@ export default function AccountsPage() {
       {actionError && <p className="error-message" role="alert">{actionError}</p>}
       {formState && <AccountFormDialog account={formState.account}
         onClose={() => setFormState(null)} onSaved={accountSaved} />}
+      {deleteAccount && <AccountDeleteDialog account={deleteAccount}
+        onClose={() => setDeleteAccount(null)} onDeleted={accountDeleted} />}
       <section className="card" aria-labelledby="accounts-title" aria-busy={loading}>
         <div className="card-heading">
           <h2 id="accounts-title">Danh sách tài khoản</h2>
@@ -140,10 +154,18 @@ export default function AccountsPage() {
               <td><span className={`role-badge ${account.accountRole === 1 ? 'admin' : 'staff'}`}>
                 {account.accountRole === 1 ? 'Admin' : 'Staff'}
               </span></td>
-              <td><button type="button" className="button-secondary" disabled={editingId !== null}
-                aria-label={`Sửa ${account.accountEmail}`} onClick={() => openEditForm(account.accountId)}>
-                {editingId === account.accountId ? 'Đang tải…' : 'Sửa'}
-              </button></td>
+              <td><div className="row-actions">
+                <button type="button" className="button-secondary" disabled={editingId !== null}
+                  aria-label={`Sửa ${account.accountEmail}`} onClick={() => openEditForm(account.accountId)}>
+                  {editingId === account.accountId ? 'Đang tải…' : 'Sửa'}
+                </button>
+                <button type="button" className="button-danger" disabled={editingId !== null}
+                  aria-label={`Xóa ${account.accountEmail}`} onClick={() => {
+                    setSuccess('')
+                    setActionError('')
+                    setDeleteAccount(account)
+                  }}>Xóa</button>
+              </div></td>
             </tr>)}</tbody>
           </table>
         </div>}

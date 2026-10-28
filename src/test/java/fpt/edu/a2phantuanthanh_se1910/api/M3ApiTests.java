@@ -16,6 +16,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.env.StandardEnvironment;
 import org.springframework.core.io.support.ResourcePropertySource;
 import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.*;
@@ -63,6 +64,7 @@ class M3ApiTests {
     @Autowired JwtEncoder encoder;
     @Autowired JwtDecoder decoder;
     @Autowired Validator validator;
+    @Autowired JdbcTemplate jdbc;
 
     private final String password = "M3-test-only-" + java.util.UUID.randomUUID();
     private SystemAccount admin;
@@ -316,6 +318,63 @@ class M3ApiTests {
             mvc.perform(put("/api/accounts/" + id).header("Authorization", "Bearer " + token)
                             .contentType(MediaType.APPLICATION_JSON).content(body)).andExpect(status().is(expected));
         }
+    }
+
+    @Test
+    void deleteBlocksCreatorsWithActiveOrOnlyInactiveNews() throws Exception {
+        String token = login(admin.getAccountEmail(), password).path("accessToken").asText();
+        active.setUpdatedBy(staff);
+        articles.saveAndFlush(active);
+        for (int status : new int[]{1, 0}) {
+            active.setNewsStatus(status);
+            articles.saveAndFlush(active);
+            mvc.perform(delete("/api/accounts/" + staff.getAccountId()).header("Authorization", "Bearer " + token))
+                    .andExpect(status().isConflict()).andExpect(jsonPath("code").value("CONFLICT"));
+            assertThat(accounts.existsById(staff.getAccountId())).isTrue();
+            assertThat(articles.count()).isEqualTo(2);
+            assertThat(jdbc.queryForObject("SELECT UpdatedByID FROM dbo.NewsArticle WHERE NewsArticleID=?",
+                    Long.class, active.getNewsArticleId())).isEqualTo(staff.getAccountId());
+        }
+    }
+
+    @Test
+    void deleteClearsUpdaterReferencesAndKeepsNewsAndRelatedData() throws Exception {
+        String token = login(admin.getAccountEmail(), password).path("accessToken").asText();
+        SystemAccount updater = accounts.saveAndFlush(new SystemAccount("Updater only", "updater@example.com", 2,
+                passwords.encode(password)));
+        active.setUpdatedBy(updater);
+        inactive.setUpdatedBy(updater);
+        articles.saveAndFlush(active);
+        articles.saveAndFlush(inactive);
+        mvc.perform(delete("/api/accounts/" + updater.getAccountId()).header("Authorization", "Bearer " + token))
+                .andExpect(status().isNoContent()).andExpect(content().string(""));
+        assertThat(accounts.existsById(updater.getAccountId())).isFalse();
+        for (NewsArticle article : new NewsArticle[]{active, inactive}) {
+            assertThat(jdbc.queryForObject("SELECT UpdatedByID FROM dbo.NewsArticle WHERE NewsArticleID=?",
+                    Long.class, article.getNewsArticleId())).isNull();
+            assertThat(jdbc.queryForObject("SELECT CreatedByID FROM dbo.NewsArticle WHERE NewsArticleID=?",
+                    Long.class, article.getNewsArticleId())).isEqualTo(staff.getAccountId());
+        }
+        assertThat(articles.count()).isEqualTo(2);
+        assertThat(categories.count()).isEqualTo(1);
+        assertThat(tags.count()).isEqualTo(1);
+        assertThat(links.count()).isEqualTo(1);
+        for (String id : new String[]{"0", "-1", "abc", "1.5", "9223372036854775807"}) {
+            int expected = 400;
+            if (id.equals("9223372036854775807")) expected = 404;
+            mvc.perform(delete("/api/accounts/" + id).header("Authorization", "Bearer " + token))
+                    .andExpect(status().is(expected));
+        }
+    }
+
+    @Test
+    void deleteUnreferencedCurrentAccountIsAllowedAndOldTokenBecomesInvalid() throws Exception {
+        String token = login(admin.getAccountEmail(), password).path("accessToken").asText();
+        mvc.perform(delete("/api/accounts/" + admin.getAccountId()).header("Authorization", "Bearer " + token))
+                .andExpect(status().isNoContent());
+        assertThat(accounts.existsById(admin.getAccountId())).isFalse();
+        assertThat(articles.count()).isEqualTo(2);
+        mvc.perform(get("/api/accounts").header("Authorization", "Bearer " + token)).andExpect(status().isUnauthorized());
     }
 
     @Test

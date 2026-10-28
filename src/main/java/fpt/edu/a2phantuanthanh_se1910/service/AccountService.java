@@ -5,7 +5,9 @@ import fpt.edu.a2phantuanthanh_se1910.dto.response.AccountResponse;
 import fpt.edu.a2phantuanthanh_se1910.dto.request.CreateAccountRequest;
 import fpt.edu.a2phantuanthanh_se1910.dto.request.UpdateAccountRequest;
 import fpt.edu.a2phantuanthanh_se1910.entity.SystemAccount;
+import fpt.edu.a2phantuanthanh_se1910.entity.NewsArticle;
 import fpt.edu.a2phantuanthanh_se1910.repository.SystemAccountRepository;
+import fpt.edu.a2phantuanthanh_se1910.repository.NewsArticleRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -22,10 +24,13 @@ import java.nio.charset.StandardCharsets;
 public class AccountService {
     private final SystemAccountRepository accounts;
     private final PasswordEncoder passwordEncoder;
+    private final NewsArticleRepository newsArticles;
 
-    public AccountService(SystemAccountRepository accounts, PasswordEncoder passwordEncoder) {
+    public AccountService(SystemAccountRepository accounts, PasswordEncoder passwordEncoder,
+                          NewsArticleRepository newsArticles) {
         this.accounts = accounts;
         this.passwordEncoder = passwordEncoder;
+        this.newsArticles = newsArticles;
     }
 
     public List<AccountResponse> search(String query) {
@@ -57,15 +62,6 @@ public class AccountService {
         return mapAccount(account);
     }
 
-    private void validatePassword(String password) {
-        if (password.isBlank()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Password must not be blank");
-        }
-        if (password.getBytes(StandardCharsets.UTF_8).length > 72) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Password must be at most 72 UTF-8 bytes");
-        }
-    }
-
     public AccountResponse findById(long id) {
         return mapAccount(requireAccount(id));
     }
@@ -86,6 +82,32 @@ public class AccountService {
         account.setAccountRole(request.accountRole());
         accounts.saveAndFlush(account);
         return mapAccount(account);
+    }
+
+    @Transactional
+    public void delete(long id) {
+        SystemAccount account = requireAccount(id);
+        if (newsArticles.existsByCreatedBy_AccountId(id)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "Không thể xóa tài khoản đã tạo bài viết, kể cả bài inactive.");
+        }
+        List<NewsArticle> editedArticles = newsArticles.findByUpdatedBy_AccountId(id);
+        for (NewsArticle article : editedArticles) {
+            article.setUpdatedBy(null);
+        }
+        // DEC-06: release updater references before deleting; both steps roll back on failure.
+        newsArticles.flush();
+        accounts.delete(account);
+        accounts.flush();
+    }
+
+    private void validatePassword(String password) {
+        if (password.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Password must not be blank");
+        }
+        if (password.getBytes(StandardCharsets.UTF_8).length > 72) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Password must be at most 72 UTF-8 bytes");
+        }
     }
 
     private SystemAccount requireAccount(long id) {
