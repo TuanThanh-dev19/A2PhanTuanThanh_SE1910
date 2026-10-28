@@ -9,7 +9,9 @@ Assignment 02 SBA301 — FUNewsManagementSystem, dùng Spring Boot 3, SQL Server
 - Baseline: `6a26a99`. Nền tảng M1: `db2e8e6`.
 - Đã có Boot **3.5.16**, Java **21**, Web/JPA/Validation/JDBC và kết nối SQL Server bằng Windows Authentication. Kết quả đã lưu: **2 tests pass**, JAR chạy được. [Evidence M1](docs/evidence/2026-10-28-m1/inspection.md).
 - M2 đã thêm 5 entity, 5 repository và constraint SQL Server; xem [thiết kế persistence](docs/design.md#5-data-model-và-persistence) và [evidence M2](docs/evidence/2026-10-28-m2/inspection.md). DEC-01/03 áp dụng tạm theo yêu cầu sinh viên, chưa có xác nhận giảng viên.
-- M1 còn thiếu minh chứng sinh viên chạy trong IntelliJ. Chưa có Controller, Service nghiệp vụ, REST CRUD, auth/JWT hoặc React. Bước tiếp theo: M3.
+- M1 còn thiếu minh chứng sinh viên chạy trong IntelliJ. M3 đã có login/JWT, phân quyền và API tin công khai; chưa có REST CRUD hoặc React.
+
+- M3: login BCrypt/JWT, quyền backend, public news và seed demo; 20 tests pass.
 
 ## Chạy backend trên Windows
 
@@ -43,18 +45,25 @@ Tên DB đã cố định là `A2PhanTuanThanh_SE1910`. Mặc định source v�
 
 [.env.example](.env.example) là mẫu tham khảo; Spring Boot không tự nạp file `.env`. Không đưa secret hoặc DLL vào Git.
 
-**4. Build/test rồi chạy:**
+**4. Tạo khóa JWT trong cùng phiên PowerShell 7** (lưu local nếu muốn dùng lại sau restart):
 
 ```powershell
-.\scripts\test-persistence.ps1 -SqlServerInstance '.\SQL2022'
+$env:JWT_SECRET = [Convert]::ToBase64String([System.Security.Cryptography.RandomNumberGenerator]::GetBytes(32))
+$env:DEMO_ENABLED = 'false'
+```
+
+**5. Build/test rồi chạy:**
+
+```powershell
+.\scripts\test-m3.ps1 -SqlServerInstance '.\SQL2022'
 java -jar target/A2PhanTuanThanh_SE1910-0.0.1-SNAPSHOT.jar
 ```
 
-Chạy script bằng **PowerShell 7** (`pwsh`). Script chạy `clean verify`, hai test M1 trên DB bài tập và test M2 trên DB mới có tên `A2PhanTuanThanh_SE1910_M2Test_<timestamp>_<suffix>`. Cần quyền CREATE DATABASE qua Windows Authentication; SQL login chưa được kiểm tra. Mỗi lần chạy giữ DB test và log/report trong thư mục riêng dưới `tmp/m2-results/`; không drop/reset DB. Có thể truyền `-EvidenceDirectory <thư mục mới>` để lưu minh chứng. Chạy `clean verify` trực tiếp cần tự chuẩn bị DB test rỗng và đặt `SQLSERVER_TEST_DATABASE` theo mẫu trên.
+Chạy script bằng **PowerShell 7** (`pwsh`). `test-m3.ps1` tạo DB M3 riêng và gọi runner persistence chạy `clean verify`: 2 tests M1 trên DB bài tập, 7 M2 và 11 M3 trên DB test riêng. Cần quyền CREATE DATABASE qua Windows Authentication. DB test/log local được giữ trong `tmp/m2-results/`, không drop/reset. Report Maven ở `target/surefire-reports`. Nếu chạy Maven trực tiếp, đặt cả `SQLSERVER_TEST_DATABASE` (prefix M2Test) và `SQLSERVER_M3_TEST_DATABASE` (prefix M3Test); hai DB phải khác nhau, DB M2 cần mới/rỗng. `test-persistence.ps1` vẫn chạy riêng 9 tests cũ khi không đặt biến DB M3.
 
-Backend dùng cổng 8080; GET `/` trả 404 vì chưa có controller. Ctrl+C để dừng. `ddl-auto=update` tạo bảng/FK thiếu, không seed khi startup; dùng `--spring.jpa.hibernate.ddl-auto=validate` để kiểm tra schema đã có. `update` phục vụ dev theo DEC-03, không thay thế migration khi cần thay đổi schema/dữ liệu phức tạp.
+Backend dùng cổng 8080; GET `/api/public/news` trả 200; GET `/` không có quyền public, trả 401. Ctrl+C để dừng. `ddl-auto=update` tạo bảng/FK thiếu, chỉ seed demo khi bật `DEMO_ENABLED`; dùng `--spring.jpa.hibernate.ddl-auto=validate` để kiểm tra schema đã có. `update` phục vụ dev theo DEC-03, không thay thế migration khi cần thay đổi schema/dữ liệu phức tạp.
 
-Fixture nằm trong test source: 3 account, 3 category, 3 news, 3 tag và 2 links; có tiếng Việt, active/inactive, parent/updater nullable và tag tự do. Password là chuỗi ngẫu nhiên dành riêng cho test, không phải credential thật hoặc dữ liệu đăng nhập M3. Không có startup seeder trên DB bài tập.
+Fixture nằm trong test source: 3 account, 3 category, 3 news, 3 tag và 2 links; có tiếng Việt, active/inactive, parent/updater nullable và tag tự do. Password là chuỗi ngẫu nhiên dành riêng cho test, không phải credential thật hoặc dữ liệu đăng nhập M3. Demo login M3 dùng seeder riêng, bật có chủ đích theo hướng dẫn bên dưới.
 
 **IntelliJ:** mở `pom.xml`, reload Maven, chọn JDK 21 và đặt các biến trên trong Run Configuration. Cấu hình PATH chứa DLL hoặc VM option `-Djava.library.path=<thư mục x64>`. Sinh viên chạy main và lưu ảnh IDE/log làm minh chứng `TC-SETUP-03`.
 
@@ -74,3 +83,27 @@ Bộ docs dùng bố cục báo cáo của Assignment 01: requirement/design, h�
 | [evidence](docs/evidence/README.md) | Log/report của từng lần chạy |
 
 Cập nhật docs và evidence cùng tính năng; chỉ ghi PASS khi đã chạy. Hướng dẫn Microsoft: [JDBC Windows Authentication](https://learn.microsoft.com/en-us/sql/connect/jdbc/building-the-connection-url?view=sql-server-ver17#connecting-with-integrated-authentication-on-windows).
+
+
+## M3: đăng nhập và tin công khai
+
+JWT dùng HS256 qua Spring Security/Nimbus, hạn 1 giờ. Khóa bắt buộc lấy từ `JWT_SECRET`; thiếu/sai Base64 hoặc dưới 32 byte thì startup thất bại. Giữ cùng khóa giữa các lần chạy để token chưa hết hạn còn dùng được. CORS mặc định `http://localhost:5173`, đổi bằng `CORS_ALLOWED_ORIGIN`.
+
+Để thêm demo vào DB bài tập, đặt biến sau rồi chạy JAR ở trên:
+
+```powershell
+$env:DEMO_ENABLED = 'true'
+$env:DEMO_ADMIN_PASSWORD = Read-Host 'Password demo Admin (8 ký tự trở lên)' -MaskInput
+$env:DEMO_STAFF_PASSWORD = Read-Host 'Password demo Staff (8 ký tự trở lên)' -MaskInput
+java -jar target/A2PhanTuanThanh_SE1910-0.0.1-SNAPSHOT.jar
+```
+
+Email mặc định: `admin.m3@example.com` (role 1), `staff.m3@example.com` (role 2); có thể đổi qua `DEMO_ADMIN_EMAIL`/`DEMO_STAFF_EMAIL`. Password tối đa 72 byte UTF-8, không trim. Seeder chỉ thêm account/category/bài demo còn thiếu; chạy lại không đổi password/hash/nội dung đã có. Email đã có role khác thì dừng, không sửa account đó. Sau lần seed đầu có thể đặt `DEMO_ENABLED=false`; không reset hoặc xóa dữ liệu.
+
+| Request | Kết quả |
+|---|---|
+| `POST /api/auth/login` với JSON `{"email":"...","password":"..."}` | 200: accessToken, tokenType, expiresAt, account (ID/name/email/role); không có hash |
+| `GET /api/public/news?q=` | Danh sách active, mới nhất trước; tìm title/headline/content, không phân biệt hoa thường |
+| `GET /api/public/news/{id}` | 200 kèm content/category/authorName/tags; inactive/không tồn tại: 404 |
+
+API quản trị gửi `Authorization: Bearer <accessToken>`. Thiếu/sai/hết hạn token: 401; sai role: 403. Backend đọc lại role/account từ DB mỗi request. Admin chỉ được `/api/accounts/**`; Staff được category/news/tags/profile (history ở `/api/profile/news`). Route CRUD/profile/history chưa có controller nên đúng role hiện nhận 404; không coi đây là CRUD đã làm. Hướng dẫn request/ảnh tự chụp ở [evidence](docs/evidence/README.md#m3--postman-và-sql-server).

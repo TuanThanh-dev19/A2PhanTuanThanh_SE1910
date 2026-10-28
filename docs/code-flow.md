@@ -2,7 +2,7 @@ Author: Phan Tuan Thanh - CE190595
 
 # FUNewsManagementSystem - Code Flow Guide
 
-Tài liệu dùng để mở đúng file và giải thích theo khung: **Purpose → Input → Trigger → Transform → Output**. Mục 2/2.1–2.3 mô tả startup và persistence M1/M2 đã có; các luồng API/nghiệp vụ còn lại là dự kiến.
+Tài liệu dùng để mở đúng file và giải thích theo khung: **Purpose → Input → Trigger → Transform → Output**. Mục 2/2.1–2.3 mô tả startup và persistence M1/M2 đã có; M3 login/quyền/public đã triển khai ở mục cuối; CRUD và React còn dự kiến.
 
 ## 1. Ranh giới trách nhiệm
 
@@ -75,22 +75,15 @@ Mở `NewsTagId.equals()/hashCode()` để giải thích định danh theo hai I
 | Transform | Script tạo DB test mới, không DROP/reset; `startOnExplicitIsolatedDatabase()` chặn tên ngoài prefix. `jpaCreatesExactTablesColumnsKeysAndConstraints()` đối chiếu sys catalog. `PersistenceFixture.create()` lưu qua 5 repo trong TransactionTemplate |
 | Output | Fixture có 3 account/category/news/tag và 2 links, tag tự do, article active/inactive với hai creator; logs/report và SQL snapshot thực tế |
 
-`assertFixtureAndQueries()` đọc lại Unicode, nullable, audit, parent/creator/updater/tag và mọi derived query đã thêm. `committedDataSurvivesApplicationRestartAndSchemaValidation()` đóng toàn bộ context/EMF/pool, mở lại với validate rồi update và đọc lại từ DB. Script sau đó chạy JAR trên DB bài tập (HTTP 404, kiểm tra session), chạy hai JVM JAR riêng trên DB test; snapshot metadata/counts/audit/Unicode content SHA256 phải giữ nguyên.
+`assertFixtureAndQueries()` đọc lại Unicode, nullable, audit, parent/creator/updater/tag và mọi derived query đã thêm. `committedDataSurvivesApplicationRestartAndSchemaValidation()` đóng toàn bộ context/EMF/pool, mở lại với validate rồi update và đọc lại từ DB. Script hiện chạy JAR trên DB bài tập (HTTP public news 200, kiểm tra session), chạy hai JVM JAR riêng trên DB test; snapshot metadata/counts/audit/Unicode content SHA256 phải giữ nguyên.
 
 `databaseRejectsEveryInvalidForeignKeyAndReferencedDeletes()` và `databaseRejectsDuplicateLinksTagReuseEmailAndInvalidDomains()` dùng SQL trong transaction để chứng minh DB chặn trực tiếp bằng error 547/2627/515; không chỉ dựa vào Bean Validation. `repositoryValidationRejectsBlankOversizeEmailRoleStatusAndNullRelation()` kiểm tra tầng entity.
 
 `failedLinkRollsBackFlushedArticleAndNewTag()` sửa title và flush, lưu Tag mới, rồi gây lỗi tag đã thuộc bài khác; transaction rollback title/Tag/links. Lặp lại với FK bài có ID dương không tồn tại để tới được SQL FK. Sau mỗi lỗi, `assertFixtureAndQueries()` xác nhận toàn bộ fixture còn đúng và không tăng counts. Đây là test giao dịch repository, chưa tuyên bố Service/API CRUD đã triển khai.
 
-## 3. Login flow dự kiến
+## 3. Login backend
 
-```text
-Login form submit → validate email/password → axios POST /api/auth/login
-  → Auth service kiểm tra account/BCrypt
-  → trả token và role hoặc lỗi
-  → React cập nhật auth state và route
-```
-
-Protected request được BE kiểm tra token/role. Logout xóa phiên FE; 401 đưa người dùng về trạng thái chưa đăng nhập. Không dùng credential mock `Admin/Admin` của bài trước.
+Đã triển khai ở M3; luồng và file thực tế xem mục M3 cuối tài liệu. Login UI/axios còn chờ React.
 
 ## 4. Create và Update flow dự kiến
 
@@ -145,6 +138,19 @@ Profile lấy account từ principal, chỉ sửa tên/email/password; không nh
 | Mapping/constraints News và composite key? | [NewsArticle](../src/main/java/fpt/edu/a2phantuanthanh_se1910/entity/NewsArticle.java), [NewsTag](../src/main/java/fpt/edu/a2phantuanthanh_se1910/entity/NewsTag.java), [NewsTagId](../src/main/java/fpt/edu/a2phantuanthanh_se1910/entity/NewsTagId.java) |
 | Kiểm tra references/history/status? | [NewsArticleRepository](../src/main/java/fpt/edu/a2phantuanthanh_se1910/repository/NewsArticleRepository.java) |
 | Demo/retest M2? | [NewsPersistenceTests](../src/test/java/fpt/edu/a2phantuanthanh_se1910/persistence/NewsPersistenceTests.java), [PersistenceFixture](../src/test/java/fpt/edu/a2phantuanthanh_se1910/persistence/PersistenceFixture.java), [runner](../scripts/test-persistence.ps1) |
-| Auth, CRUD, profile/history API? | Chưa triển khai; bổ sung file/method thật ở M3–M7 |
+| Auth/public API? | Xem mục M3 cuối tài liệu; CRUD/profile/history chưa triển khai |
 
 Khi code từng module, cập nhật luồng và file thực tế kèm mã test trong [test-matrix](test-matrix.md).
+
+
+## M3 đã triển khai: login → bearer → public news
+
+- `AuthController.login(LoginRequest)` nhận email/password, Jakarta Validation kiểm tra payload. `AuthService.login()` chuẩn hóa email, repository tra account, BCrypt kiểm tra password không trim; sai credential trả cùng lỗi 401. Nimbus ký JWT có subject=AccountID, issuer, issuedAt, expiresAt; response DTO không chứa password/hash.
+- `JwtConfiguration` đọc khóa Base64 từ môi trường và cấu hình HS256, issuer, thời hạn. Spring Security xác minh bearer; `CurrentAccountJwtConverter` gọi `AuthService.findCurrentAccount()` đọc account/role hiện tại. Account đã xóa trả 401; đổi role áp quyền mới. `SecurityConfiguration` tách ADMIN và STAFF, không kế thừa role; `SecurityErrorHandler` trả JSON 401/403.
+- `PublicNewsController.search(q)` → `PublicNewsService.search()` trim/giới hạn 200 ký tự, escape wildcard → `NewsArticleRepository.searchActiveNews()` bind tham số và lọc status=1 → mapping summary DTO. Dùng native SQL vì Hibernate coi nội dung `nvarchar(max)` là NCLOB, không chấp nhận `lower()` trong JPQL.
+- `detail(id)` → service tìm ID+status=1 trong transaction đọc → map content, category, authorName và tags. Bài inactive/không tồn tại cùng trả 404; category inactive vẫn cho đọc bài active. Không serialize entity/account ra response.
+- `DemoDataInitializer` chỉ chạy khi bật `DEMO_ENABLED`; transaction thêm account BCrypt và hai bài demo còn thiếu, giữ dữ liệu cũ. Password demo lấy từ môi trường. Mặc định không seed.
+
+Mở lần lượt `controller/AuthController.java`, `service/AuthService.java`, `security/SecurityConfiguration.java`, `security/CurrentAccountJwtConverter.java`, `controller/PublicNewsController.java`, `service/PublicNewsService.java`, `repository/NewsArticleRepository.java` dưới `src/main/java/fpt/edu/a2phantuanthanh_se1910/`. Kiểm tra thật ở `src/test/java/fpt/edu/a2phantuanthanh_se1910/api/M3ApiTests.java`; chạy bằng `scripts/test-m3.ps1`. Chưa có CRUD quản trị, profile/history hoặc React.
+
+Tham khảo: [Spring Security JWT](https://docs.spring.io/spring-security/reference/6.5/servlet/oauth2/resource-server/jwt.html), [BCrypt/PasswordEncoder](https://docs.spring.io/spring-security/reference/6.5/features/authentication/password-storage.html).

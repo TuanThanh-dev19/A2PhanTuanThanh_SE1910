@@ -4,7 +4,7 @@ Author: Phan Tuan Thanh - CE190595
 
 ## Trạng thái
 
-Đã kiểm tra baseline, M1 và persistence M2 bằng AI/tool. Lần cuối M2 run-05 có **9 automated tests pass (2 M1 + 7 M2), 0 failure/error/skipped**, packaged JAR chạy và dữ liệu giữ nguyên qua restart JVM trên SQL Server thật. Các ca API/Service/auth/React bên dưới vẫn là kế hoạch, chưa chạy. Không lấy kết quả Assignment 01 làm kết quả Assignment 02.
+M3 ngày 28-10-2026: AI/tool chạy `scripts/test-m3.ps1` trên SQL Server thật, **20 tests pass (2 M1 + 7 M2 + 11 M3), 0 failure/error/skipped**. JAR HTTP và restart persistence đạt; hai lần seed demo giữ counts 2/1/2. React/CRUD/profile/history chưa chạy. Report local ở `target/surefire-reports`; ảnh sinh viên tự chụp theo evidence index.
 
 **Pass:** đã chạy đủ và đạt; **Fail:** đã chạy nhưng sai; **Not run:** chưa chạy; **Partial:** mới đạt một phần; **Blocked:** bị chặn, cần ghi nguyên nhân. Một hàng nhiều nhánh chỉ Pass khi đủ các nhánh.
 
@@ -41,19 +41,19 @@ M2 chạy trên base `ea84544` + working tree được lưu cùng commit tính n
 
 | ID | Trường hợp | Các bước | Kết quả mong đợi | Actual | Trạng thái |
 |---|---|---|---|---|---|
-| TC-AUTH-01 | Login hợp lệ; REQ-07 | Login Admin và hai Staff | 200, đúng identity/role, không lộ password/hash | Chưa chạy | Not run |
-| TC-AUTH-02 | Credential/payload sai; REQ-07,17 | Sai email/password, thử form rỗng/sai format | Credential sai: 401; payload sai: 400 | Chưa chạy | Not run |
-| TC-AUTH-03 | Token không hợp lệ; REQ-07 | Gọi API quản trị không token/sai/hết hạn | 401 | Chưa chạy | Not run |
-| TC-AUTH-04 | Sai role; REQ-07 | Staff gọi account; Admin gọi module chỉ Staff | 403 cho read/write không được cấp quyền | Chưa chạy | Not run |
-| TC-AUTH-05 | Thu hồi quyền; REQ-07 | Đổi role/xóa account rồi dùng token cũ | Không giữ quyền đã mất | Chưa chạy | Not run |
+| TC-AUTH-01 | Login hợp lệ; REQ-07 | Login Admin và Staff | 200, đúng identity/role, không lộ password/hash | 200; đúng ID/role, JWT decode đúng, không hash/password | Pass |
+| TC-AUTH-02 | Credential/payload sai; REQ-07,17 | Sai email/password, thử form rỗng/sai format | Credential sai: 401; payload sai: 400 | 401 credential sai; 400 blank/email/JSON sai và quá 72 byte UTF-8 | Pass |
+| TC-AUTH-03 | Token không hợp lệ; REQ-07 | Gọi API quản trị không token/sai/hết hạn | 401 | 401 khi thiếu/hỏng/hết hạn/sai chữ ký/sai issuer | Pass |
+| TC-AUTH-04 | Sai role; REQ-07 | Staff gọi account; Admin gọi module chỉ Staff | 403 cho read/write không được cấp quyền | 403 sai role cho GET/POST/PUT/DELETE; đúng role GET qua filter, 404 vì chưa controller | Pass |
+| TC-AUTH-05 | Thu hồi quyền; REQ-07 | Đổi role/xóa account rồi dùng token cũ | Không giữ quyền đã mất | Đổi role trong DB: áp quyền mới; xóa account test: token cũ 401 | Pass |
 
 ## Tin công khai
 
 | ID | Trường hợp | Các bước | Kết quả mong đợi | Actual | Trạng thái |
 |---|---|---|---|---|---|
-| TC-PUB-01 | Public list; REQ-06 | Không login, list với DB có cả hai status | Chỉ trả bài active | Chưa chạy | Not run |
-| TC-PUB-02 | Public detail; REQ-06 | Mở URL active, inactive, không tồn tại | 200 active; 404 hai trường hợp còn lại | Chưa chạy | Not run |
-| TC-PUB-03 | Category inactive; REQ-06 | Xem bài active trong category inactive | Vẫn công khai theo DEC-10 | Chưa chạy | Not run |
+| TC-PUB-01 | Public list; REQ-06 | Không login, list với DB có cả hai status | Chỉ trả bài active | 200; chỉ active; search title/headline/content, trim/case/literal wildcard đạt | Pass |
+| TC-PUB-02 | Public detail; REQ-06 | Mở URL active, inactive, không tồn tại | 200 active; 404 hai trường hợp còn lại | 200 active có content/tags; 404 inactive và ID không tồn tại; ID sai 400 | Pass |
+| TC-PUB-03 | Category inactive; REQ-06 | Xem bài active trong category inactive | Vẫn công khai theo DEC-10 | Bài active trong category inactive vẫn list/detail 200 | Pass |
 
 ## Account CRUD và Search
 
@@ -115,6 +115,16 @@ M2 chạy trên base `ea84544` + working tree được lưu cùng commit tính n
 
 ## Ghi kết quả cho các mốc tiếp theo
 
-Đã có `PersistenceFixture` ở test source với Admin/hai Staff, account/category có và không có bài, bài active/inactive và tag tự do/đã gắn. Fixture dùng password ngẫu nhiên phục vụ persistence, chưa phải account đăng nhập/demo UI. Không tự seed DB bài tập; các test API/auth/UI cần chuẩn bị fixture phù hợp khi triển khai các mốc sau.
+Đã có `PersistenceFixture` ở test source với Admin/hai Staff, account/category có và không có bài, bài active/inactive và tag tự do/đã gắn. Fixture dùng password ngẫu nhiên phục vụ persistence, chưa phải account đăng nhập/demo UI. M3 có seed demo bật qua môi trường và fixture API riêng; React cần kiểm tra ở mốc sau.
 
 Ghi actual, ngày/môi trường, revision và evidence sau khi chạy. Test service/API kiểm tra rule, validation và quyền; dùng SQL Server thật cho FK/transaction/Unicode/persistence. Kiểm tra browser riêng cho popup/confirmation/axios; mock/H2 hoặc API Pass không thay thế kiểm tra tích hợp/UI. Có thể dùng Postman CLI khi có endpoint; lỗi thực tế liên kết debug-log.
+
+## Kiểm tra bổ sung M3
+
+| ID | Trường hợp | Expected | Actual | Trạng thái |
+|---|---|---|---|---|
+| TC-M3-SEED | Seed hai lần, dữ liệu cũ đã sửa | Thêm thiếu, BCrypt, không ghi đè/trùng | Test SQL rollback đạt; JAR chạy hai lần, counts 2 account/1 category/2 news giữ nguyên | Pass |
+| TC-M3-CORS | Origin 5173 và origin khác | Cho phép origin cấu hình, chặn origin khác | Preflight 200 đúng origin, 403 origin khác | Pass |
+| TC-M3-KEY | JWT key sai Base64/quá ngắn | Không cho khởi tạo key | IllegalStateException ở cả hai nhánh | Pass |
+
+Các kết quả M3 ở `api/M3ApiTests.java`, chạy SQL Server DB biệt lập; kiểm tra token bằng JWT thật, không mock auth/controller CRUD. Chưa kiểm tra UI/Postman do sinh viên thao tác; HTTP thật đã thử bằng PowerShell. Test profile/history/CRUD ở các hàng trên vẫn Not run.

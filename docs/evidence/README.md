@@ -62,9 +62,9 @@ Lần nghiệm thu cuối: **28/10/2026, run-05**, base `ea84544` + working tree
 
 | Evidence | Vị trí | Trạng thái |
 |---|---|---|
-| E04 - Test matrix | [test-matrix](../test-matrix.md) | Có kết quả baseline/M1 và persistence M2; API/UI chưa chạy |
+| E04 - Test matrix | [test-matrix](../test-matrix.md) | Có kết quả baseline/M1 và persistence M2; M3 API đã chạy; CRUD/UI chưa chạy |
 | E05 - Debug log | [debug-log](../debug-log.md) | Có lỗi version và DBG-002..005 với fix/retest thật, warning còn theo dõi |
-| E06 - Thiết kế và code-flow | [design](../design.md), [code-flow](../code-flow.md) | Startup/persistence M2 đã triển khai; API/nghiệp vụ còn dự kiến |
+| E06 - Thiết kế và code-flow | [design](../design.md), [code-flow](../code-flow.md) | Startup/persistence M2 đã triển khai; M3 auth/public đã có; CRUD còn dự kiến |
 | E07 - AI usage log | [ai-usage-log](../ai-usage-log.md) | Có |
 | E08 - Git/tiến độ | [development-plan](../development-plan.md) | Có baseline/M1, commit quy ước riêng và M2; còn kiểm tra attribution/toàn tiến trình |
 | E09 - Hướng dẫn chạy | [README](../../README.md) | Có backend; frontend chưa triển khai |
@@ -73,3 +73,27 @@ Lần nghiệm thu cuối: **28/10/2026, run-05**, base `ea84544` + working tree
 - [ ] Có cả normal và negative case, popup/confirmation và request axios.
 - [ ] Tên file trong index khớp file thật; Actual/Pass chỉ ghi khi đã chạy.
 - [ ] Kiểm tra đúng repo/account, test lại từ checkout sạch và loại secret khỏi ảnh/log.
+
+
+## M3 — Postman và SQL Server
+
+Backend có API thật, chưa có React. Chạy theo README, seed demo rồi mở Postman với `baseUrl=http://localhost:8080`. Lưu email/password trong environment local, không export secret vào Git. Mỗi login lấy `accessToken` dùng ở tab Authorization → Bearer Token; che token/password khi chụp.
+
+| Ảnh đề xuất / request | Kết quả cần thấy |
+|---|---|
+| `e02-api-login.png`: POST `{{baseUrl}}/api/auth/login`, Body raw JSON `{"email":"{{adminEmail}}","password":"{{adminPassword}}"}`; lặp lại Staff | 200, đúng accountRole=1/2; không password/hash |
+| `e02-api-validation.png`: cùng POST với `{}`, email sai hoặc password rỗng; rồi credential sai | 400 với lỗi payload; 401 với credential sai |
+| `e02-api-authorization.png`: GET `/api/accounts` không bearer, bearer hỏng/hết hạn, bearer Staff | 401, 401, 403; Admin GET `/api/news` cũng 403 |
+| `e02-api-public.png`: GET `/api/public/news?q=M3`, GET detail active và inactive | List chỉ active; active=200; inactive=404 |
+| `e02-api-sql-demo.png`: SSMS query dưới đây, chạy seed lại rồi query | 2 demo accounts (role 1/2), 1 demo category, 2 demo news (status 1/0), không thêm trùng |
+
+```sql
+SELECT AccountID, AccountName, AccountEmail, AccountRole
+FROM dbo.SystemAccount WHERE AccountEmail IN ('admin.m3@example.com', 'staff.m3@example.com');
+SELECT NewsArticleID, NewsTitle, NewsStatus, CategoryID, CreatedByID
+FROM dbo.NewsArticle WHERE NewsTitle LIKE N'M3 Demo - %';
+```
+
+Ảnh trên **chờ sinh viên tự chụp**. Đúng role trên route quản trị hiện là 404 vì chưa có controller; không tạo endpoint giả. Token hết hạn có thể thử sau 1 giờ hoặc chạy local với `--app.jwt.lifetime=PT5S`, login rồi đợi trên 5 giây. Đổi role/xóa account để thử token cũ chỉ thực hiện trên DB test; không xóa account demo đang tham chiếu news.
+
+AI/tool đã chạy ngày 28-10-2026: `scripts/test-m3.ps1` đạt 20 tests (2 M1 + 7 M2 + 11 M3), 0 failure/error/skipped; packaged JAR/public smoke và hai JVM restart persistence đạt. Hai lần chạy JAR demo qua HTTP thật đều đúng login/401/403/public active/inactive; số record sau hai lần seed giữ 2 account, 1 category, 2 news. Report hiện ở `target/surefire-reports`, output local trong `tmp/m2-results/` và `tmp/m3-http-result.txt` (không commit). Không tạo ảnh/log/manifest minh chứng mới trong Git.

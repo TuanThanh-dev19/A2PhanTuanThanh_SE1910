@@ -24,3 +24,7 @@ Thêm hàng khi gặp lỗi mới; nêu bước tái hiện/expected/actual, ngu
 - **OPEN:** còn lỗi hoặc chưa sửa.
 - **FIXED:** đã có thay đổi code, chưa kiểm tra lại đủ.
 - **VERIFIED:** đã chạy lại và xác nhận hết lỗi.
+
+## DBG-006 — M3, 28-10-2026
+
+Startup/test lỗi khi JPQL gọi `lower(NewsContent)`: Hibernate coi `nvarchar(max)` là NCLOB. Đổi search sang native SQL Server có bind tham số và escape wildcard, giữ nguyên schema. Retest `clean verify`: 20 tests pass; HTTP JAR list/detail/search hoạt động.

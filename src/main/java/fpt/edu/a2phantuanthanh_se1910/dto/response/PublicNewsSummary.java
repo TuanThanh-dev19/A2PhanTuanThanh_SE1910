@@ -1,0 +1,8 @@
+// Author: Phan Tuan Thanh - CE190595
+package fpt.edu.a2phantuanthanh_se1910.dto.response;
+
+import java.time.LocalDateTime;
+
+public record PublicNewsSummary(Long newsArticleId, String newsTitle, String headline,
+                                LocalDateTime createdDate, Long categoryId, String categoryName) {
+}

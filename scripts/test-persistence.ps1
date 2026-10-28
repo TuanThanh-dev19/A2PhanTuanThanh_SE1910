@@ -31,9 +31,9 @@ function Start-PackagedApplication {
             Start-Sleep -Milliseconds 500
         }
         if ($null -eq $httpPort) { throw 'Packaged application did not become ready within 45 seconds.' }
-        $httpResponse = Invoke-WebRequest -Uri "http://localhost:$httpPort/" -SkipHttpErrorCheck
-        if ($httpResponse.StatusCode -ne 404) { throw 'Expected HTTP 404 without controllers.' }
-        "PASS: packaged Boot 3 application started; GET / = $($httpResponse.StatusCode); port=$httpPort; PID=$($process.Id)" |
+        $httpResponse = Invoke-WebRequest -Uri "http://localhost:$httpPort/api/public/news" -SkipHttpErrorCheck
+        if ($httpResponse.StatusCode -ne 200) { throw 'Expected HTTP 200 for public news.' }
+        "PASS: packaged Boot 3 application started; GET /api/public/news = $($httpResponse.StatusCode); port=$httpPort; PID=$($process.Id)" |
             Set-Content -LiteralPath "$OutputPrefix-smoke.txt" -Encoding utf8
         return $process
     }
@@ -51,6 +51,9 @@ try {
     # The runner uses the Windows identity explicitly selected for this project.
     if ($env:SQLSERVER_INTEGRATED_SECURITY -ne 'true') {
         throw 'This runner requires configured Windows Authentication; it does not guess SQL login credentials.'
+    }
+    if ($env:DEMO_ENABLED -eq 'true') {
+        throw 'Disable DEMO_ENABLED when running tests; seed the demo separately.'
     }
     $databaseSuffix = (Get-Date -Format 'yyyyMMdd_HHmmss') + '_' + [guid]::NewGuid().ToString('N').Substring(0, 8)
     $testDatabase = 'A2PhanTuanThanh_SE1910_M2Test_' + $databaseSuffix
@@ -84,7 +87,11 @@ try {
         Set-Content -LiteralPath "$evidencePath/assignment-before.txt" -Encoding utf8
     if ($LASTEXITCODE -ne 0) { throw 'Could not inspect the assignment database.' }
 
-    & .\mvnw.cmd -B clean verify 2>&1 | Tee-Object -FilePath "$evidencePath/build-test.txt"
+    $mavenArguments = @('-B', 'clean', 'verify')
+    if ([string]::IsNullOrWhiteSpace($env:SQLSERVER_M3_TEST_DATABASE)) {
+        $mavenArguments += '-Dtest=A2PhanTuanThanhSe1910ApplicationTests,NewsPersistenceTests'
+    }
+    & .\mvnw.cmd @mavenArguments 2>&1 | Tee-Object -FilePath "$evidencePath/build-test.txt"
     $buildExitCode = $LASTEXITCODE
     if (Test-Path -LiteralPath target/surefire-reports) {
         Copy-Item -Path target/surefire-reports/*.txt -Destination $evidencePath

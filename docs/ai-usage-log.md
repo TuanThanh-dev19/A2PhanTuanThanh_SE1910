@@ -32,3 +32,7 @@ Tài liệu ghi cách dùng AI, phần đã áp dụng và cách kiểm chứng.
 ## Cách ghi các lần tiếp theo
 
 Thêm một hàng với mục đích, phần AI hỗ trợ, kết quả đã kiểm tra và phần sinh viên cần hiểu. Ghi rõ gợi ý đã sửa/bỏ và lý do; liên kết debug-log nếu AI tạo lỗi. Không lưu secret hoặc tự ghi sinh viên đã chạy/hiểu khi chưa có xác nhận.
+
+## AI-009 — M3 (28-10-2026)
+
+AI triển khai login BCrypt/JWT bằng Spring Security/Nimbus, quyền role riêng, public news và seed demo chỉ thêm thiếu; giữ riêng thay đổi có sẵn. Kiểm chứng: 20 tests pass trên SQL Server (9 cũ + 11 M3), JAR HTTP/restart đạt, seed hai lần không thêm trùng; lỗi JPQL NCLOB đã sửa và retest. Sinh viên cần giải thích token/role DB hiện tại, 401/403/404, DTO không hash và tự thao tác/chụp Postman theo evidence index. Chưa làm CRUD/profile/history/React, chưa push.
