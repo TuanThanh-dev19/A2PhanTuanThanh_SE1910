@@ -136,7 +136,7 @@ class M3ApiTests {
     }
 
     @Test
-    void roleRulesProtectReadsAndWritesWithoutFakeCrudControllers() throws Exception {
+    void roleRulesProtectReadsAndWrites() throws Exception {
         String adminToken = login(admin.getAccountEmail(), password).path("accessToken").asText();
         String staffToken = login(staff.getAccountEmail(), password).path("accessToken").asText();
         String[] staffRoutes = {"/api/categories", "/api/categories/1", "/api/news", "/api/news/1",
@@ -157,8 +157,33 @@ class M3ApiTests {
                 mvc.perform(request(org.springframework.http.HttpMethod.valueOf(method), route)
                                 .header("Authorization", "Bearer " + staffToken)).andExpect(status().isForbidden());
             }
-            mvc.perform(get(route).header("Authorization", "Bearer " + adminToken)).andExpect(status().isNotFound());
+            if (route.equals("/api/accounts")) {
+                mvc.perform(get(route).header("Authorization", "Bearer " + adminToken)).andExpect(status().isOk());
+            } else {
+                mvc.perform(get(route).header("Authorization", "Bearer " + adminToken)).andExpect(status().isNotFound());
+            }
         }
+    }
+
+    @Test
+    void adminAccountListMatchesDatabaseAndOnlyContainsSafeDtoFields() throws Exception {
+        String token = login(admin.getAccountEmail(), password).path("accessToken").asText();
+        String body = mvc.perform(get("/api/accounts").header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk()).andExpect(header().string("Cache-Control", "no-store"))
+                .andReturn().getResponse().getContentAsString();
+        JsonNode response = json.readTree(body);
+        var records = accounts.findAll(org.springframework.data.domain.Sort.by("accountId"));
+        assertThat(response.size()).isEqualTo(records.size());
+        for (int index = 0; index < records.size(); index++) {
+            SystemAccount account = records.get(index);
+            JsonNode row = response.get(index);
+            assertThat(row.size()).isEqualTo(4);
+            assertThat(row.path("accountId").asLong()).isEqualTo(account.getAccountId());
+            assertThat(row.path("accountName").asText()).isEqualTo(account.getAccountName());
+            assertThat(row.path("accountEmail").asText()).isEqualTo(account.getAccountEmail());
+            assertThat(row.path("accountRole").asInt()).isEqualTo(account.getAccountRole());
+        }
+        assertThat(body).doesNotContain("password", "Password", "$2a$", "$2b$");
     }
 
     @Test

@@ -128,3 +128,9 @@ Ghi actual, ngày/môi trường, revision và evidence sau khi chạy. Test ser
 | TC-M3-KEY | JWT key sai Base64/quá ngắn | Không cho khởi tạo key | IllegalStateException ở cả hai nhánh | Pass |
 
 Các kết quả M3 ở `api/M3ApiTests.java`, chạy SQL Server DB biệt lập; kiểm tra token bằng JWT thật, không mock auth/controller CRUD. Chưa kiểm tra UI/Postman do sinh viên thao tác; HTTP thật đã thử bằng PowerShell. Test profile/history/CRUD ở các hàng trên vẫn Not run.
+
+## M4 - Phần 1: danh sách account và React
+
+| ID | Trường hợp | Expected | Actual | Trạng thái |
+|---|---|---|---|---|
+| TC-M4-API | GET accounts với Admin/Staff/khách | 200 DTO không password/hash; 403; 401 | SQL Server thật: 21 tests pass; so khớp đủ 4 field với repository, đúng quyền; mvnw verify thành công | Pass |
