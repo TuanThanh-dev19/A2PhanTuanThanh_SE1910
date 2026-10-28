@@ -151,3 +151,12 @@ Các kết quả M3 ở `api/M3ApiTests.java`, chạy SQL Server DB biệt lập
 | TC-M4P2-UPDATE | Detail/prefill, sai field/email trùng, giữ/đổi password | DTO không hash; lỗi giữ form; password trống giữ hash, mới login được | 17 API tests pass; Chrome prefill đúng, ô password rỗng, lỗi tên/trùng email giữ popup; sửa tên/email khớp SQL và login mật khẩu cũ được; đổi password qua React: cũ bị từ chối, mới login Staff thành công; lint/build đạt | Pass |
 | TC-M4P2-DELETE | Cancel/Confirm, creator và updater-only | Cancel không DELETE; 204 hợp lệ; 409 creator; DEC-06 giữ bài | Chrome/SQL thật: counter 0 khi Hủy, 1 khi Confirm; creator bị chặn và giữ popup; xóa updater đặt NULL cho 2 bài còn nguyên | Pass |
 | TC-M4P2-VERIFY | Regression, quyền và build | Backend/FE chạy; khách 401, Staff 403 mọi thao tác | mvnw verify: 29 tests pass, 0 fail/error/skipped; lint/build FE đạt; HTTP thật list/detail/POST/PUT/DELETE đúng 401/403, Admin list 200. Delete UI thử cổng 5174, proxy chỉ đếm request rồi chuyển nguyên tới BE | Pass |
+
+## M5 - Phần 1: đọc và tìm kiếm Category (28-10-2026)
+
+| ID | Trường hợp | Expected | Actual | Trạng thái |
+|---|---|---|---|---|
+| TC-M5P1-API | List/detail và quyền | Staff 200 DTO phẳng đủ 6 field, cả active/inactive; Admin 403; khách 401; ID thiếu/sai 404/400 | SQL Server riêng: assertions khớp repository, parent có/null, mô tả null; HTTP JAR list/detail 200/403/401 và thiếu ID 404 đạt | Pass |
+| TC-M5P1-SEARCH | Tên/mô tả, hoa thường, trim, trống/no-match | Lọc đúng; trống trả đủ; không khớp trả []; không sửa dữ liệu | API đạt cả literal wildcard và q > 200 trả 400; Chrome tên tiếng Việt/mô tả khác hoa thường đúng, clear trả đủ 3 dòng | Pass |
+| TC-M5P1-UI | Menu/route Staff, loading/empty/no-result/error | Staff xem bảng; Admin bị chặn; khách về login; feedback và retry đúng | Chrome + JAR/SQL thật: đủ field; Admin URL về /accounts, khách về /login; chờ khóa SQL hiện loading; DB test rỗng/no-match đúng thông báo; dừng/chạy lại BE và Thử lại đạt | Pass |
+| TC-M5P1-BUILD | Backend regression và frontend | Build/test/lint thành công | mvnw verify: 32 tests, 0 failure/error/skipped; npm run lint và npm run build đạt | Pass |

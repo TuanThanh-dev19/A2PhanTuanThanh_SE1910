@@ -141,7 +141,7 @@ class M3ApiTests {
     void roleRulesProtectReadsAndWrites() throws Exception {
         String adminToken = login(admin.getAccountEmail(), password).path("accessToken").asText();
         String staffToken = login(staff.getAccountEmail(), password).path("accessToken").asText();
-        String[] staffRoutes = {"/api/categories", "/api/categories/1", "/api/news", "/api/news/1",
+        String[] staffRoutes = {"/api/categories", "/api/categories/" + active.getCategory().getCategoryId(), "/api/news", "/api/news/1",
                 "/api/tags", "/api/profile", "/api/profile/news"};
         for (String route : staffRoutes) {
             for (String method : new String[]{"GET", "POST", "PUT", "DELETE"}) {
@@ -151,8 +151,12 @@ class M3ApiTests {
                 mvc.perform(request(org.springframework.http.HttpMethod.valueOf(method), route))
                         .andExpect(status().isUnauthorized());
             }
-            // No controller exists yet: reaching MVC's 404 proves the authorized request passed the filter.
-            mvc.perform(get(route).header("Authorization", "Bearer " + staffToken)).andExpect(status().isNotFound());
+            if (route.startsWith("/api/categories")) {
+                mvc.perform(get(route).header("Authorization", "Bearer " + staffToken)).andExpect(status().isOk());
+            } else {
+                // Modules without a controller still return 404 after passing the security filter.
+                mvc.perform(get(route).header("Authorization", "Bearer " + staffToken)).andExpect(status().isNotFound());
+            }
         }
         for (String route : new String[]{"/api/accounts", "/api/accounts/9223372036854775807"}) {
             for (String method : new String[]{"GET", "POST", "PUT", "DELETE"}) {
@@ -166,6 +170,75 @@ class M3ApiTests {
             } else {
                 mvc.perform(get(route).header("Authorization", "Bearer " + adminToken)).andExpect(status().isNotFound());
             }
+        }
+    }
+
+    @Test
+    void categoryListAndDetailMatchDatabaseWithFlatParentAndBothStatuses() throws Exception {
+        Category parent = active.getCategory();
+        categories.saveAndFlush(new Category("Danh mục con", null, parent, 1));
+        String token = login(staff.getAccountEmail(), password).path("accessToken").asText();
+        String body = mvc.perform(get("/api/categories").header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk()).andExpect(header().string("Cache-Control", "no-store"))
+                .andReturn().getResponse().getContentAsString();
+        JsonNode response = json.readTree(body);
+        var records = categories.findAll(org.springframework.data.domain.Sort.by("categoryId"));
+        assertThat(response.size()).isEqualTo(2);
+        for (int index = 0; index < records.size(); index++) {
+            Category category = records.get(index);
+            JsonNode row = response.get(index);
+            assertThat(row.size()).isEqualTo(6);
+            assertThat(row.path("categoryId").asLong()).isEqualTo(category.getCategoryId());
+            assertThat(row.path("categoryName").asText()).isEqualTo(category.getCategoryName());
+            assertThat(row.get("categoryDescription")).isEqualTo(json.valueToTree(category.getCategoryDescription()));
+            assertThat(row.path("isActive").asInt()).isEqualTo(category.getIsActive());
+            if (category.getParentCategory() == null) {
+                assertThat(row.path("parentCategoryId").isNull()).isTrue();
+                assertThat(row.path("parentCategoryName").isNull()).isTrue();
+            } else {
+                assertThat(row.path("parentCategoryId").asLong()).isEqualTo(parent.getCategoryId());
+                assertThat(row.path("parentCategoryName").asText()).isEqualTo(parent.getCategoryName());
+            }
+            String detail = mvc.perform(get("/api/categories/" + category.getCategoryId())
+                            .header("Authorization", "Bearer " + token))
+                    .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+            assertThat(json.readTree(detail)).isEqualTo(row);
+        }
+    }
+
+    @Test
+    void categorySearchHandlesNameDescriptionCaseBlankNoMatchAndLiteralWildcards() throws Exception {
+        Category child = categories.saveAndFlush(new Category("Technology 100%_ [literal]!",
+                "Unique-DESCRIPTION", active.getCategory(), 1));
+        String token = login(staff.getAccountEmail(), password).path("accessToken").asText();
+        for (String query : new String[]{"  TECHNOLOGY  ", "technology", "unique-description", "UNIQUE-description",
+                "%", "_", "[", "!"}) {
+            mvc.perform(get("/api/categories").param("q", query).header("Authorization", "Bearer " + token))
+                    .andExpect(status().isOk()).andExpect(jsonPath("$.length()").value(1))
+                    .andExpect(jsonPath("$[0].categoryId").value(child.getCategoryId()));
+        }
+        for (String query : new String[]{"", "  "}) {
+            mvc.perform(get("/api/categories").param("q", query).header("Authorization", "Bearer " + token))
+                    .andExpect(status().isOk()).andExpect(jsonPath("$.length()").value(2));
+        }
+        for (String query : new String[]{"no-such-category", "' OR 1=1 --"}) {
+            mvc.perform(get("/api/categories").param("q", query).header("Authorization", "Bearer " + token))
+                    .andExpect(status().isOk()).andExpect(jsonPath("$.length()").value(0));
+        }
+        mvc.perform(get("/api/categories").param("q", "x".repeat(201)).header("Authorization", "Bearer " + token))
+                .andExpect(status().isBadRequest());
+        assertThat(categories.count()).isEqualTo(2);
+        assertThat(child.getCategoryDescription()).isEqualTo("Unique-DESCRIPTION");
+    }
+
+    @Test
+    void categoryDetailRejectsMissingAndInvalidIds() throws Exception {
+        String token = login(staff.getAccountEmail(), password).path("accessToken").asText();
+        mvc.perform(get("/api/categories/9223372036854775807").header("Authorization", "Bearer " + token))
+                .andExpect(status().isNotFound()).andExpect(jsonPath("code").value("NOT_FOUND"));
+        for (String id : new String[]{"0", "-1", "abc", "1.5"}) {
+            mvc.perform(get("/api/categories/" + id).header("Authorization", "Bearer " + token))
+                    .andExpect(status().isBadRequest());
         }
     }
 

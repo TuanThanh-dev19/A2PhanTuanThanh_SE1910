@@ -5,6 +5,7 @@ import { AuthContext } from '../auth/AuthContext'
 import { homePath } from '../auth/session'
 import ManagementLayout from '../components/ManagementLayout'
 import AccountsPage from '../pages/AccountsPage'
+import CategoriesPage from '../pages/CategoriesPage'
 import LoginPage from '../pages/LoginPage'
 import StaffPage from '../pages/StaffPage'
 import ProtectedRoute from './ProtectedRoute'
@@ -22,6 +23,7 @@ export default function AppRoutes() {
       <Route element={<ProtectedRoute role={2} />}>
         <Route element={<ManagementLayout />}>
           <Route path="/staff" element={<StaffPage />} />
+          <Route path="/categories" element={<CategoriesPage />} />
         </Route>
       </Route>
       <Route path="*" element={<Navigate to={homePath(session)} replace />} />

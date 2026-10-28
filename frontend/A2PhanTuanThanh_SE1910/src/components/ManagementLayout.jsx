@@ -22,6 +22,7 @@ export default function ManagementLayout() {
           <p className="eyebrow">Khu vực quản lý</p>
           {isAdmin && <NavLink to="/accounts">Tài khoản</NavLink>}
           {!isAdmin && <NavLink to="/staff">Trang Staff</NavLink>}
+          {!isAdmin && <NavLink to="/categories">Danh mục</NavLink>}
         </nav>
         <main className="page-content"><Outlet /></main>
       </div>
