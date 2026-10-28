@@ -69,11 +69,11 @@ M2 chạy trên base `ea84544` + working tree được lưu cùng commit tính n
 
 | ID | Trường hợp | Các bước | Kết quả mong đợi | Actual | Trạng thái |
 |---|---|---|---|---|---|
-| TC-CAT-01 | CRUD; REQ-10 | Staff tạo/đọc/sửa category, description/parent/status | Đúng record và field | Chưa chạy | Not run |
-| TC-CAT-02 | Search; REQ-10 | Tìm tên/mô tả với hoa thường, trống và no-result | Đúng DEC-07, source không bị sửa | Chưa chạy | Not run |
-| TC-CAT-03 | Delete bị chặn; REQ-11 | Xóa category có bài active, rồi chỉ inactive | 409, category/bài còn | Chưa chạy | Not run |
-| TC-CAT-04 | Parent sai; REQ-10,17 | Parent giả, self-parent, vòng A→B→A | Bị từ chối, không lưu chu kỳ | Chưa chạy | Not run |
-| TC-CAT-05 | Delete hợp lệ; REQ-11 | Xóa category chưa có bài, thử có/không category con | Xóa được; nếu có con, giữ con và parent null theo DEC-05 | Chưa chạy | Not run |
+| TC-CAT-01 | CRUD; REQ-10 | Staff tạo/đọc/sửa category, description/parent/status | Đúng record và field | API/Chrome/SQL: DTO, prefill, tạo/sửa và các field đúng; ID giữ nguyên | Pass |
+| TC-CAT-02 | Search; REQ-10 | Tìm tên/mô tả với hoa thường, trống và no-result | Đúng DEC-07, source không bị sửa | Regression API/Chrome đạt; tạo/sửa/xóa tải lại theo keyword đang Search | Pass |
+| TC-CAT-03 | Delete bị chặn; REQ-11 | Xóa category có bài active, rồi chỉ inactive | 409, category/bài còn | API: từng status đều 409, category/bài và parent của con nguyên vẹn; Chrome giữ confirmation và báo lỗi | Pass |
+| TC-CAT-04 | Parent sai; REQ-10,17 | Parent giả, self-parent, vòng A→B→A | Bị từ chối, không lưu chu kỳ | API trả 400 cho parent giả/self/vòng 2 và 3 cấp; Chrome lỗi vòng giữ form, sửa lại lưu được | Pass |
+| TC-CAT-05 | Delete hợp lệ; REQ-11 | Xóa category chưa có bài, thử có/không category con | Xóa được; nếu có con, giữ con và parent null theo DEC-05 | 204; API giữ cả con/cháu/bài của con; Chrome/SQL xác nhận con còn, parent null; Cancel 0 DELETE | Pass |
 
 ## News, Tags và Search
 
@@ -168,3 +168,6 @@ Các kết quả M3 ở `api/M3ApiTests.java`, chạy SQL Server DB biệt lập
 | TC-M5P2-BASE | Chạy lại Phần 1 | Staff đọc/search được | 23 API tests đạt; Chrome/JAR/SQL riêng: bảng và search DEMO đúng | Pass |
 | TC-M5P2-CREATE | Tạo hợp lệ/sai field/parent, quyền và search | 201 DTO; sai 400; khách 401/Admin 403; lỗi giữ form; lưu giữ search | 3 Category API tests đạt, 23 regression API đạt; Chrome form rỗng báo lỗi, tạo root/child inactive khớp SQL, parent đủ dù search không khớp, lưu đóng popup và giữ keyword; lint/build đạt | Pass |
 | TC-M5P2-UPDATE | Prefill, sửa hợp lệ/sai field, parent giả/self/vòng, ID và search | 200 giữ ID; sai 400/404, dữ liệu không đổi; quyền 401/403 | 6 Category API tests đạt cả vòng 2/3 cấp; Chrome prefill đúng inactive/parent, tên rỗng/vòng báo lỗi giữ form; sửa tên/cha/status khớp SQL, giữ search và loại dòng không còn khớp; lint/build đạt | Pass |
+| TC-M5P2-DELETE | Cancel/Confirm, có bài active/inactive và DEC-05 | Cancel không DELETE; 204 hợp lệ; 409 có bài; giữ con/cháu/bài | 9 Category API tests đạt; Chrome + JAR/SQL: Cancel 0 DELETE, xóa leaf/parent 204, con còn và parent null; category có bài 409 giữ popup, SQL bài active/inactive còn nguyên | Pass |
+| TC-M5P2-SUBMIT | Nhấn kép Create/Update/Delete và Search | Mỗi thao tác 1 request; giữ keyword sau lưu/xóa | Proxy tạm chuyển nguyên request: dblclick lần lượt 1 POST 201, 1 PUT 200, 1 DELETE 204; SQL không trùng; search tạo/sửa/xóa và danh sách parent độc lập đạt | Pass |
+| TC-M5P2-VERIFY | Regression, HTTP quyền và build | Test/build/lint đạt; mọi thao tác chỉ Staff | mvnw verify: 41 tests, 0 failure/error/skipped; lint/build đạt; HTTP POST/PUT/DELETE khách 401/Admin 403. Test dùng DB riêng, không reset dữ liệu có sẵn | Pass |

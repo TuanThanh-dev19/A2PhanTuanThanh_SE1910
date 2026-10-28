@@ -5,6 +5,7 @@ import fpt.edu.a2phantuanthanh_se1910.dto.response.CategoryResponse;
 import fpt.edu.a2phantuanthanh_se1910.dto.request.CategoryRequest;
 import fpt.edu.a2phantuanthanh_se1910.entity.Category;
 import fpt.edu.a2phantuanthanh_se1910.repository.CategoryRepository;
+import fpt.edu.a2phantuanthanh_se1910.repository.NewsArticleRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,9 +22,11 @@ import java.util.Set;
 @Transactional(readOnly = true)
 public class CategoryService {
     private final CategoryRepository categories;
+    private final NewsArticleRepository newsArticles;
 
-    public CategoryService(CategoryRepository categories) {
+    public CategoryService(CategoryRepository categories, NewsArticleRepository newsArticles) {
         this.categories = categories;
+        this.newsArticles = newsArticles;
     }
 
     public List<CategoryResponse> search(String query) {
@@ -65,6 +68,23 @@ public class CategoryService {
         category.setIsActive(request.isActive());
         categories.saveAndFlush(category);
         return mapCategory(category);
+    }
+
+    @Transactional
+    public void delete(long id) {
+        Category category = requireCategory(id);
+        if (newsArticles.existsByCategory_CategoryId(id)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "Không thể xóa danh mục đang có bài viết, kể cả bài inactive.");
+        }
+        List<Category> children = categories.findByParentCategory_CategoryId(id);
+        for (Category child : children) {
+            child.setParentCategory(null);
+        }
+        // DEC-05: release child references before deleting; any failure rolls back both steps.
+        categories.flush();
+        categories.delete(category);
+        categories.flush();
     }
 
     private Category requireCategory(long id) {

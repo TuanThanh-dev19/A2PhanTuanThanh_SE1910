@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react'
 import client from '../api/client'
 import CategoryFormDialog from '../components/CategoryFormDialog'
+import CategoryDeleteDialog from '../components/CategoryDeleteDialog'
 
 export default function CategoriesPage() {
   const [categories, setCategories] = useState([])
@@ -14,6 +15,7 @@ export default function CategoriesPage() {
   const [success, setSuccess] = useState('')
   const [actionError, setActionError] = useState('')
   const [editingId, setEditingId] = useState(null)
+  const [deleteCategory, setDeleteCategory] = useState(null)
 
   useEffect(() => {
     const controller = new AbortController()
@@ -108,6 +110,12 @@ export default function CategoriesPage() {
       {actionError && <p className="error-message" role="alert">{actionError}</p>}
       {formState && <CategoryFormDialog category={formState.category}
         onClose={() => setFormState(null)} onSaved={categorySaved} />}
+      {deleteCategory && <CategoryDeleteDialog category={deleteCategory}
+        onClose={() => setDeleteCategory(null)} onDeleted={() => {
+          setDeleteCategory(null)
+          setSuccess('Đã xóa danh mục.')
+          reloadCategories()
+        }} />}
       <section className="card" aria-labelledby="categories-title" aria-busy={loading}>
         <div className="card-heading">
           <h2 id="categories-title">Danh sách danh mục</h2>
@@ -140,6 +148,12 @@ export default function CategoriesPage() {
                   aria-label={`Sửa danh mục ${category.categoryId}`} onClick={() => openEditForm(category.categoryId)}>
                   {editingId === category.categoryId ? 'Đang tải…' : 'Sửa'}
                 </button>
+                <button type="button" className="button-danger" disabled={editingId !== null}
+                  aria-label={`Xóa danh mục ${category.categoryId}`} onClick={() => {
+                    setSuccess('')
+                    setActionError('')
+                    setDeleteCategory(category)
+                  }}>Xóa</button>
               </div></td>
             </tr>)}</tbody>
           </table>
