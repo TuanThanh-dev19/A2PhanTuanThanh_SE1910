@@ -101,11 +101,7 @@ class CategoryApiTests {
                         .contentType(MediaType.APPLICATION_JSON).content("{}"))
                 .andExpect(status().isBadRequest()).andExpect(jsonPath("fieldErrors.categoryName").exists())
                 .andExpect(jsonPath("fieldErrors.isActive").exists());
-        Object[][] invalidValues = {{"categoryName", " "}, {"categoryName", null}, {"categoryName", "x".repeat(101)},
-                {"categoryDescription", "x".repeat(1001)}, {"parentCategoryId", 0}, {"parentCategoryId", -1},
-                {"parentCategoryId", 1.5}, {"parentCategoryId", "1"}, {"parentCategoryId", Long.MAX_VALUE},
-                {"isActive", null}, {"isActive", -1}, {"isActive", 2}, {"isActive", 0.5}, {"isActive", "1"}};
-        for (Object[] invalid : invalidValues) {
+        for (Object[] invalid : invalidCategoryValues()) {
             var body = categoryBody("Invalid category", null, 1);
             body.put((String) invalid[0], invalid[1]);
             mvc.perform(post("/api/categories").header("Authorization", "Bearer " + staffToken)
@@ -116,14 +112,91 @@ class CategoryApiTests {
     }
 
     @Test
-    void createOnlyAllowsStaff() throws Exception {
+    void categoryWritesOnlyAllowStaff() throws Exception {
         String body = json.writeValueAsString(categoryBody("Unauthorized", null, 1));
         mvc.perform(post("/api/categories").contentType(MediaType.APPLICATION_JSON).content(body))
                 .andExpect(status().isUnauthorized());
         mvc.perform(post("/api/categories").header("Authorization", "Bearer " + adminToken)
                         .contentType(MediaType.APPLICATION_JSON).content(body))
                 .andExpect(status().isForbidden());
+        mvc.perform(put("/api/categories/" + parent.getCategoryId())
+                        .contentType(MediaType.APPLICATION_JSON).content(body))
+                .andExpect(status().isUnauthorized());
+        mvc.perform(put("/api/categories/" + parent.getCategoryId()).header("Authorization", "Bearer " + adminToken)
+                        .contentType(MediaType.APPLICATION_JSON).content(body))
+                .andExpect(status().isForbidden());
         assertThat(categories.count()).isEqualTo(1);
+    }
+
+    @Test
+    void updateChangesFieldsAndOptionalParentWithoutChangingId() throws Exception {
+        Category child = categories.saveAndFlush(new Category("Child", "Before", parent, 0));
+        String path = "/api/categories/" + child.getCategoryId();
+        var body = categoryBody("  Đã sửa  ", null, 1);
+        body.put("categoryDescription", "  Mô tả mới  ");
+        body.put("categoryId", Long.MAX_VALUE);
+        mvc.perform(put(path).header("Authorization", "Bearer " + staffToken)
+                        .contentType(MediaType.APPLICATION_JSON).content(json.writeValueAsString(body)))
+                .andExpect(status().isOk()).andExpect(jsonPath("categoryId").value(child.getCategoryId()))
+                .andExpect(jsonPath("categoryName").value("Đã sửa"))
+                .andExpect(jsonPath("categoryDescription").value("Mô tả mới"))
+                .andExpect(jsonPath("isActive").value(1));
+        assertThat(child.getParentCategory()).isNull();
+        body = categoryBody("Đã sửa lại", parent.getCategoryId(), 0);
+        mvc.perform(put(path).header("Authorization", "Bearer " + staffToken)
+                        .contentType(MediaType.APPLICATION_JSON).content(json.writeValueAsString(body)))
+                .andExpect(status().isOk()).andExpect(jsonPath("parentCategoryId").value(parent.getCategoryId()))
+                .andExpect(jsonPath("isActive").value(0));
+        assertThat(child.getCategoryId()).isNotEqualTo(Long.MAX_VALUE);
+        assertThat(child.getCategoryName()).isEqualTo("Đã sửa lại");
+        assertThat(child.getCategoryDescription()).isNull();
+        assertThat(child.getParentCategory().getCategoryId()).isEqualTo(parent.getCategoryId());
+        assertThat(categories.count()).isEqualTo(2);
+    }
+
+    @Test
+    void updateRejectsInvalidFieldsSelfParentAndTwoOrThreeLevelCycles() throws Exception {
+        Category child = categories.saveAndFlush(new Category("Child", null, parent, 1));
+        Category grandchild = categories.saveAndFlush(new Category("Grandchild", null, child, 1));
+        String path = "/api/categories/" + parent.getCategoryId();
+        for (Object[] invalid : invalidCategoryValues()) {
+            var body = categoryBody("Changed", null, 1);
+            body.put((String) invalid[0], invalid[1]);
+            mvc.perform(put(path).header("Authorization", "Bearer " + staffToken)
+                            .contentType(MediaType.APPLICATION_JSON).content(json.writeValueAsString(body)))
+                    .andExpect(status().isBadRequest());
+        }
+        for (Long parentId : new Long[]{parent.getCategoryId(), child.getCategoryId(), grandchild.getCategoryId()}) {
+            mvc.perform(put(path).header("Authorization", "Bearer " + staffToken)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(json.writeValueAsString(categoryBody("Changed", parentId, 1))))
+                    .andExpect(status().isBadRequest());
+        }
+        assertThat(parent.getCategoryName()).isEqualTo("Parent Category");
+        assertThat(parent.getParentCategory()).isNull();
+        assertThat(parent.getIsActive()).isZero();
+        assertThat(child.getParentCategory().getCategoryId()).isEqualTo(parent.getCategoryId());
+        assertThat(grandchild.getParentCategory().getCategoryId()).isEqualTo(child.getCategoryId());
+    }
+
+    @Test
+    void updateRejectsMissingAndInvalidIds() throws Exception {
+        String body = json.writeValueAsString(categoryBody("Changed", null, 1));
+        mvc.perform(put("/api/categories/9223372036854775807").header("Authorization", "Bearer " + staffToken)
+                        .contentType(MediaType.APPLICATION_JSON).content(body))
+                .andExpect(status().isNotFound());
+        for (String id : new String[]{"0", "-1", "abc", "1.5"}) {
+            mvc.perform(put("/api/categories/" + id).header("Authorization", "Bearer " + staffToken)
+                            .contentType(MediaType.APPLICATION_JSON).content(body))
+                    .andExpect(status().isBadRequest());
+        }
+    }
+
+    private Object[][] invalidCategoryValues() {
+        return new Object[][]{{"categoryName", " "}, {"categoryName", null}, {"categoryName", "x".repeat(101)},
+                {"categoryDescription", "x".repeat(1001)}, {"parentCategoryId", 0}, {"parentCategoryId", -1},
+                {"parentCategoryId", 1.5}, {"parentCategoryId", "1"}, {"parentCategoryId", Long.MAX_VALUE},
+                {"isActive", null}, {"isActive", -1}, {"isActive", 2}, {"isActive", 0.5}, {"isActive", "1"}};
     }
 
     private JsonNode create(Map<String, Object> body) throws Exception {

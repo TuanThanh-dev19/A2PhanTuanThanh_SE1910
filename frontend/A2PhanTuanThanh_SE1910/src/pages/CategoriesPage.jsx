@@ -10,8 +10,10 @@ export default function CategoriesPage() {
   const [reloadCount, setReloadCount] = useState(0)
   const [keyword, setKeyword] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
-  const [showForm, setShowForm] = useState(false)
+  const [formState, setFormState] = useState(null)
   const [success, setSuccess] = useState('')
+  const [actionError, setActionError] = useState('')
+  const [editingId, setEditingId] = useState(null)
 
   useEffect(() => {
     const controller = new AbortController()
@@ -64,6 +66,26 @@ export default function CategoriesPage() {
     }
   }
 
+  async function openEditForm(categoryId) {
+    setEditingId(categoryId)
+    setActionError('')
+    setSuccess('')
+    try {
+      const response = await client.get(`/categories/${categoryId}`)
+      setFormState({ category: response.data })
+    } catch (requestError) {
+      setActionError(requestError.response?.data?.message || 'Không tải được danh mục. Vui lòng thử lại.')
+    } finally {
+      setEditingId(null)
+    }
+  }
+
+  function categorySaved() {
+    setSuccess(formState.category ? 'Đã cập nhật danh mục.' : 'Đã thêm danh mục.')
+    setFormState(null)
+    reloadCategories()
+  }
+
   return (
     <>
       <p className="eyebrow">Quản lý nội dung</p>
@@ -78,15 +100,14 @@ export default function CategoriesPage() {
           onClick={clearSearch}>Xóa tìm kiếm</button>}
         <button type="button" className="button-primary" onClick={() => {
           setSuccess('')
-          setShowForm(true)
-        }}>Thêm danh mục</button>
+          setActionError('')
+          setFormState({ category: null })
+        }} disabled={editingId !== null}>Thêm danh mục</button>
       </form>
       {success && <p className="notice" role="status">{success}</p>}
-      {showForm && <CategoryFormDialog onClose={() => setShowForm(false)} onSaved={() => {
-        setShowForm(false)
-        setSuccess('Đã thêm danh mục.')
-        reloadCategories()
-      }} />}
+      {actionError && <p className="error-message" role="alert">{actionError}</p>}
+      {formState && <CategoryFormDialog category={formState.category}
+        onClose={() => setFormState(null)} onSaved={categorySaved} />}
       <section className="card" aria-labelledby="categories-title" aria-busy={loading}>
         <div className="card-heading">
           <h2 id="categories-title">Danh sách danh mục</h2>
@@ -105,7 +126,8 @@ export default function CategoriesPage() {
           <table>
             <caption className="sr-only">ID, tên, mô tả, ID và tên danh mục cha, trạng thái</caption>
             <thead><tr><th scope="col">ID</th><th scope="col">Tên</th><th scope="col">Mô tả</th>
-              <th scope="col">ID cha</th><th scope="col">Danh mục cha</th><th scope="col">Trạng thái</th></tr></thead>
+              <th scope="col">ID cha</th><th scope="col">Danh mục cha</th><th scope="col">Trạng thái</th>
+              <th scope="col">Thao tác</th></tr></thead>
             <tbody>{categories.map((category) => <tr key={category.categoryId}>
               <td className="id-cell">{category.categoryId}</td>
               <td className="name-cell">{category.categoryName}</td>
@@ -113,6 +135,12 @@ export default function CategoriesPage() {
               <td className="id-cell">{category.parentCategoryId ?? '—'}</td>
               <td>{category.parentCategoryName ?? '—'}</td>
               <td>{category.isActive === 1 ? 'Active' : 'Inactive'}</td>
+              <td><div className="row-actions">
+                <button type="button" className="button-secondary" disabled={editingId !== null}
+                  aria-label={`Sửa danh mục ${category.categoryId}`} onClick={() => openEditForm(category.categoryId)}>
+                  {editingId === category.categoryId ? 'Đang tải…' : 'Sửa'}
+                </button>
+              </div></td>
             </tr>)}</tbody>
           </table>
         </div>}

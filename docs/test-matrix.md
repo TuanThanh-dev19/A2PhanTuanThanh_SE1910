@@ -167,3 +167,4 @@ Các kết quả M3 ở `api/M3ApiTests.java`, chạy SQL Server DB biệt lập
 |---|---|---|---|---|
 | TC-M5P2-BASE | Chạy lại Phần 1 | Staff đọc/search được | 23 API tests đạt; Chrome/JAR/SQL riêng: bảng và search DEMO đúng | Pass |
 | TC-M5P2-CREATE | Tạo hợp lệ/sai field/parent, quyền và search | 201 DTO; sai 400; khách 401/Admin 403; lỗi giữ form; lưu giữ search | 3 Category API tests đạt, 23 regression API đạt; Chrome form rỗng báo lỗi, tạo root/child inactive khớp SQL, parent đủ dù search không khớp, lưu đóng popup và giữ keyword; lint/build đạt | Pass |
+| TC-M5P2-UPDATE | Prefill, sửa hợp lệ/sai field, parent giả/self/vòng, ID và search | 200 giữ ID; sai 400/404, dữ liệu không đổi; quyền 401/403 | 6 Category API tests đạt cả vòng 2/3 cấp; Chrome prefill đúng inactive/parent, tên rỗng/vòng báo lỗi giữ form; sửa tên/cha/status khớp SQL, giữ search và loại dòng không còn khớp; lint/build đạt | Pass |

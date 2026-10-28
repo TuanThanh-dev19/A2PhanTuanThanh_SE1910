@@ -8,11 +8,14 @@ import fpt.edu.a2phantuanthanh_se1910.repository.CategoryRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.HashSet;
+import java.util.Set;
 
 @Service
 @Transactional(readOnly = true)
@@ -40,25 +43,54 @@ public class CategoryService {
     }
 
     public CategoryResponse findById(long id) {
-        Category category = categories.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Category not found"));
-        return mapCategory(category);
+        return mapCategory(requireCategory(id));
     }
 
     @Transactional
     public CategoryResponse create(CategoryRequest request) {
-        Category parent = findParent(request.parentCategoryId());
+        Category parent = findParent(request.parentCategoryId(), null);
         Category category = new Category(request.categoryName(), request.categoryDescription(),
                 parent, request.isActive());
         categories.saveAndFlush(category);
         return mapCategory(category);
     }
 
-    private Category findParent(Long parentId) {
+    @Transactional(isolation = Isolation.SERIALIZABLE)
+    public CategoryResponse update(long id, CategoryRequest request) {
+        Category category = requireCategory(id);
+        Category parent = findParent(request.parentCategoryId(), id);
+        category.setCategoryName(request.categoryName());
+        category.setCategoryDescription(request.categoryDescription());
+        category.setParentCategory(parent);
+        category.setIsActive(request.isActive());
+        categories.saveAndFlush(category);
+        return mapCategory(category);
+    }
+
+    private Category requireCategory(long id) {
+        return categories.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Category not found"));
+    }
+
+    private Category findParent(Long parentId, Long categoryId) {
         if (parentId == null) return null;
-        return categories.findById(parentId)
+        if (parentId.equals(categoryId)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Danh mục không thể là cha của chính nó.");
+        }
+        Category parent = categories.findById(parentId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
                         "Danh mục cha không tồn tại. Vui lòng chọn lại."));
+        Set<Long> visitedIds = new HashSet<>();
+        Category ancestor = parent;
+        // Keep the hierarchy stable until save; also stop if existing data already contains a cycle.
+        while (ancestor != null) {
+            Long ancestorId = ancestor.getCategoryId();
+            if (ancestorId.equals(categoryId) || !visitedIds.add(ancestorId)) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Danh mục cha tạo vòng lặp nhiều cấp.");
+            }
+            ancestor = ancestor.getParentCategory();
+        }
+        return parent;
     }
 
     private CategoryResponse mapCategory(Category category) {

@@ -2,13 +2,14 @@
 import { useEffect, useRef, useState } from 'react'
 import client from '../api/client'
 
-export default function CategoryFormDialog({ onClose, onSaved }) {
+export default function CategoryFormDialog({ category, onClose, onSaved }) {
   const dialogRef = useRef(null)
   const savingRef = useRef(false)
-  const [categoryName, setCategoryName] = useState('')
-  const [categoryDescription, setCategoryDescription] = useState('')
-  const [parentCategoryId, setParentCategoryId] = useState('')
-  const [isActive, setIsActive] = useState('1')
+  const isEditing = Boolean(category)
+  const [categoryName, setCategoryName] = useState(category?.categoryName || '')
+  const [categoryDescription, setCategoryDescription] = useState(category?.categoryDescription || '')
+  const [parentCategoryId, setParentCategoryId] = useState(String(category?.parentCategoryId ?? ''))
+  const [isActive, setIsActive] = useState(String(category?.isActive ?? 1))
   const [parents, setParents] = useState([])
   const [loadingParents, setLoadingParents] = useState(true)
   const [parentError, setParentError] = useState('')
@@ -61,7 +62,12 @@ export default function CategoryFormDialog({ onClose, onSaved }) {
         categoryName: categoryName.trim(), categoryDescription: categoryDescription.trim(),
         parentCategoryId: parentCategoryId === '' ? null : Number(parentCategoryId), isActive: Number(isActive),
       }
-      const response = await client.post('/categories', body)
+      let response
+      if (isEditing) {
+        response = await client.put(`/categories/${category.categoryId}`, body)
+      } else {
+        response = await client.post('/categories', body)
+      }
       onSaved(response.data)
     } catch (requestError) {
       setError(requestError.response?.data?.message || 'Không lưu được danh mục. Vui lòng thử lại.')
@@ -75,7 +81,7 @@ export default function CategoryFormDialog({ onClose, onSaved }) {
   return (
     <dialog ref={dialogRef} className="account-dialog" aria-labelledby="category-form-title" onCancel={handleCancel}>
       <form onSubmit={handleSubmit} noValidate aria-busy={saving || loadingParents}>
-        <h2 id="category-form-title">Thêm danh mục</h2>
+        <h2 id="category-form-title">{isEditing ? 'Sửa danh mục' : 'Thêm danh mục'}</h2>
         {error && <p className="error-message" role="alert">{error}</p>}
         {loadingParents && <p role="status">Đang tải danh mục cha…</p>}
         {parentError && <div>
@@ -101,7 +107,8 @@ export default function CategoryFormDialog({ onClose, onSaved }) {
           <select id="category-parent" value={parentCategoryId} onChange={(event) => setParentCategoryId(event.target.value)}
             aria-invalid={Boolean(fieldErrors.parentCategoryId)} aria-describedby={fieldErrors.parentCategoryId ? 'category-parent-error' : undefined}>
             <option value="">Không có danh mục cha</option>
-            {parents.map((parent) => <option key={parent.categoryId} value={parent.categoryId}>
+            {parents.map((parent) => <option key={parent.categoryId} value={parent.categoryId}
+              disabled={parent.categoryId === category?.categoryId}>
               {parent.categoryName} (ID: {parent.categoryId})
             </option>)}
           </select>
