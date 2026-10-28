@@ -1,163 +1,190 @@
-# Thiết kế dự kiến
+Author: Phan Tuan Thanh - CE190595
 
-Trạng thái 28/10/2026 sau M1: nền tảng Boot 3/SQL Server đã chạy bằng CLI; chưa có các lớp nghiệp vụ/API/React được mô tả bên dưới. Yêu cầu và các quyết định DEC tham chiếu [requirements.md](requirements.md).
+# FUNewsManagementSystem - Solution Design
 
-## Nền tảng M1 đã triển khai
+## 1. Mục tiêu thiết kế
 
-- POM dùng Spring Boot **3.5.16**, Java 21; Web, Data JPA, Validation, Test; JDBC `12.10.2.jre11` và Hibernate `6.6.53.Final` do BOM quản lý, không override version rời. [System requirements](https://docs.spring.io/spring-boot/3.5/system-requirements.html) xác nhận JDK 21 nằm trong dải tương thích. [Release notes](https://spring.io/blog/2026/06/25/spring-boot-3-5-16-available-now/) ghi bản OSS cuối nhánh 3.5; chọn major 3 theo đề.
-- `application.properties` ghép URL từ `SQLSERVER_HOST` (bắt buộc), `SQLSERVER_PORT` (mặc định 1433), tên DB cố định `A2PhanTuanThanh_SE1910`; credentials tách qua `SQLSERVER_USERNAME/PASSWORD`. `SQLSERVER_INTEGRATED_SECURITY` mặc định false; lần chạy thật dùng true theo sinh viên, danh tính Windows hiện tại và native DLL x64 cùng version JDBC.
-- TLS mặc định `SQLSERVER_ENCRYPT=true`, `SQLSERVER_TRUST_SERVER_CERTIFICATE=false`; lần chạy local bật trust certificate tường minh. `applicationName` cho phép đối chiếu session SQL với PID Java. Không có credential hard-code hoặc trong URL mẫu.
-- `scripts/create-database.sql` chỉ tạo DB nếu chưa tồn tại. Khảo sát thật thấy DB chưa có; tool tạo DB, sau đó JDBC và SQL metadata xác nhận đúng tên, SQL Server 16.0.1000.6, TCP/NTLM/encryption TRUE. DB có 0 user tables trước và sau chạy. Đây chưa nghiệm thu phần JPA sinh schema của REQ-03/DEC-03.
-- `ddl-auto=none` cho M1; `open-in-view=false` để không kéo truy vấn persistence sang web view. Khi triển khai M2 mới chốt entity/schema và đổi chính sách DDL với test riêng.
-- Tests cần DB thật và môi trường hợp lệ; không có H2, mock datasource hoặc profile né kiểm tra kết nối. README có cách cài native DLL, cấu hình PowerShell/IntelliJ và mẫu `.env.example` không tự nạp.
-- [Evidence M1](evidence/2026-10-28-m1/inspection.md): 2 tests pass và JAR HTTP smoke pass. IntelliJ do sinh viên chạy vẫn chưa kiểm chứng; SQL login và TLS với chứng chỉ tin cậy chưa chạy.
+Ứng dụng ưu tiên đúng core requirements, rõ trách nhiệm và dễ giải thích khi đánh giá. Backend ba lớp giữ nghiệp vụ và dữ liệu; React quản lý tương tác và gọi API bằng axios. Tránh generic CRUD engine hoặc global state khi chưa cần.
 
-## 1. Kiến trúc SBA301
+**Hiện có sau M1:** Boot 3.5.16/JDK 21, Web/JPA/Validation và JDBC 12.10.2.jre11; đã kết nối SQL Server qua Windows Authentication. `ddl-auto=none`, chưa có entity/bảng nghiệp vụ. Các mục nghiệp vụ bên dưới là **dự kiến**, chưa phải code đã chạy. Cấu hình thực tế ở [README](../README.md).
 
-```mermaid
-flowchart LR
-    UI[React pages và dialogs] --> AX[axios client]
-    AX --> SEC[Spring Security]
-    SEC --> CTRL[REST Controller và request DTO]
-    CTRL --> SVC[Service: nghiệp vụ và transaction]
-    SVC --> REPO[Spring Data JPA Repository]
-    REPO --> DB[(SQL Server)]
-```
+### 1.1 Quy ước code dễ giải thích
 
-Ba lớp của backend là presentation (Controller), business (Service), persistence (Repository). Entity là mô hình persistence; DTO, mapper, security và exception là các thành phần hỗ trợ. Controller xử lý HTTP/validation DTO, service quyết định quyền/nghiệp vụ/transaction, repository truy vấn dữ liệu. Dùng constructor injection; không trả entity trực tiếp ra API và không gọi repository từ controller.
+- Tên thể hiện nghiệp vụ; method làm một việc rõ ràng, các bước kiểm tra → xử lý → trả kết quả đọc được từ trên xuống.
+- Ưu tiên `if/else`, vòng lặp, biến trung gian và mapping DTO tường minh khi dễ hiểu hơn cách viết gộp. Stream/lambda/helper chỉ dùng khi giúp code rõ hơn; không thêm abstraction/thư viện chỉ để rút ngắn code.
+- Giữ đầy đủ ba lớp, validation, quyền, transaction và xử lý lỗi. Cách làm phức tạp chỉ chọn khi có lý do cụ thể và giải thích được.
 
-Giữ main application trong `fpt.edu.a2phantuanthanh_se1910`, các package ứng dụng nằm bên dưới để Spring quét component/entity. Spring Boot không bắt buộc một cây thư mục duy nhất; cách chia theo lớp dưới đây được chọn để thể hiện rõ yêu cầu ba lớp của SBA301. [Spring Boot 3.5: Structuring Your Code](https://docs.spring.io/spring-boot/3.5/reference/using/structuring-your-code.html).
+Quy ước chi tiết áp dụng cho các chat tiếp theo nằm trong [AGENTS.md](../AGENTS.md).
+
+## 2. Định hướng giao diện
+
+- Public news list/detail và Login tách khỏi khu vực quản lý.
+- Header có tên hệ thống, current account và Logout; menu theo role.
+- Account, Category, News dùng table, toolbar Search/Add và status/role có nhãn chữ.
+- Create/Update dùng popup của từng module; Delete có confirmation riêng.
+- Form có loading/error; Cancel không lưu; lỗi API giữ form để sửa.
+- Màn hình hẹp cho table cuộn trong vùng riêng; input có label, button có type và focus rõ.
 
 ```text
-A2PhanTuanThanh_SE1910/                 # repo và backend hiện có
-├── pom.xml                            # hiện đã Boot 3.5.16 ở M1
-├── mvnw, mvnw.cmd, .mvn/
-├── src/main/java/fpt/edu/a2phantuanthanh_se1910/
-│   ├── A2PhanTuanThanhSe1910Application.java
-│   ├── controller/                    # Auth, PublicNews, Account, Category, News, Profile
-│   ├── service/                       # interface nghiệp vụ
-│   │   └── impl/                      # triển khai service, @Transactional
-│   ├── repository/                    # JpaRepository và truy vấn
-│   ├── entity/                        # SystemAccount, Category, NewsArticle, Tag, NewsTag
-│   ├── dto/request/                   # DTO create/update/login riêng
-│   ├── dto/response/                  # DTO không chứa password/hash
-│   ├── mapper/                        # mapping tường minh, không cần thêm thư viện
-│   ├── security/                      # principal, JWT, quyền truy cập
-│   ├── config/                        # Security, CORS, cấu hình ứng dụng
-│   ├── exception/                     # exception và @RestControllerAdvice
-│   └── bootstrap/                     # dữ liệu demo bằng repository, profile riêng
-├── src/main/resources/
-│   ├── application.properties
-│   └── application-demo.properties    # tham chiếu biến môi trường
-├── src/test/java/fpt/edu/a2phantuanthanh_se1910/
-│   ├── service/
-│   ├── controller/
-│   └── integration/
-├── frontend/A2PhanTuanThanh_SE1910/     # project React có tên folder đúng đề
-│   └── src/
-│       ├── api/                       # axios instance, hàm gọi API
-│       ├── auth/                      # trạng thái đăng nhập và route guard
-│       ├── pages/                     # PublicNews, Accounts, Categories, News, Profile, History
-│       ├── components/                # dialogs, form fields, confirmation
-│       └── routes/
-└── docs/
+Header: FUNewsManagementSystem | current account | Logout
+Menu theo role                | Page title
+                              | [Search........] [Add]
+                              | Table / Empty / No-result
+                              | Edit → Form dialog
+                              | Delete → Confirm dialog
 ```
 
-Frontend là project riêng trong cùng repo, không nằm trong Java package hay template Thymeleaf. Folder giữ `A2PhanTuanThanh_SE1910`; `package.json.name` dự kiến `a2phantuanthanh-se1910`. Tên DB là `A2PhanTuanThanh_SE1910`.
+Màu sắc/layout có thể theo phong cách Assignment 01; Dashboard, Settings và logo AI không được thêm thành chức năng bắt buộc của A2.
 
-Đã có ở M1: Spring Web, Data JPA, Validation, Microsoft SQL Server JDBC driver và Spring Boot Test. Security, Spring Security Test và JWT còn dự kiến ở M3; thư viện JWT được chọn/khóa version khi triển khai. POM hiện là 3.5.16, JDK 21. Không trộn namespace `javax.persistence` với `jakarta.persistence`; `javax.sql.DataSource` trong test là API Java SE hợp lệ.
+## 3. Kiến trúc và trách nhiệm
 
-## 2. Entity và trường dữ liệu
+```text
+React Page/Form → axios API client → HTTP/JSON
+  → Spring Security → REST Controller → Service → Repository/JPA → SQL Server
+```
 
-PDF chỉ cung cấp tên trường. Kiểu và giới hạn dưới đây là **đề xuất DEC-02**, chưa phải schema đang tồn tại. Tên bảng/cột map tường minh để giữ tương ứng với sơ đồ. Dùng Unicode cho văn bản tiếng Việt trên SQL Server.
-
-| Entity | Trường theo sơ đồ và kiểu dự kiến |
+| Thành phần | Trách nhiệm |
 |---|---|
-| SystemAccount | AccountID: Long identity; AccountName: String(100); AccountEmail: String(254), unique; AccountRole: Integer 1/2; AccountPassword: String(255) chứa BCrypt hash |
-| Category | CategoryID: Long identity; CategoryName: String(100); CategoryDescription: String(1000), tùy chọn; ParentCategoryID: FK Category nullable; IsActive: Integer 0/1 |
-| NewsArticle | NewsArticleID: Long identity; NewsTitle: String(200); Headline: String(300); CreatedDate: LocalDateTime; NewsContent: Unicode large text; NewsSource: String(500), tùy chọn; CategoryID: FK bắt buộc; NewsStatus: Integer 0/1; CreatedByID: FK bắt buộc; UpdatedByID: FK nullable; ModifiedDate: LocalDateTime nullable |
-| Tag | TagID: Long identity; TagName: String(100); Note: String(500), tùy chọn |
-| NewsTag | NewsArticleID và TagID: khóa ghép, đồng thời FK; unique TagID dự kiến theo DEC-01 |
+| React Page | Ghép UI, giữ keyword/selected item/dialog/loading; nhận kết quả API |
+| Form dialog | Controlled inputs, local error, submit dữ liệu đã validate |
+| axios client | URL, HTTP method, bearer token và xử lý lỗi response |
+| Controller | Nhận DTO, Jakarta Validation, trả đúng HTTP status |
+| Service | Nghiệp vụ, principal/quyền theo dữ liệu, mapping DTO và transaction |
+| Repository / Entity | Truy vấn và mapping bảng/quan hệ bằng JPA |
+| Exception handler | Response lỗi thống nhất, không lộ stacktrace hoặc secret |
 
-Mapping dự kiến:
+Dùng constructor injection. Controller không gọi repository trực tiếp; không trả entity/password hash ra API. Đặt package dưới root `fpt.edu.a2phantuanthanh_se1910` để Spring quét component/entity.
 
-- `NewsArticle.category`: `@ManyToOne`, một bài thuộc đúng một category.
-- `NewsArticle.createdBy`: `@ManyToOne` tới SystemAccount. CreatedByID lấy từ principal Staff tại lúc tạo; FE không được đặt field này.
-- `NewsArticle.updatedBy`: `@ManyToOne`, lấy từ principal khi sửa; không cho payload giả mạo.
-- `Category.parentCategory`: self-reference `@ManyToOne`, nullable. Chặn self-parent và vòng lặp nhiều cấp.
-- `NewsTag`: entity nối với embedded key; mapping tới NewsArticle và Tag. Tạm giữ unique TagID, chờ chốt DEC-01. Không tự chuyển thành many-to-many tái sử dụng tag trái với phần chữ.
-- Dùng lazy loading cho quan hệ; chuyển entity sang response DTO trong service/transaction để tránh vòng lặp JSON và lộ password.
-- Không cascade REMOVE từ account/category tới bài. Khi xóa bài chỉ xóa liên kết NewsTag; Tag không còn dùng có thể tồn tại với 0 bài theo đề.
+## 4. Cấu trúc code dự kiến
 
-SQL Server instance và database rỗng phải sẵn sàng để kết nối. Ở profile phát triển, JPA/Hibernate sinh cấu trúc bảng từ entity; cấu hình `ddl-auto` tường minh. Dự kiến `update` cho DB demo và `validate` khi xác minh schema đã ổn định. Không dùng `create-drop` với dữ liệu cần giữ. Chụp minh chứng trên database rỗng để chứng minh schema do JPA tạo. [Spring Boot 3.5: Database Initialization](https://docs.spring.io/spring-boot/3.5/how-to/data-initialization.html).
+```text
+src/main/java/fpt/edu/a2phantuanthanh_se1910/
+  A2PhanTuanThanhSe1910Application.java
+  controller/
+  service/impl/
+  repository/
+  entity/
+  dto/request/
+  dto/response/
+  mapper/
+  security/
+  config/
+  exception/
+  bootstrap/
+frontend/A2PhanTuanThanh_SE1910/src/
+  api/
+  auth/
+  pages/
+  components/
+  routes/
+```
 
-## 3. Quy tắc nghiệp vụ ở service
+Frontend là project riêng trong cùng repo; package npm dự kiến `a2phantuanthanh-se1910`. Security/JWT sẽ thêm ở M3. Các thư mục nghiệp vụ chưa được tạo trong M1.
 
-| Service | Quy tắc quan trọng |
+Component tree mức khái niệm:
+
+```text
+BrowserRouter → AuthProvider → App/Routes
+  PublicNewsPage / PublicNewsDetailPage / LoginPage
+  ProtectedRoute (kiểm tra role)
+    ManagementLayout → Header / Menu / Outlet
+      AccountsPage (Admin)
+      CategoriesPage / NewsPage / ProfilePage / HistoryPage (Staff)
+```
+
+## 5. Data model và persistence
+
+Giữ tên bảng/cột theo PDF. Các kiểu/giới hạn là đề xuất DEC-02, không phải thông số đề đã quy định.
+
+| Entity | Các trường |
 |---|---|
-| AccountService | Admin CRUD/search; email trim/chuẩn hóa nhất quán và unique; không trả password/hash; `existsByCreatedBy...` chặn delete cho mọi news status |
-| CategoryService | Staff CRUD/search; kiểm tra parent tồn tại/không chu kỳ; `existsByCategory...` chặn delete cho mọi news status |
-| NewsArticleService | Staff CRUD/search; kiểm tra category/tag hợp lệ; server gán creator/updater/date; lưu bài và links trong một transaction |
-| ProfileService | Dựa vào principal thay vì ID tùy ý; DTO chỉ cho sửa tên/email/password; role và ID không được thay đổi |
-| AuthService | Đăng nhập bằng email/password; BCrypt verify; trả token và thông tin role; thông báo lỗi đăng nhập không tiết lộ password |
-| PublicNewsService | List/detail chỉ NewsStatus=1; bài inactive hoặc không tồn tại trả 404 ở detail |
+| SystemAccount | AccountID, AccountName, AccountEmail, AccountRole, AccountPassword |
+| Category | CategoryID, CategoryName, CategoryDescription, ParentCategoryID, IsActive |
+| NewsArticle | NewsArticleID, NewsTitle, Headline, CreatedDate, NewsContent, NewsSource, CategoryID, NewsStatus, CreatedByID, UpdatedByID, ModifiedDate |
+| Tag | TagID, TagName, Note |
+| NewsTag | NewsArticleID, TagID |
 
-Account chưa tạo bài nhưng xuất hiện trong UpdatedByID được xử lý theo DEC-06; category có con nhưng chưa được bài dùng theo DEC-05. Database FK/unique là lớp bảo vệ cuối cùng cho truy cập đồng thời; chuyển lỗi xung đột constraint thành 409 thay vì để 500. Service check đơn lẻ không thay thế constraint.
+| Dữ liệu | Kiểu/giới hạn dự kiến |
+|---|---|
+| ID | Long identity; NewsTag dùng khóa ghép hai FK |
+| Tên account/category/tag | String, tối đa 100 ký tự |
+| Email / password hash | Email tối đa 254, unique sau chuẩn hóa; BCrypt hash tối đa 255 |
+| Role / status | Integer; role 1/2, NewsStatus và IsActive 0/1 |
+| Title / headline / content | String tối đa 200 / 300 / 20.000; content dùng Unicode large text |
+| Description / source / note | Tối đa 1000 / 500 / 500; có thể trống |
+| CreatedDate / ModifiedDate | LocalDateTime theo quy ước UTC; ModifiedDate ban đầu null |
 
-History là query `CreatedByID = principal.accountId`, không lấy ID người khác từ request. Staff quản lý news chung theo ma trận quyền; chức năng history chỉ hiển thị news của mình.
+Quan hệ:
 
-## 4. API dự kiến và quyền
+- NewsArticle `@ManyToOne` tới Category và creator; updater nullable. Creator/updater/time do server gán; sửa bài giữ nguyên creator/ngày tạo.
+- Category có parent nullable; chặn self-parent và vòng lặp.
+- NewsTag nối bài/tag bằng embedded key. Dự kiến unique TagID theo DEC-01, cần chốt trước mapping.
+- Dùng lazy loading và map DTO trong service/transaction.
 
-Tất cả route sau là hợp đồng đề xuất, **chưa tồn tại trong code**. ID trên path là số nguyên dương. `q` là query search đã trim; giới hạn độ dài 200 ký tự là lựa chọn triển khai.
+M2 dự kiến cho JPA tạo bảng/FK trên DB rỗng; `ddl-auto=update` khi phát triển và `validate` khi kiểm tra schema ổn định. Script tạo database đã có, nhưng cách hiểu “JPA create database” vẫn theo DEC-03. SQL Server là nguồn dữ liệu chính; không duy trì localStorage như nguồn CRUD thứ hai.
 
-| Method/route | Quyền | Mục đích |
+## 6. State ownership và API
+
+| State | Owner | Lý do |
 |---|---|---|
-| POST `/api/auth/login` | Public | Đăng nhập email/password |
-| GET `/api/public/news?q=` | Public | List/search tin active |
-| GET `/api/public/news/{id}` | Public | Chi tiết tin active |
-| GET `/api/accounts?q=`; GET `/api/accounts/{id}` | Admin | Read/search account |
-| POST `/api/accounts`; PUT `/api/accounts/{id}`; DELETE `/api/accounts/{id}` | Admin | Create/update/delete account |
-| GET `/api/categories?q=`; GET `/api/categories/{id}` | Staff | Read/search category |
-| POST `/api/categories`; PUT `/api/categories/{id}`; DELETE `/api/categories/{id}` | Staff | Create/update/delete category |
-| GET `/api/news?q=`; GET `/api/news/{id}` | Staff | Read/search cả hai trạng thái |
-| POST `/api/news`; PUT `/api/news/{id}`; DELETE `/api/news/{id}` | Staff | Quản lý bài và tags trong cùng payload |
-| GET `/api/tags?q=` | Staff | Tag lookup cho form, trả tag chưa gắn hoặc thuộc bài đang sửa |
-| GET `/api/profile`; PUT `/api/profile` | Staff | Hồ sơ hiện tại |
-| GET `/api/profile/news?q=` | Staff | Lịch sử bài của mình |
+| Token/current account | AuthProvider | Header, route và request được bảo vệ |
+| Danh sách/kết quả API, keyword, selected item, dialog, loading | Page tương ứng | Phục vụ một module, chưa cần Context dữ liệu toàn ứng dụng |
+| Form input/error | Form dialog | Gắn với vòng đời form, là bản copy khi Edit |
 
-Quản lý tags nằm trong dialog bài viết: thêm tag mới, sửa tên/note của tag thuộc bài, gắn tag chưa thuộc bài và bỏ gắn tag. Theo DEC-01, tag thuộc bài khác phải bị từ chối ở BE kể cả bị gửi thủ công. Payload cần phân biệt tag có `id` với tag mới, loại duplicate ID, kiểm tra quyền sửa tag trong cùng transaction. Không bắt buộc một màn CRUD tag độc lập.
+Search gửi `q` tới backend; clear keyword tải danh sách đầy đủ trong phạm vi có quyền. Không mutate props/state trực tiếp; không lấy bộ lọc trên FE thay cho kiểm tra quyền ở BE.
 
-HTTP: GET/update 200, create 201 với Location, delete 204; validation 400; thiếu/sai/hết hạn xác thực 401; sai role 403; không tìm thấy 404; delete bị chặn hoặc trùng email/tag conflict 409. `RestControllerAdvice` trả lỗi thống nhất gồm `status`, `code`, `message`, `fieldErrors`, `path`, `timestamp`. Không trả stacktrace, token, password hoặc hash.
+| Route dự kiến | Thao tác | Quyền |
+|---|---|---|
+| `/api/auth/login` | POST login email/password | Public |
+| `/api/public/news`, `/api/public/news/{id}` | GET list/search (`?q=`) và detail, NewsStatus = 1 | Public |
+| `/api/accounts`, `/api/accounts/{id}` | GET list/search/detail; POST tạo; PUT sửa; DELETE xóa | Admin |
+| `/api/categories`, `/api/categories/{id}` | GET list/search/detail; POST tạo; PUT sửa; DELETE xóa | Staff |
+| `/api/news`, `/api/news/{id}` | GET list/search/detail; POST/PUT lưu bài kèm tags; DELETE xóa | Staff |
+| `/api/tags?q=` | GET tag tự do hoặc thuộc bài đang sửa | Staff |
+| `/api/profile` | GET/PUT hồ sơ account đang đăng nhập | Staff |
+| `/api/profile/news?q=` | GET history theo principal | Staff |
 
-JWT: khóa ký qua biến môi trường, expiration hữu hạn; request axios gửi bearer token. BE tra trạng thái/role hiện tại của account khi xác thực để việc đổi role hoặc xóa account không để token cũ tiếp tục có quyền. FE xóa phiên khi logout hoặc nhận 401. CORS chỉ cho origin FE đã cấu hình. Chi tiết thư viện/thời hạn sẽ được ghi khi triển khai và có test; chưa có token implementation hiện tại.
+POST tạo trên collection; PUT/DELETE trên route có ID. HTTP: đọc/sửa 200, tạo 201 kèm Location, xóa 204; validation 400, auth 401, sai quyền 403, không thấy 404, xung đột 409. Lỗi trả `status`, `code`, `message`, `fieldErrors`, `path`, `timestamp`.
 
-## 5. Validation dự kiến cho toàn bộ dữ liệu đầu vào
+## 7. Authentication và quyền
 
-| Nhóm field | Quy tắc dự kiến |
+- Dự kiến Spring Security + JWT bearer, BCrypt; khóa ký qua môi trường, token có hạn.
+- BE kiểm tra account/role hiện tại để đổi role/xóa account làm mất quyền cũ.
+- Axios gửi token; logout hoặc 401 xóa phiên FE; chỉ cho CORS origin được cấu hình.
+- Admin quản lý account; Staff quản lý category/news, hồ sơ và history của mình. Admin không mặc định có quyền Staff.
+- History query CreatedByID từ principal, gồm active/inactive. Profile chỉ sửa tên/email/password, không nhận ID người khác hoặc role.
+- Public lọc NewsStatus ở BE; detail inactive/không tồn tại trả 404. Không trả password/hash/stacktrace.
+
+## 8. CRUD dialog và delete policy
+
+```text
+Add/Edit → popup rỗng/prefill → validate → axios POST/PUT
+         → BE kiểm tra và lưu → response → close/reset + reload list
+Delete → ConfirmDialog → Cancel: close; Confirm: axios DELETE → reload list
+```
+
+| Thao tác | Policy |
 |---|---|
-| ID/path/FK | Số nguyên dương; route không nhận chữ; FK tồn tại; ID entity mới do DB sinh |
-| AccountName, CategoryName, TagName | Trim, không blank, tối đa theo schema |
-| AccountEmail | Không blank, format email, tối đa 254; unique sau chuẩn hóa |
-| Password tạo/login/đổi | Không blank khi bắt buộc; tạo/đổi áp dụng chính sách thống nhất; tối đa 72 byte UTF-8 cho BCrypt; không trim password; sửa account không gửi password thì giữ hash cũ |
-| AccountRole | Chỉ 1 hoặc 2; chỉ Admin được đặt qua account API |
-| IsActive, NewsStatus | Integer 0 hoặc 1, không null; từ chối giá trị ngoài miền và kiểu sai |
-| NewsTitle, Headline, NewsContent | Không blank; title≤200, headline≤300; content dự kiến≤20.000 ký tự; đồng bộ max với UI |
-| Description, Source, Note | Có thể trống; giới hạn 1000/500/500; NewsSource không bắt buộc URL vì đề không nói vậy |
-| ParentCategoryID | Null hoặc ID tồn tại; không tự tham chiếu/chu kỳ |
-| CreatedByID, UpdatedByID, CreatedDate, ModifiedDate | Server quản lý, không nhận trong DTO ghi; trả thời gian theo quy ước UTC rõ ràng |
-| Tags collection | ID không lặp; tag mới validate tên/note; ownership/cardinality theo DEC-01; đề chưa quy định số tag tối thiểu nên tạm cho phép 0 |
-| Query search | String trim, giới hạn 200; giá trị rỗng tương đương không lọc; dùng parameter binding |
+| Lưu bài/tags | Một transaction; kiểm tra category/tag, ID không lặp; tag lỗi rollback cả bài |
+| Quản lý tag trong news dialog | Thêm tag mới, sửa name/note, gắn tag tự do và bỏ gắn; tag bài khác bị chặn theo DEC-01 |
+| Xóa account đã tạo bài | Chặn cho cả bài active/inactive; không cascade xóa bài |
+| Xóa category đang có bài | Chặn cho cả hai status; không cascade xóa bài |
+| Category có con / account chỉ có updater reference | Theo DEC-05/06 trong requirements |
+| Xóa news | Xóa bài và links NewsTag, giữ account/category/Tag; tag có thể thuộc 0 bài |
 
-Độ dài password tối thiểu dự kiến 8 ký tự cho tạo/đổi, không áp đặt lên login của tài khoản có sẵn. Validate BE bằng Jakarta Validation, custom rule và service; FE dùng cùng quy tắc để phản hồi sớm. Test cả JSON sai kiểu và numeric coercion để không vô tình nhận `1.5` thành `1`.
+FK/unique bảo vệ dữ liệu khi request đồng thời; chuyển constraint conflict thành 409. UI hiển thị lý do, giữ form khi lỗi, chặn submit kép. Quan hệ được BE kiểm tra lại dù FE đã validate.
 
-## 6. React và tương tác
+## 9. Validation strategy
 
-- Các page quản lý có list, search và nút mở create/update dialog. Có loading, empty, error; form không đóng khi BE trả lỗi.
-- Shared `ConfirmDialog` cho mọi thao tác delete. Cancel chỉ đóng dialog; Confirm mới gọi axios DELETE; 409 hiển thị lý do từ BE.
-- Form news chọn category/status và sửa tags; creator/date không phải input sửa được.
-- Sau mutation thành công, tải lại danh sách/chi tiết liên quan để chứng minh trạng thái đồng bộ với DB. Chặn double submit trong lúc request đang chạy.
-- Public page dùng public API; protected route giúp UX, quyền thực tế vẫn do BE kiểm tra.
+- ID là số nguyên dương, FK tồn tại; role/status đúng miền. Chặn JSON sai kiểu hoặc số thập phân cho integer.
+- Tên/email/title/headline/content không blank; text được trim phù hợp và giới hạn theo bảng dữ liệu. Email đúng format và unique.
+- Tạo/đổi password dự kiến tối thiểu 8 ký tự, tối đa 72 byte UTF-8; không trim. Sửa không gửi password thì giữ hash cũ; login không áp chính sách tối thiểu mới lên account có sẵn.
+- Query search trim, tối đa 200 ký tự; dùng parameter binding. NewsSource không bắt buộc URL vì đề không quy định.
+- Parent không tự tham chiếu/chu kỳ; tags có thể rỗng theo cách hiểu hiện tại, ID không trùng và field tag mới được validate.
+- Audit fields chỉ do server quản lý, không có trong DTO ghi. Thông báo theo field, form không đóng nếu chưa hợp lệ.
 
-## 7. Chưa chốt/chưa kiểm chứng
+## 10. Definition of Done
 
-DEC-01 và DEC-03 cần làm rõ; Boot đã khóa 3.5.16, JWT library chưa chọn. SQL Server connectivity đã kiểm chứng ở M1; mapping JPA nghiệp vụ, sinh schema, token, DTO, route và React chưa triển khai. Chưa xác nhận thao tác IntelliJ của sinh viên. Mọi thay đổi thiết kế sau đó phải cập nhật requirements, test matrix và code-flow trong cùng nhịp triển khai.
+Một tính năng xong khi đúng yêu cầu, có normal/negative test, FE/BE/DB nhất quán nếu có UI, docs/evidence được cập nhật và sinh viên giải thích được Purpose → Input → Trigger → Transform → Output. Các mốc triển khai và commit ở [development-plan](development-plan.md).
+
+Tham khảo: [Spring Boot code structure](https://docs.spring.io/spring-boot/3.5/reference/using/structuring-your-code.html), [JPA initialization](https://docs.spring.io/spring-boot/3.5/how-to/data-initialization.html).

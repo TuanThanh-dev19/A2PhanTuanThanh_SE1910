@@ -1,63 +1,30 @@
-# Nhật ký sử dụng AI
+Author: Phan Tuan Thanh - CE190595
 
-Mục đích: ghi minh bạch AI đã hỗ trợ gì, đầu ra nào được dùng, ai đã kiểm tra và phần nào sinh viên còn phải tự xác minh. Nhật ký này không thay thế việc sinh viên hiểu, chạy và giải thích code.
+# FUNewsManagementSystem - AI Usage Log
 
-## AI-001: Phân tích đề, thiết kế và lập kế hoạch
+Tài liệu ghi cách dùng AI, phần đã áp dụng và cách kiểm chứng. Sinh viên vẫn chịu trách nhiệm đọc, hiểu, chạy thử và giải thích code trước khi nộp.
 
-| Thuộc tính | Ghi nhận thực tế |
+| # | Prompt/Mục đích | Gợi ý hoặc phần AI hỗ trợ | Cách kiểm chứng | Phần sinh viên cần hiểu/chỉnh sửa |
+|---|---|---|---|---|
+| 1 / AI-001 | Đọc Assignment 02, phân tích yêu cầu và tiến trình Git | Requirement matrix, thiết kế, milestone, code-flow, test/evidence và nhật ký | Đọc đủ 5 trang PDF; kiểm tra source/Git/account; context test baseline 1 pass | Chốt DEC-01/03; phân biệt yêu cầu đề với lựa chọn thiết kế |
+| 2 / AI-002 | Triển khai nền tảng M1 | Boot 3, dependency, datasource, JDBC test, script DB, mẫu môi trường và docs | AI/tool chạy `clean verify`: 2 pass; JAR/Tomcat chạy; SQL session đúng DB, TCP/NTLM/mã hóa, 0 bảng | Giải thích cấu hình và JDBC test; tự chạy IntelliJ/build; sinh viên đã chọn Windows Authentication trong chat |
+| 3 / AI-003 | Đơn giản hóa docs đang quá phức tạp | Rút gọn README/docs, bỏ phần lặp và hướng dẫn Git đã cũ, cập nhật SHA M1 | Kiểm tra link, giữ REQ/DEC/test ID; checksum xác nhận code và evidence không đổi | Đọc lại nội dung rút gọn; xác nhận vẫn đủ để trình bày |
+| 4 / AI-004 | Cập nhật docs theo hình thức/hướng của Assignment 01 | Đồng bộ tiêu đề/mục; code-flow theo Purpose → Input → Trigger → Transform → Output; bảng AI/debug; test có Steps/Expected/Actual; evidence index | Đối chiếu bộ docs tham chiếu, code/Git hiện tại, link/ID và checksum; thay đổi chỉ ở tài liệu | Hiểu khác biệt A1 mock storage và A2 API/SQL; review bản docs mới |
+| 5 / AI-005 | Xác định bước tiếp theo và thêm tên tác giả đầu file | Ghi quy ước trong AGENTS.md; thêm author header vào source/config/SQL/docs; xác định M2 là persistence | Kiểm tra header, cú pháp XML, liên kết và diff; đối chiếu checksum để giữ nguyên evidence/Wrapper | Review thay đổi; M2 và DEC-01/03 vẫn chưa được triển khai/chốt |
+| 6 / AI-006 | Quy ước code dễ hiểu, tường minh, tránh phức tạp không cần thiết | Bổ sung quy tắc tên/method, control flow, mapping, abstraction và React state trong AGENTS.md; đồng bộ design và bước review | Kiểm tra header, liên kết và diff; chỉ thay đổi hướng dẫn | Áp dụng khi làm M2 trở đi; giải thích được lý do nếu chọn cách làm phức tạp hơn |
+
+## Phạm vi và minh chứng
+
+| Mục | Ghi nhận |
 |---|---|
-| Ngày | 28/10/2026, UTC+07:00 |
-| Công cụ | Codex trong phiên làm việc cùng sinh viên |
-| Yêu cầu của sinh viên | Đọc PDF; phân tích yêu cầu/quy trình; đáp ứng C2 tiến trình cá nhân và Git; đủ docs theo ảnh; code/tài liệu/commit tương ứng; tuân thủ Spring Boot SBA301 |
-| Đầu vào | PDF 5 trang, ảnh cấu trúc docs, tiêu chí C2 được trích trong chat và skeleton ở workspace |
-| AI thực hiện | Trích xuất và xem đủ trang PDF; đọc source/POM; kiểm tra Git local và GitHub profile kết nối; chạy test skeleton; lập baseline requirements/design/flows/test plan/Git plan |
-| Đầu ra đã ghi | README, sáu file docs theo ảnh, development-plan, evidence baseline và quy ước evidence |
-| Phát hiện | POM Boot 4.1.2 khác yêu cầu Boot 3; chưa có Git repo; mâu thuẫn cardinality tag; chưa có chức năng nghiệp vụ/React/SQL datasource |
-| Kiểm chứng bởi công cụ | Test Maven thật: 1 pass; đối chiếu source và PDF; profile GitHub có email khớp Git config; kiểm tra liên kết/file docs và mã yêu cầu/test |
-| Nguồn kỹ thuật tham khảo | Spring Boot 3.5 docs về cấu trúc package và khởi tạo database; GitHub Docs về author email; liên kết trong design/development-plan |
-| Phạm vi chấp nhận hiện tại | Dùng làm baseline phân tích và thiết kế dự kiến; chưa có xác nhận của sinh viên/giảng viên về DEC-01/03 |
-| Không có bằng chứng đã làm | Sinh viên tự chạy test/demo; sinh viên tự viết nghiệp vụ; SQL Server integration; frontend; commit/push; nghiệm thu chức năng |
-| Code được AI sửa trong phiên | Không sửa Java, POM hoặc cấu hình ứng dụng; chỉ tạo tài liệu/minh chứng |
-| Việc sinh viên cần kiểm tra tiếp | Đọc từng REQ/DEC; xác nhận với giảng viên các điểm mơ hồ; tự chạy skeleton; thiết lập repo cá nhân; tự giải thích và thực hiện các mốc tiếp theo |
-| Commit | Chưa có Git repository/commit; không ghi SHA giả |
+| Công cụ / ngày | Codex và terminal; 28/10/2026, UTC+07:00 |
+| Baseline | Khảo sát lúc chưa có Git; skeleton/docs được lưu sau đó ở `6a26a99`. [Evidence](evidence/2026-10-28-baseline/inspection.md) |
+| M1 | Commit `db2e8e6`; test chạy trên base `6a26a99` + working tree. [Evidence](evidence/2026-10-28-m1/inspection.md) |
+| Quyết định sinh viên đã xác nhận | Dùng Windows Authentication cho SQL Server; AI/tool tạo DB rỗng và tải DLL vào thư mục tmp bị ignore |
+| Chưa có bằng chứng sinh viên tự làm | Chạy IntelliJ/build/demo và giải thích code; không chuyển kết quả AI/tool thành xác nhận sinh viên đã chạy |
+| Chưa kiểm chứng ở M1 | SQL login, TLS chứng chỉ tin cậy, checkout máy khác; entity/CRUD/auth/React; DEC-01/03 chưa chốt |
+| Các lần chỉnh docs/header 3–6 | Chưa tạo commit; không chạy lại test ứng dụng; giữ log/evidence lịch sử. Phiên 5 chỉ thêm comment tác giả vào source/config, phiên 6 bổ sung quy ước code |
 
-## AI-002: Triển khai nền tảng M1
+## Cách ghi các lần tiếp theo
 
-| Thuộc tính | Ghi nhận thực tế |
-|---|---|
-| Ngày / công cụ | 28/10/2026, UTC+07:00; Codex và terminal tools |
-| Yêu cầu sinh viên | Triển khai M1 từ baseline 6a26a99; Boot 3/JDK 21, Web/JPA/Validation/JDBC, DB đúng tên, config môi trường, kết nối SQL thật, docs/evidence và commit; chưa push/nghiệp vụ |
-| Đầu vào đã đọc | AGENTS do chat cung cấp (Postman CLI); không thấy AGENTS.md trên đĩa ở repo/ancestor đã kiểm tra; README, toàn bộ docs/evidence, Java/POM/config, Git thực tế |
-| Quyết định có sinh viên trả lời | Sau kiểm tra SQL2022/Windows auth hoạt động và thiếu cấu hình JDBC, AI hỏi phương thức auth. Sinh viên chọn **Windows Authentication hiện tại**; không đoán username/password SQL |
-| AI sửa/tạo | POM 3.5.16 và dependencies; application.properties; test context + JDBC assertions; .gitignore, .env.example; scripts/create-database.sql; README, requirements, design, code-flow, development-plan, test-matrix, debug-log, AI log và evidence M1 |
-| Thao tác máy/DB | Khảo sát instance/TCP/listener; tạo DB rỗng đúng tên bằng Windows identity; tải native DLL 12.10.2 x64 từ Microsoft GitHub vào tmp bị ignore, kiểm tra chữ ký Valid; không commit DLL/secret |
-| Nguồn kiểm tra | Spring Boot 3.5 system requirements/release notes; Microsoft JDBC connection URL/native DLL và release notes 12.10.2 (liên kết ở README/design/evidence) |
-| AI/tool đã chạy | `mvnw -version`, dependency tree, `mvnw -B clean verify` (2 pass), `java -jar ... --server.port=0`, HTTP GET / = 404 expected; SQL metadata đối chiếu PID Java, DB đúng tên, TCP/NTLM/encrypt TRUE, 0 bảng nghiệp vụ; review diff/secret/baseline checks trước commit |
-| Phạm vi kết quả | DBG-001 VERIFIED do build/runtime Boot 3 thật; nền tảng CLI/SQL pass. Giữ nguyên baseline Boot 4, AI-001 và khảo sát ban đầu; không dùng report cũ làm evidence mới |
-| Sinh viên tự thực hiện / chưa có evidence | Đã lựa chọn auth trong chat. **Chưa có bằng chứng sinh viên tự chạy build, IntelliJ, demo hoặc giải thích diff**; TC-SETUP-03 NOT RUN, M1 còn điều kiện này |
-| Chưa kiểm chứng | SQL login, TLS với chứng chỉ tin cậy, graceful shutdown, checkout sạch trên máy khác; toàn bộ schema JPA nghiệp vụ/CRUD/auth/React. DEC-01/03 chưa chốt |
-| Evidence / commit | [M1 inspection](evidence/2026-10-28-m1/inspection.md), manifest/logs cùng thư mục; tests chạy trên base `6a26a99` + file thay đổi, không giả là checkout sạch. Thuộc **cùng commit này**: `fix: align backend with Spring Boot 3 assignment requirement`; chưa push |
-
-## Nguyên tắc cập nhật
-
-- Mỗi lần AI hỗ trợ code, ghi module/file liên quan, yêu cầu đã hỏi, đề xuất dùng/không dùng và lý do.
-- Ghi riêng “AI/tool chạy” và “sinh viên tự chạy”. Không chuyển tự động kết quả của AI thành bằng chứng sinh viên đã hiểu.
-- Khi sửa gợi ý của AI, ghi vấn đề, cách sửa và test chứng minh; liên kết debug-log nếu có lỗi thật.
-- Không đưa mật khẩu, token, cookie hoặc chuỗi kết nối có secret vào prompt được lưu trong repo.
-- Tên commit/author phải phản ánh workflow thật; AI log bổ sung minh bạch về hỗ trợ, không tạo một lịch sử phát triển khác với code.
-
-## Mẫu cho lần sử dụng tiếp theo
-
-```text
-AI-ID / thời gian:
-Mục tiêu và REQ liên quan:
-Prompt hoặc tóm tắt yêu cầu:
-AI gợi ý hoặc tạo phần nào:
-File và diff đã dùng:
-Phần không dùng / đã sửa và lý do:
-Kiểm chứng do AI/tool thực hiện:
-Kiểm chứng sinh viên tự thực hiện:
-Kết quả và evidence:
-Điểm chưa hiểu/chưa kiểm chứng:
-Commit thực tế:
-```
+Thêm một hàng với mục đích, phần AI hỗ trợ, kết quả đã kiểm tra và phần sinh viên cần hiểu. Ghi rõ gợi ý đã sửa/bỏ và lý do; liên kết debug-log nếu AI tạo lỗi. Không lưu secret hoặc tự ghi sinh viên đã chạy/hiểu khi chưa có xác nhận.

@@ -1,3 +1,5 @@
+-- Author: Phan Tuan Thanh - CE190595
+
 -- Run using an authorized SQL Server identity; leaves an existing database intact.
 USE [master];
 GO

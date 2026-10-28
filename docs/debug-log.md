@@ -1,52 +1,20 @@
-# Nhật ký lỗi và vấn đề thực tế
+Author: Phan Tuan Thanh - CE190595
 
-Không ghi lỗi giả để tạo commit sửa lỗi. Mỗi mục chỉ ghi điều đã quan sát; giả thuyết phải được phân biệt với nguyên nhân đã kiểm chứng. Các rủi ro chưa xảy ra thuộc design/test-matrix, không phải bug đã phát hiện.
+# FUNewsManagementSystem - Debug Log
 
-## DBG-001: Sai major version Spring Boot so với đề
+Tài liệu ghi lỗi thật, nguyên nhân, cách sửa và kết quả kiểm tra lại. Không tạo lỗi để tăng số commit.
 
-| Thuộc tính | Ghi nhận |
-|---|---|
-| Ngày phát hiện | 28/10/2026 |
-| Trạng thái | **VERIFIED** ngày 28/10/2026 bằng AI/tool, phạm vi sai major version |
-| Liên quan | REQ-02, M1, TC-SETUP-01 |
-| Cách tái hiện | Mở `pom.xml`, kiểm tra version của spring-boot-starter-parent; chạy `./mvnw.cmd test` |
-| Expected | Spring Boot 3 theo PDF tr.1,2,5 |
-| Actual lúc phát hiện | POM và log test dùng Spring Boot 4.1.2; test context vẫn thành công |
-| Nguyên nhân đã xác định | Skeleton lúc phát hiện khai báo parent 4.1.2. Chưa biết vì sao lúc tạo project đã chọn version này |
-| Tác động | Build pass nhưng không đáp ứng ràng buộc công nghệ của assignment |
-| Cách sửa đã thực hiện | Parent 3.5.16, Java 21; Web/JPA/Validation/JDBC do Boot quản lý; SQL datasource qua biến môi trường, DB đúng tên |
-| Đã sửa? | Có; không thêm nghiệp vụ. Baseline Boot 4 được giữ nguyên để đối chiếu |
-| Retest | `mvnw -B clean verify` kết thúc 14:09:48 +07:00, exit 0; Boot 3.5.16, 2 tests, 0 failures/errors/skipped. JAR chạy Tomcat và session JDBC thật tới SQL Server được xác nhận tiếp lúc 14:10 +07:00 |
-| Evidence | [Baseline inspection](evidence/2026-10-28-baseline/inspection.md), [M1 inspection](evidence/2026-10-28-m1/inspection.md), [build](evidence/2026-10-28-m1/build-test.txt), [runtime](evidence/2026-10-28-m1/application-start.txt) |
-| Commit | Base `6a26a99` + working tree khi test; sửa lỗi và evidence thuộc **cùng commit này** (`fix: align backend with Spring Boot 3 assignment requirement`) |
+| Ngày | Milestone / ID | Hiện tượng | Nguyên nhân | Cách sửa | Kiểm chứng |
+|---|---|---|---|---|---|
+| 2026-10-28 | M1 / DBG-001 | POM/test chạy Boot 4.1.2 trong khi đề yêu cầu Boot 3 | Parent version trong skeleton là 4.1.2; chưa rõ lý do chọn lúc tạo | Đổi Boot 3.5.16/JDK 21, thêm Web/JPA/Validation/JDBC và cấu hình datasource | **VERIFIED** bởi AI/tool: `clean verify` lúc 14:09:48 +07:00 có 2 tests pass; JAR chạy Boot 3 và kết nối SQL thật. Commit `db2e8e6`; [evidence M1](evidence/2026-10-28-m1/inspection.md) |
+| 2026-10-28 | Baseline, M1 / OBS-001 | Timeout metadata apache.snapshots, cảnh báo Mockito agent/JVM CDS; một số metadata Hibernate unknown | Timeout được quan sát; chưa điều tra nguyên nhân mạng/tooling đầy đủ | Chưa sửa; tiếp tục theo dõi nếu ảnh hưởng chạy/test | Hai build vẫn thành công; JDBC assertions và SQL session xác nhận kết nối. [Build M1](evidence/2026-10-28-m1/build-test.txt) |
 
-VERIFIED ở đây chỉ đóng lỗi version; không đồng nghĩa M1 đã đủ điều kiện IntelliJ. TC-SETUP-03 còn NOT RUN, sinh viên chưa cung cấp bằng chứng tự chạy IDE.
+DBG-001 chỉ đóng lỗi major version. M1 vẫn thiếu minh chứng sinh viên chạy IntelliJ. Trạng thái baseline trước sửa xem [baseline inspection](evidence/2026-10-28-baseline/inspection.md).
 
-## OBS-001: Cảnh báo mạng và test tooling khi chạy baseline
+## Cách bổ sung
 
-- **Thời điểm:** lần chạy kết thúc 28/10/2026 13:37:48 +07:00.
-- **Quan sát:** Maven cảnh báo timeout metadata từ `repository.apache.org/snapshots`; sau đó tiếp tục và kết thúc BUILD SUCCESS. Mockito cảnh báo tự attach Java agent; JVM cũng có cảnh báo dynamic agent/CDS.
-- **Ảnh hưởng quan sát:** không làm thất bại lần chạy này; 1 test pass, 0 skipped. Chưa có bằng chứng đây là lỗi ứng dụng.
-- **Trạng thái:** ghi nhận, chưa thay cấu hình để xử lý. Chỉ điều tra thêm nếu cảnh báo gây lỗi/chậm lặp lại hoặc ảnh hưởng chạy lại trong môi trường bàn giao.
-- **Không kết luận:** không ghi “đã fix dependency/network” khi chưa sửa và chưa xác minh.
+Thêm hàng khi gặp lỗi mới; nêu bước tái hiện/expected/actual, nguyên nhân đã xác định, fix và retest. Nếu cần log dài, liên kết tới thư mục evidence.
 
-Cập nhật M1: timeout metadata `apache.snapshots` lặp lại trong dependency tree/clean verify; Mockito dynamic agent/CDS vẫn cảnh báo. Lần build Boot 3 thành công; chưa sửa cấu hình mạng/test tooling. Xem [build-test.txt](evidence/2026-10-28-m1/build-test.txt). Hibernate log có một số trường pool/driver `undefined/unknown`; không dùng dòng này để kết luận mất kết nối: test JDBC có assertion và SQL metadata xác nhận session thật.
-
-## Mẫu thêm một lỗi thực sự phát sinh
-
-```text
-ID:
-Thời điểm và người/công cụ phát hiện:
-REQ / test ID / code revision:
-Môi trường và dữ liệu đầu vào:
-Các bước tái hiện:
-Expected:
-Actual và evidence:
-Nguyên nhân (đã xác minh hay giả thuyết):
-Thay đổi sửa lỗi:
-Kiểm tra hồi quy và kết quả:
-Commit chứa sửa lỗi:
-Trạng thái: OPEN / FIXED / VERIFIED
-```
-
-`FIXED` nghĩa là đã có thay đổi code, `VERIFIED` nghĩa là đã chạy lại kiểm tra phù hợp và xác nhận hết lỗi. Không đóng bug chỉ dựa vào việc AI nói rằng code đã đúng.
+- **OPEN:** còn lỗi hoặc chưa sửa.
+- **FIXED:** đã có thay đổi code, chưa kiểm tra lại đủ.
+- **VERIFIED:** đã chạy lại và xác nhận hết lỗi.

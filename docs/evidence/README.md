@@ -1,51 +1,60 @@
-# Quy ước lưu minh chứng
+Author: Phan Tuan Thanh - CE190595
 
-Chỉ lưu artifact từ hành động đã thực hiện. File kế hoạch hoặc ảnh UI mockup không phải bằng chứng ứng dụng chạy. Tránh đưa raw token, password, cookie hay connection string có secret vào evidence.
+# FUNewsManagementSystem - Evidence Index
 
-## Baseline hiện có
+Thư mục lưu log/report và ảnh thực tế cho Assignment 02. Bổ sung screenshot khi đã thao tác đúng test case; file đề xuất chưa phải evidence đã có.
 
-- [Ghi nhận khảo sát ngày 28/10/2026](2026-10-28-baseline/inspection.md).
-- [Bản sao báo cáo Surefire gốc](2026-10-28-baseline/context-test.txt).
-- [Manifest checksum nguồn và code baseline](2026-10-28-baseline/manifest.json).
+## Quy tắc đặt tên và ghi nhận
 
-Baseline chỉ chứng minh trạng thái skeleton đã kiểm tra; chưa chứng minh SQL Server, UI, API nghiệp vụ, Git history hay quyền sở hữu remote.
+- Log theo thư mục ngày/milestone; ảnh dùng PNG, video MP4/WebM nếu được yêu cầu.
+- Mỗi lần chạy ghi ngày/môi trường, người chạy, code revision (hoặc base + working tree), test ID, expected/actual và kết quả.
+- Ảnh có ngữ cảnh trang, dữ liệu và kết quả; có thể chứng minh nhiều case nếu quan sát rõ.
+- Không để lộ password, token/cookie; giữ nguyên artifact cũ khi có lần chạy mới.
 
-## M1 đã chạy
+## E01 - Baseline và nền tảng backend
 
-- [Inspection M1](2026-10-28-m1/inspection.md): base 6a26a99 + working tree, môi trường, lệnh và giới hạn.
-- [Build/test Boot 3](2026-10-28-m1/build-test.txt), [Surefire](2026-10-28-m1/context-test.txt), [dependencies](2026-10-28-m1/dependencies.txt).
-- [JAR startup](2026-10-28-m1/application-start.txt), [HTTP smoke](2026-10-28-m1/runtime-smoke.txt), [session SQL Server theo PID Java](2026-10-28-m1/sqlserver-application-session.txt).
-- [Manifest SHA-256](2026-10-28-m1/manifest.json) cố định code/config/test và artifact mới, không ghi mật khẩu.
+| Evidence | Test ID | Vị trí | Trạng thái |
+|---|---|---|---|
+| Baseline Boot 4, một context test | TC-BASE-01 | [inspection](2026-10-28-baseline/inspection.md), [report](2026-10-28-baseline/context-test.txt), [manifest](2026-10-28-baseline/manifest.json) | Có, AI/tool chạy |
+| Boot 3 build/test, hai tests pass | TC-SETUP-01 | [M1 inspection](2026-10-28-m1/inspection.md), [build](2026-10-28-m1/build-test.txt), [manifest](2026-10-28-m1/manifest.json) | Có, AI/tool chạy |
+| SQL Server session và tên DB | TC-SETUP-02-BE-DB, TC-M1-DB, TC-M1-SCHEMA | [SQL session](2026-10-28-m1/sqlserver-application-session.txt) | Có, AI/tool chạy |
+| JAR/Tomcat/HTTP startup | TC-M1-HTTP | [runtime smoke](2026-10-28-m1/runtime-smoke.txt) | Có, AI/tool chạy |
+| `e01-intellij-boot3.png` (đề xuất) | TC-SETUP-03 | Ảnh IDE/main/log Boot 3 và kết nối SQL | Chưa bổ sung |
 
-M1 do AI/tool chạy bằng Windows Authentication theo sinh viên lựa chọn. Chưa có evidence sinh viên chạy IntelliJ, entity/schema/CRUD/auth/React hoặc SQL login. Giữ nguyên toàn bộ thư mục baseline Boot 4.
+M1 chưa có bảng nghiệp vụ. Chi tiết lệnh, môi trường và phạm vi ở inspection; log trên không thay thế minh chứng sinh viên chạy IntelliJ.
 
-## Cấu trúc cho các lần chạy sau
+## E02 - Login, quyền và public news
 
-Mỗi lần chạy dùng thư mục theo ngày và mục đích, ví dụ `YYYY-MM-DD-category-delete/`. Tên thư mục ví dụ này chưa phải evidence đã tồn tại.
+| File đề xuất | Test ID | Nội dung cần chụp | Trạng thái |
+|---|---|---|---|
+| `e02-login-validation.png` | TC-AUTH-02 | Form lỗi khi rỗng/sai credential, không lộ secret | Chưa bổ sung |
+| `e02-login-role.png` | TC-AUTH-01, TC-AUTH-04 | Login hai role, menu/quyền và response 403 đúng | Chưa bổ sung |
+| `e02-public-active.png` | TC-PUB-01, TC-PUB-02 | Khách chỉ xem được active, URL inactive bị từ chối | Chưa bổ sung |
 
-Mỗi thư mục cần ghi:
+## E03 - CRUD và Search
 
-| Trường | Nội dung |
-|---|---|
-| Thời gian | Thời gian thực, timezone rõ ràng |
-| Code | SHA đã test; nếu working tree có sửa, ghi base SHA và file diff/checksum |
-| Phạm vi | REQ và test ID liên quan |
-| Môi trường | Java/Boot/Node, DB instance/test DB phù hợp; không có credential |
-| Dữ liệu | Fixture hoặc bước tạo dữ liệu có thể tái hiện |
-| Thực hiện | Lệnh/API hoặc bước thao tác UI |
-| Kết quả | Expected, actual, PASS/FAIL/BLOCKED; không bỏ lỗi khỏi report |
-| Artifact | Test report, response đã loại secret, screenshot UI/DB hoặc log liên quan |
-| Người xác minh | AI/tool hoặc sinh viên tự thực hiện, ghi đúng thực tế |
+| File đề xuất | Test ID | Nội dung cần chụp | Trạng thái |
+|---|---|---|---|
+| `e03-account-crud-search.png` | TC-ACC-01, TC-ACC-02 | Account Create/Update popup, list và Search | Chưa bổ sung |
+| `e03-account-delete.png` | TC-ACC-03, TC-ACC-04, TC-UI-02 | Confirmation/Cancel, xóa hợp lệ và case có bài bị chặn | Chưa bổ sung |
+| `e03-category-crud-search.png` | TC-CAT-01, TC-CAT-02 | Category popup, list và Search | Chưa bổ sung |
+| `e03-category-delete.png` | TC-CAT-03, TC-CAT-05, TC-UI-02 | Confirmation và rule chặn xóa category có bài | Chưa bổ sung |
+| `e03-news-tags.png` | TC-NEWS-01, TC-NEWS-02 | Popup bài có category/status/tags và kết quả lưu | Chưa bổ sung |
+| `e03-news-delete-search.png` | TC-NEWS-04, TC-NEWS-05, TC-UI-02 | Search, confirmation và bài/links sau xóa | Chưa bổ sung |
+| `e03-profile-history.png` | TC-SELF-01, TC-SELF-03 | Hồ sơ và history riêng của hai Staff | Chưa bổ sung |
 
-## Evidence cần có ở các mốc
+## Evidence tài liệu và kiểm tra trước nộp
 
-- Setup: phiên bản Boot 3 và IntelliJ chạy project.
-- Database: bảng/FK do JPA tạo trên SQL Server; dữ liệu Unicode và tồn tại qua restart.
-- Auth: login hai role, truy cập bị 401/403; không chụp token chưa che.
-- CRUD: thao tác create/read/update/delete/search, kết quả API và dữ liệu lưu thật.
-- Delete guards: account/category có bài active và inactive đều bị chặn.
-- React: popup tạo/sửa, confirmation với Cancel/Confirm, form lỗi và network request axios.
-- Cá nhân: hai Staff có history riêng, profile không tự nâng quyền.
-- Git: owner remote, author attribution, commit graph và diff qua mốc; chỉ lấy sau khi đã có repository thật.
+| Evidence | Vị trí | Trạng thái |
+|---|---|---|
+| E04 - Test matrix | [test-matrix](../test-matrix.md) | Có; mới có kết quả baseline/M1 |
+| E05 - Debug log | [debug-log](../debug-log.md) | Có lỗi version đã sửa và quan sát warning |
+| E06 - Thiết kế và code-flow | [design](../design.md), [code-flow](../code-flow.md) | Có; nghiệp vụ còn dự kiến |
+| E07 - AI usage log | [ai-usage-log](../ai-usage-log.md) | Có |
+| E08 - Git/tiến độ | [development-plan](../development-plan.md) | Có baseline/M1; còn kiểm tra attribution/toàn tiến trình |
+| E09 - Hướng dẫn chạy | [README](../../README.md) | Có backend; frontend chưa triển khai |
 
-Trước nộp, người đọc phải lần theo `requirements → code-flow → test-matrix → evidence → Git commit` mà không gặp artifact thiếu hoặc tuyên bố quá phạm vi kết quả đã chạy.
+- [ ] Bổ sung IntelliJ, login và ảnh từng module khi đã kiểm tra.
+- [ ] Có cả normal và negative case, popup/confirmation và request axios.
+- [ ] Tên file trong index khớp file thật; Actual/Pass chỉ ghi khi đã chạy.
+- [ ] Kiểm tra đúng repo/account, test lại từ checkout sạch và loại secret khỏi ảnh/log.

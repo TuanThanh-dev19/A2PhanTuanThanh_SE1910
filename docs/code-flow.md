@@ -1,98 +1,105 @@
-# Luồng code và truy vết
+Author: Phan Tuan Thanh - CE190595
 
-Trạng thái: sau triển khai nền tảng M1 ngày 28/10/2026. Phần 1 mô tả code có thật; các phần còn lại là thiết kế chờ triển khai.
+# FUNewsManagementSystem - Code Flow Guide
 
-## 1. Luồng hiện có
+Tài liệu dùng để mở đúng file và giải thích theo khung: **Purpose → Input → Trigger → Transform → Output**. Mục 2 mô tả luồng đã có ở M1; các luồng nghiệp vụ còn lại là dự kiến.
 
-`A2PhanTuanThanhSe1910Application.main()` gọi `SpringApplication.run(...)`. Boot 3.5.16 nạp `application.properties` và biến môi trường, cấu hình Tomcat/Spring MVC, Hikari datasource và JPA EntityManagerFactory. Microsoft JDBC dùng TCP tới SQL Server; lần chạy thật dùng Windows Authentication qua native DLL. DB cố định `A2PhanTuanThanh_SE1910`. Chưa có controller, service, repository hoặc entity nghiệp vụ; scan thấy 0 repository, `ddl-auto=none`, DB vẫn 0 bảng. GET `/` của JAR trả 404 như dự kiến.
+## 1. Ranh giới trách nhiệm
 
-Code hiện tại:
-
-- [Main application](../src/main/java/fpt/edu/a2phantuanthanh_se1910/A2PhanTuanThanhSe1910Application.java).
-- [Cấu hình ứng dụng](../src/main/resources/application.properties).
-- [POM](../pom.xml): Boot 3.5.16, Java 21; Web, Data JPA, Validation, SQL Server runtime driver và Test.
-- [Context/SQL test](../src/test/java/fpt/edu/a2phantuanthanh_se1910/A2PhanTuanThanhSe1910ApplicationTests.java): `@SpringBootTest`, inject DataSource/EntityManagerFactory. `contextLoads()` kiểm tra JPA factory mở; `connectsToAssignmentDatabaseOnSqlServer()` mở JDBC connection, kiểm tra product `Microsoft SQL Server`, chạy `SELECT DB_NAME(), 1`, assert tên DB và giá trị 1. Không ghi dữ liệu nghiệp vụ.
-- [Script DB](../scripts/create-database.sql): tạo database rỗng nếu thiếu; chạy riêng trước app/tests bằng danh tính được cấp quyền. Hibernate chưa tạo schema trong M1.
-- [Mẫu biến môi trường](../.env.example) và [README](../README.md): cấu hình local, DLL đúng version/kiến trúc, cách chạy; file `.env` không được Boot tự nạp.
-
-Luồng kiểm chứng: `mvnw clean verify → Spring context/JPA → JDBC SELECT → Surefire → executable JAR`; sau đó `java -jar → Tomcat → GET / (404)`, SQL metadata đối chiếu `applicationName + host_process_id` với đúng PID Java, DB/TCP/NTLM/encryption. [Evidence mới](evidence/2026-10-28-m1/inspection.md) không thay evidence Boot 4. IntelliJ và toàn bộ luồng nghiệp vụ bên dưới chưa được chạy.
-
-## 2. Luồng request dự kiến
-
-1. React page/dialog thu thập dữ liệu và validate trước khi gửi.
-2. Hàm trong `api/` gọi axios với URL, method và payload; bearer token được thêm cho request được bảo vệ.
-3. Spring Security xác thực và kiểm tra role; từ chối trước khi vào nghiệp vụ khi thiếu quyền.
-4. Controller bind DTO và chạy `@Valid`; không nhận entity trực tiếp.
-5. Service kiểm tra nghiệp vụ, lấy account từ principal và bắt đầu transaction cho thao tác ghi.
-6. Repository đọc/ghi bằng JPA tới SQL Server; FK/unique ngăn dữ liệu không hợp lệ.
-7. Service map response DTO; controller trả HTTP status đúng hợp đồng.
-8. FE cập nhật UI hoặc hiển thị lỗi/fieldErrors. `RestControllerAdvice` xử lý lỗi ứng dụng nhất quán.
-
-## 3. Xóa category và account
-
-```mermaid
-sequenceDiagram
-    actor Staff
-    participant UI as Category dialog
-    participant API as CategoryController
-    participant SVC as CategoryService
-    participant DB as Repository và SQL Server
-    Staff->>UI: Chọn Delete
-    UI->>Staff: Yêu cầu xác nhận
-    Staff->>UI: Confirm
-    UI->>API: DELETE /api/categories/{id}
-    API->>SVC: delete(id)
-    SVC->>DB: Tìm category và kiểm tra bài tham chiếu
-    alt Có bất kỳ bài tham chiếu
-        SVC-->>API: Conflict
-        API-->>UI: 409 + lý do
-    else Không có bài tham chiếu
-        SVC->>DB: Gỡ parent của con nếu cần; xóa category trong transaction
-        API-->>UI: 204
-        UI->>API: Tải lại danh sách
-    end
+```text
+React Page/Form → axios → Spring Security
+  → REST Controller → Service → Repository/JPA → SQL Server
+  → response DTO → React cập nhật UI
 ```
 
-Đây là luồng dự kiến theo DEC-05. Cancel không tạo request DELETE. Query kiểm tra tham chiếu không lọc NewsStatus. Nếu có race giữa kiểm tra và xóa, FK vẫn bảo vệ dữ liệu và lỗi constraint chuyển thành 409.
+- Page giữ keyword, selected item, trạng thái dialog/loading và kết quả API.
+- Form giữ input/error, gọi validator; axios thực hiện HTTP request.
+- Controller nhận DTO và xử lý HTTP; Service giữ nghiệp vụ/transaction.
+- Repository truy vấn DB; SQL Server là nguồn dữ liệu chính.
 
-Account delete tương tự nhưng yêu cầu Admin, kiểm tra `CreatedByID` và xử lý `UpdatedByID` theo DEC-06. Không dùng cascade để vượt qua điều kiện cấm xóa.
+Các lớp nghiệp vụ/React này chưa tồn tại. Hiện chỉ có application, datasource/JPA và test kết nối.
 
-## 4. Tạo/sửa bài và tags
+## 2. Startup và database flow đã có
 
-`NewsDialog → newsApi → NewsController → NewsArticleServiceImpl → repositories`.
+```text
+Application.main()
+  → SpringApplication.run()
+  → đọc application.properties và biến môi trường
+  → khởi tạo Tomcat, DataSource và JPA
+  → JDBC kết nối SQL Server
+```
 
-- DTO có title/headline/content/source/category/status/tags; không có creator/updater/date do người dùng đặt.
-- Service validate category và tag, kiểm tra cardinality DEC-01, rồi lưu NewsArticle và NewsTag trong cùng transaction.
-- Tạo mới: lấy CreatedByID từ principal Staff, gán CreatedDate; UpdatedByID/ModifiedDate ban đầu null.
-- Cập nhật: giữ nguyên CreatedByID/CreatedDate, gán updater/time; đồng bộ thêm/bỏ links. Nếu một tag không hợp lệ thì rollback toàn bộ.
-- Xóa bài: xóa NewsTag của bài và bài; không xóa account, category hoặc các Tag không cần xóa.
-- Sau thành công, dialog đóng, danh sách được tải lại; public chỉ thấy bài nếu NewsStatus=1.
+| Thành phần giải thích | Nội dung thực tế |
+|---|---|
+| Purpose | Khởi động backend và xác nhận SQL Server sẵn sàng |
+| Input | Biến SQLSERVER_*; database A2PhanTuanThanh_SE1910; native DLL nếu dùng Windows auth |
+| Trigger | Chạy main, `java -jar` hoặc `mvnw clean verify` |
+| Transform | Boot nạp cấu hình, mở JDBC connection; test kiểm tra JPA factory và `SELECT DB_NAME(), 1` |
+| Output | Hai tests pass; JAR/Tomcat chạy. GET `/` trả 404 vì chưa có controller |
 
-## 5. Public, profile và history
+`create-database.sql` tạo DB rỗng nếu thiếu, chạy trước app/test. `ddl-auto=none`; M1 có 0 bảng nghiệp vụ. Code thuộc commit `db2e8e6`; [evidence M1](evidence/2026-10-28-m1/inspection.md).
 
-- Public list/detail lọc NewsStatus trong query/service, không tải hết rồi để React lọc. URL trực tiếp của bài inactive trả 404.
-- Profile dùng principal; không cho client truyền account ID khác để cập nhật. DTO cập nhật hồ sơ không chứa role.
-- History gọi `/api/profile/news`, service tự lấy ID và query CreatedByID. Một Staff khác dù đoán ID bài vẫn không làm history trả bài không do mình tạo.
-- Quản lý news của Staff và history cá nhân là hai phạm vi khác nhau; không dùng bộ lọc history để vô tình giới hạn module quản lý chung.
+## 3. Login flow dự kiến
 
-## 6. Bảng truy vết dự kiến
+```text
+Login form submit → validate email/password → axios POST /api/auth/login
+  → Auth service kiểm tra account/BCrypt
+  → trả token và role hoặc lỗi
+  → React cập nhật auth state và route
+```
 
-Ngoài nền tảng ở phần 1, tên lớp nghiệp vụ dưới đây **chưa tồn tại**; sẽ thay bằng đường dẫn/method khi code được tạo. Không ghi SHA dự đoán.
+Protected request được BE kiểm tra token/role. Logout xóa phiên FE; 401 đưa người dùng về trạng thái chưa đăng nhập. Không dùng credential mock `Admin/Admin` của bài trước.
 
-| Yêu cầu | Điểm code dự kiến | Test | Mốc | Implementation/SHA |
-|---|---|---|---|---|
-| REQ-01,02,19 (phần nền tảng) | pom.xml, application.properties, application test, scripts/create-database.sql | TC-SETUP-01 PASS; TC-SETUP-02 BE/DB PASS, FE NOT RUN; TC-SETUP-03 NOT RUN; TC-M1-DB/HTTP PASS | M1 | Cùng commit này; evidence/2026-10-28-m1/inspection.md; chưa nghiệm thu đầy đủ REQ |
-| REQ-03,05 | entity/, repository/, datasource/bootstrap | TC-DB-01..03 | M2 | Chưa thực hiện / chưa có |
-| REQ-04 | React api client và các page | TC-E2E-01 | M4-M7 | Chưa thực hiện / chưa có |
-| REQ-06 | PublicNewsController/Service, PublicNewsPage | TC-PUB-01..03 | M3,M6 | Chưa thực hiện / chưa có |
-| REQ-07 | AuthController/Service, SecurityConfig, JWT | TC-AUTH-01..05 | M3 | Chưa thực hiện / chưa có |
-| REQ-08,09 | AccountController/Service, AccountRepository, AccountDialog | TC-ACC-01..05 | M4 | Chưa thực hiện / chưa có |
-| REQ-10,11 | CategoryController/Service, CategoryRepository, CategoryDialog | TC-CAT-01..05 | M5 | Chưa thực hiện / chưa có |
-| REQ-12 | NewsController, NewsArticleService, Tag/NewsTag, NewsDialog | TC-NEWS-01..05 | M6 | Chưa thực hiện / chưa có |
-| REQ-13,14 | ProfileController/Service, ProfilePage, HistoryPage | TC-SELF-01..03 | M7 | Chưa thực hiện / chưa có |
-| REQ-15,16 | Các dialog create/update và ConfirmDialog | TC-UI-01..03 | M4-M6 | Chưa thực hiện / chưa có |
-| REQ-17 | DTO constraints, service rules, GlobalExceptionHandler | TC-VAL-01..03 và negative tests module | M2-M7 | Chưa thực hiện / chưa có |
-| REQ-18 | Full FE/BE trên SQL Server | TC-E2E-01..02 | M8 | Chưa thực hiện / chưa có |
-| GIT-01,02,DOC-01 | Git remote/log và docs/evidence | TC-PROC-01..02 | M0-M8 | Baseline 6a26a99 đã có Git; M1 cùng commit này; chưa push/xác minh GitHub và chưa full lifecycle |
+## 4. Create và Update flow dự kiến
 
-Khi đổi route, signature, validation hoặc quyền, cập nhật mục luồng liên quan và test tương ứng trong cùng commit. Không giữ mô tả “service kiểm tra…” nếu code thực tế chưa có kiểm tra đó.
+```text
+Add/Edit → popup rỗng hoặc prefill bản copy item
+  → submit → FE validate → axios POST/PUT
+  → Controller validate DTO → Service kiểm tra rule/FK
+  → Repository lưu trong transaction
+  → response → đóng popup và tải lại danh sách
+```
+
+News lưu bài cùng links tag trong một transaction; lỗi tag/FK phải rollback toàn bộ. Creator/updater/date do server gán. Update giữ creator/ngày tạo; FE không được giả mạo các field này.
+
+## 5. Delete flow dự kiến
+
+```text
+Delete(item) → ConfirmDialog
+  → Cancel: đóng dialog, không gửi DELETE
+  → Confirm: axios DELETE /{id}
+  → BE kiểm tra role, record và quan hệ
+  → bị chặn: 409 + lý do; hợp lệ: xóa, trả 204
+  → React cập nhật danh sách
+```
+
+- Account đã tạo bài hoặc category có bài tham chiếu không được xóa, kể cả bài inactive.
+- Category có con/account chỉ có updater reference xử lý theo DEC-05/06 trong [requirements](requirements.md).
+- Xóa news chỉ xóa bài và NewsTag links; giữ account/category/Tag. FK vẫn bảo vệ dữ liệu khi request đồng thời.
+
+## 6. Search, public và history flow dự kiến
+
+```text
+Search input → keyword riêng → axios GET ?q=...
+  → Service/Repository tìm trong phạm vi có quyền
+  → trả danh sách → React render kết quả hoặc no-result
+```
+
+Query trống trả toàn bộ danh sách được phép xem. Public list/detail lọc NewsStatus = 1 ở BE; detail inactive trả 404. History lấy CreatedByID từ principal và gồm cả hai status; quản lý news chung không bị bộ lọc history giới hạn.
+
+## 7. Profile và persistence flow dự kiến
+
+Profile lấy account từ principal, chỉ sửa tên/email/password; không nhận ID người khác hoặc role để sửa. Sau lưu/reload, React lấy lại dữ liệu qua API từ SQL Server. Không dùng localStorage làm nguồn CRUD thứ hai.
+
+## 8. File cần mở khi giải thích code
+
+| Câu hỏi | File hiện có / hướng cập nhật |
+|---|---|
+| Backend khởi động ở đâu? | [Application](../src/main/java/fpt/edu/a2phantuanthanh_se1910/A2PhanTuanThanhSe1910Application.java) |
+| Cấu hình Boot/dependency? | [pom.xml](../pom.xml) |
+| Kết nối SQL Server thế nào? | [application.properties](../src/main/resources/application.properties), [.env.example](../.env.example) |
+| Database rỗng được tạo ra sao? | [create-database.sql](../scripts/create-database.sql) |
+| Test đang kiểm tra gì? | [ApplicationTests](../src/test/java/fpt/edu/a2phantuanthanh_se1910/A2PhanTuanThanhSe1910ApplicationTests.java) |
+| Auth, CRUD, tags, profile/history? | Chưa triển khai; bổ sung file/method thật ở M2–M7 |
+
+Khi code từng module, cập nhật luồng và file thực tế kèm mã test trong [test-matrix](test-matrix.md).

@@ -1,76 +1,98 @@
-# Phân tích yêu cầu
+Author: Phan Tuan Thanh - CE190595
 
-Ngày lập: 28/10/2026, múi giờ Asia/Bangkok (UTC+07:00).
-Trạng thái: baseline phân tích; chưa triển khai nghiệp vụ.
+# FUNewsManagementSystem - Requirement Specification
 
-## 1. Nguồn và cách diễn giải
+## 1. Thông tin tài liệu
 
-- **S1:** `Assignment 02_Implement CRUD Application with RESTful Web Service and ReactJS.pdf`, 5 trang, tại thư mục `D:/FA2026/SBA301/`. Đã đọc văn bản và xem ảnh từng trang, đặc biệt sơ đồ trang 3.
-- **S2:** tiêu chí C2 (2.0 điểm) do sinh viên cung cấp: repository cá nhân/đúng account; lịch sử phát triển thật; có tiến hóa tạo bài → chức năng → sửa lỗi/cải tiến; không đánh giá máy móc theo số commit. C2 không xuất hiện trong PDF 5 trang đã đọc.
-- **S3:** ảnh sinh viên cung cấp yêu cầu `docs/evidence/`, `ai-usage-log.md`, `code-flow.md`, `debug-log.md`, `design.md`, `requirements.md`, `test-matrix.md`. Ảnh chỉ thể hiện cấu trúc, không quy định nội dung từng file.
-- **S4:** yêu cầu trực tiếp của sinh viên: tài liệu, code và commit phải tương ứng; cấu trúc chuẩn Spring Boot cho SBA301.
+| Thuộc tính | Giá trị |
+|---|---|
+| Bài tập | SBA301 Assignment 02 - CRUD Application with RESTful Web Service and ReactJS |
+| Project / database | `A2PhanTuanThanh_SE1910` |
+| Công nghệ bắt buộc | Spring Boot 3, SQL Server, Spring Data JPA, ReactJS và axios |
+| Trạng thái | Sau M1: nền tảng backend đã chạy; chức năng nghiệp vụ chưa triển khai |
+| Nguồn yêu cầu | Assignment 02 (5 trang); C2 và ảnh cấu trúc docs do sinh viên cung cấp trong chat |
+| Cách trình bày | Theo bộ docs Assignment 01 của sinh viên; nội dung nghiệp vụ theo Assignment 02 |
 
-Phần Introduction mô tả bối cảnh hệ thống tin tức. Approval workflow, scheduling, analytics và publishing đa kênh được nhắc như khả năng tổng quát, không phải danh sách chức năng bắt buộc của phần Main Functions. Không đưa những chức năng đó vào phạm vi triển khai nếu chưa có yêu cầu bổ sung.
+## 2. Mục tiêu
 
-## 2. Danh mục bắt buộc và tiêu chí nghiệm thu
+Xây dựng hệ thống quản lý tin tức có backend REST API ba lớp và React client. Khách đọc tin active; Admin quản lý account; Staff quản lý category, news/tags, hồ sơ và bài do mình tạo.
 
-| ID | Yêu cầu | Nguồn | Tiêu chí nghiệm thu |
-|---|---|---|---|
-| REQ-01 | Tên BE, project React và database theo `A2StudentName_ClassCode` | S1 tr.5 | Dùng `A2PhanTuanThanh_SE1910`; tên folder React giữ mẫu, tên package npm dùng chữ thường do quy tắc npm |
-| REQ-02 | Spring Boot **3**, Spring REST API, MVC, ba lớp với Repository | S1 tr.1,2,5 | POM dùng 3.x; HTTP qua Controller → Service → Repository; controller không trực tiếp truy vấn DB |
-| REQ-03 | SQL Server và Spring Data JPA tạo cấu trúc lưu trữ | S1 tr.1,2,4 | Dữ liệu tồn tại trên SQL Server; JPA/Hibernate sinh bảng/quan hệ; có minh chứng khởi tạo và lưu dữ liệu |
-| REQ-04 | ReactJS gọi API bằng axios | S1 tr.1,2,4 | Màn hình hoạt động với BE thật; có request/response quan sát được |
-| REQ-05 | Mô hình dữ liệu theo sơ đồ | S1 tr.3 | Có SystemAccount, Category, NewsArticle, Tag, NewsTag và đủ các trường trong sơ đồ |
-| REQ-06 | Khách xem tin không cần đăng nhập; chỉ tin active | S1 tr.4 | List/detail công khai không trả tin inactive, kể cả gọi URL trực tiếp |
-| REQ-07 | Đăng nhập email/password; Admin=1, Staff=2 | S1 tr.3,4 | Đăng nhập đúng/sai được xử lý; BE kiểm tra quyền, không chỉ ẩn nút trên FE |
-| REQ-08 | Admin quản lý account: Read/Create/Update/Delete/Search | S1 tr.4 | Đủ 5 thao tác trên API và React; Staff/khách không truy cập được |
-| REQ-09 | Cấm xóa account đã tạo bất kỳ bài nào | S1 tr.4 | Bài active hoặc inactive đều chặn xóa; account chưa tạo bài có thể xóa khi không có vấn đề khác |
-| REQ-10 | Staff quản lý category: Read/Create/Update/Delete/Search | S1 tr.4 | Đủ thao tác API/React, kể cả CategoryDescription, ParentCategoryID, IsActive |
-| REQ-11 | Cấm xóa category đang được bất kỳ bài nào sử dụng | S1 tr.4 | Bài active hoặc inactive đều chặn xóa; không cascade xóa bài |
-| REQ-12 | Staff quản lý news gồm tags: Read/Create/Update/Delete/Search | S1 tr.4 | Lưu/sửa/xóa bài và liên kết tag nhất quán; bài thuộc đúng một category |
-| REQ-13 | Staff quản lý hồ sơ của mình | S1 tr.4 | Xem/sửa hồ sơ cá nhân; không sửa người khác hoặc tự nâng role qua payload |
-| REQ-14 | Staff xem lịch sử bài do mình tạo | S1 tr.4 | Lọc theo CreatedByID của tài khoản đăng nhập; có cả active/inactive; không lẫn bài người khác |
-| REQ-15 | Create/Update account, category, news bằng popup dialog | S1 tr.4 | Cả 6 luồng tạo/sửa dùng dialog trên React; lỗi validation hiển thị tại form |
-| REQ-16 | Delete luôn có confirmation | S1 tr.4 | Xóa account/category/news yêu cầu xác nhận; Cancel không gửi lệnh xóa |
-| REQ-17 | Validate kiểu dữ liệu cho mọi trường | S1 tr.2 | DTO/BE kiểm tra type, giá trị và FK; FE hỗ trợ nhập đúng; payload sai không gây lỗi 500 |
-| REQ-18 | Chạy và kiểm thử tương tác FE/BE | S1 tr.2 | Có kết quả API, thao tác trình duyệt và minh chứng SQL Server, không chỉ test mock |
-| REQ-19 | Tạo Spring Initializr project và dùng IntelliJ IDEA | S1 tr.2 | Mở/chạy project trong IntelliJ và lưu minh chứng thực tế; không suy luận công cụ khởi tạo chỉ từ tên file |
-| GIT-01 | Repository cá nhân, đúng Git account | S2 | Owner remote, account đăng nhập và author email được kiểm tra; commit trên GitHub gắn đúng account |
-| GIT-02 | Lịch sử phản ánh tiến trình phát triển thật | S2 | Có baseline, chức năng tăng dần, kiểm thử và sửa lỗi/cải tiến có căn cứ; giữ timestamp thực tế |
-| DOC-01 | Đủ bộ docs theo ảnh và đồng bộ với code/Git | S3,S4 | Mỗi yêu cầu truy vết được đến code/test/evidence/commit; trạng thái chưa làm thể hiện rõ |
+Bài làm cần có quá trình phát triển cá nhân rõ ràng. Code, tài liệu, test và minh chứng phải khớp với từng phần đã thực hiện.
 
-Tại baseline, tất cả REQ **chưa nghiệm thu**; REQ-01 mới có tên backend, test Boot 4 không đóng REQ-02. Cập nhật M1 ngày 28/10/2026: backend/DB đã đúng tên, Boot 3.5.16 + JDK 21 build/test pass và JDBC kết nối SQL Server thật. REQ-01 còn FE; REQ-02 còn API/ba lớp nghiệp vụ; REQ-03 còn entity/schema/persistence; REQ-19 còn sinh viên tự mở/chạy IntelliJ và evidence. Vì vậy các REQ vẫn chưa nghiệm thu đầy đủ. Xem [test-matrix](test-matrix.md) và [evidence M1](evidence/2026-10-28-m1/inspection.md).
+## 3. Giả định và điểm cần làm rõ
 
-## 3. Ma trận quyền dự kiến
+Các quyết định dưới đây giữ mã DEC để đối chiếu với thiết kế/test. Không mặc định chúng đã được giảng viên xác nhận.
 
-| Chức năng | Khách | Admin (1) | Staff (2) |
-|---|---|---|---|
-| Xem tin active công khai | Có | Có | Có |
-| Quản lý account | Không | Có | Không |
-| Quản lý category | Không | Không | Có |
-| Quản lý news/tags | Không | Không | Có |
-| Hồ sơ Staff của mình | Không | Không áp dụng trong phạm vi | Có |
-| Lịch sử bài do mình tạo | Không | Không áp dụng trong phạm vi | Có |
-
-Đề không cấp Admin mọi quyền của Staff. Không mặc định role 1 kế thừa role 2. Đề cũng không nói Staff chỉ được sửa bài của chính mình; thiết kế ban đầu cho Staff quản lý news chung, còn history bắt buộc chỉ của mình.
-
-## 4. Điểm mơ hồ và quyết định dự kiến
-
-| ID | Vấn đề | Hướng xử lý có thể kiểm tra |
+| ID | Nội dung | Trạng thái |
 |---|---|---|
-| DEC-01 | Tr.3 có bảng nối NewsTag; mô tả chữ nói một tag thuộc 0 hoặc 1 bài, trong khi sơ đồ không thể hiện unique TagID | Giữ cả 5 bảng. Dự kiến dùng khóa ghép NewsArticleID+TagID và unique TagID để giữ giới hạn trong phần chữ. Cần xác nhận giảng viên trước khi chốt mapping; nếu cho phép tái sử dụng tag thì bỏ unique và cập nhật test |
-| DEC-02 | PDF không nêu kiểu, chiều dài, nullable, chiến lược ID | Các kiểu/giới hạn trong design là lựa chọn triển khai, không phải trích dẫn đề; cần đồng bộ entity, DTO, SQL và React |
-| DEC-03 | “Use Spring Data JPA to create the database” | Dự kiến tạo database rỗng đúng tên trong SQL Server, sau đó JPA/Hibernate tạo bảng, FK và constraint. Ghi rõ hai bước; nếu giảng viên yêu cầu tự động CREATE DATABASE thì bổ sung bootstrap được kiểm chứng |
-| DEC-04 | Admin cần truy cập nhưng phần đăng nhập chỉ ghi Member (Staff) | Một API đăng nhập cho cả hai role; khởi tạo admin bằng cấu hình demo, không hard-code mật khẩu trong source |
-| DEC-05 | Category có parent; đề chỉ nêu chặn xóa khi được bài sử dụng | Category chưa có bài nhưng có category con: dự kiến cho xóa và chuyển parent của con thành null trong transaction; giữ nguyên các category con |
-| DEC-06 | News có UpdatedByID; điều kiện cấm xóa account chỉ dựa vào người tạo | Khi account không tạo bài nhưng có UpdatedByID tham chiếu: dự kiến gỡ tham chiếu updater thành null trước khi xóa, không xóa bài |
-| DEC-07 | Không định nghĩa search | Dự kiến search chuỗi không phân biệt hoa thường: account theo tên/email; category theo tên/mô tả; news theo title/headline/content. Query rỗng trả toàn bộ danh sách được phép xem |
-| DEC-08 | “News history” không định nghĩa audit/versioning hay thùng rác | Triển khai danh sách bài còn tồn tại với CreatedByID=current account; có cả hai status. Audit revision và lịch sử bài đã xóa không tự thêm vào phạm vi |
-| DEC-09 | Không quy định cơ chế auth, hết phiên, password hashing | Chọn Spring Security + JWT bearer và BCrypt; là quyết định thiết kế, không phải yêu cầu JWT bắt buộc trong PDF |
-| DEC-10 | Không nói category inactive có ẩn bài active không | Public chỉ áp dụng NewsStatus=1 theo đề; không tự thêm điều kiện IsActive của category để ẩn bài |
+| DEC-01 | Sơ đồ có NewsTag nhưng phần chữ giới hạn một tag thuộc tối đa một bài. Dự kiến giữ bảng nối và unique TagID. | Cần chốt trước mapping |
+| DEC-02 | PDF không nêu kiểu/độ dài. Giới hạn trong design là đề xuất, phải đồng bộ entity/DTO/React. | Dự kiến |
+| DEC-03 | Script tạo database rỗng; JPA tạo bảng/FK ở M2. | Đã tạo DB; cần xác nhận cách hiểu yêu cầu |
+| DEC-04 | Admin và Staff dùng chung API đăng nhập; admin demo lấy từ cấu hình. | Dự kiến |
+| DEC-05 | Category chưa có bài nhưng có con: cho xóa và đặt parent của con thành null trong transaction. | Dự kiến |
+| DEC-06 | Account chưa tạo bài nhưng từng sửa bài: đặt UpdatedByID thành null rồi xóa account, giữ bài. | Dự kiến |
+| DEC-07 | Search account theo tên/email; category theo tên/mô tả; news theo title/headline/content. Không phân biệt hoa thường; query trống trả toàn bộ danh sách được phép xem. | Dự kiến |
+| DEC-08 | History là bài còn tồn tại do mình tạo, gồm active/inactive; không phải lịch sử phiên bản. | Dự kiến |
+| DEC-09 | Chọn Spring Security + JWT và BCrypt; PDF không bắt buộc JWT. | Chưa triển khai auth |
+| DEC-10 | Public lọc NewsStatus = 1; category inactive không tự làm ẩn bài active. | Dự kiến |
 
-Ưu tiên làm rõ DEC-01 và DEC-03 trong giai đoạn mô hình dữ liệu. Tài liệu không tuyên bố đã được giảng viên chấp thuận các quyết định này.
+## 4. Phạm vi chức năng
 
-## 5. Phạm vi hoàn thành
+### 4.1 Requirement Traceability Matrix
 
-Hoàn thành khi toàn bộ REQ được kiểm chứng trên ứng dụng thật, các DEC ảnh hưởng nghiệp vụ đã được chốt/ghi nhận, bộ docs có số liệu thực tế, và repo cá nhân lưu đầy đủ tiến trình. Không đặt mục tiêu số commit tối thiểu; không dùng tính năng ngoài đề để thay thế chức năng bắt buộc còn thiếu.
+| ID | Yêu cầu | Tiêu chí nghiệm thu tối thiểu |
+|---|---|---|
+| REQ-01 | Tên project BE, React và DB đúng mẫu đề (tr.5) | `A2PhanTuanThanh_SE1910`; package npm dùng tên chữ thường hợp lệ |
+| REQ-02 | Boot 3, REST API, ba lớp với Repository (tr.1,2,5) | Controller → Service → Repository; controller không truy vấn DB trực tiếp |
+| REQ-03 | SQL Server và Spring Data JPA (tr.1,2,4) | JPA tạo bảng/quan hệ; lưu và đọc dữ liệu trên SQL Server |
+| REQ-04 | ReactJS gọi API bằng axios (tr.1,2,4) | UI và request/response chạy với backend thật |
+| REQ-05 | Mô hình dữ liệu theo sơ đồ (tr.3) | Đủ SystemAccount, Category, NewsArticle, Tag, NewsTag và các trường |
+| REQ-06 | Xem tin không cần đăng nhập (tr.4) | Public list/detail chỉ trả tin active, kể cả truy cập URL trực tiếp |
+| REQ-07 | Đăng nhập email/password, Admin = 1, Staff = 2 (tr.3,4) | Đúng/sai credential được xử lý; backend kiểm tra role |
+| REQ-08 | Admin account CRUD + Search (tr.4) | Đủ thao tác ở API và React; Staff/khách không có quyền |
+| REQ-09 | Chặn xóa account đã tạo bài (tr.4) | Bài active và inactive đều chặn xóa |
+| REQ-10 | Staff category CRUD + Search (tr.4) | Đủ thao tác, description, parent và status |
+| REQ-11 | Chặn xóa category đang được bài sử dụng (tr.4) | Không xóa category hoặc cascade xóa bài tham chiếu |
+| REQ-12 | Staff news/tags CRUD + Search (tr.4) | Một category/bài; bài và links tag được lưu nhất quán |
+| REQ-13 | Staff quản lý hồ sơ của mình (tr.4) | Không sửa người khác hoặc tự nâng role |
+| REQ-14 | Staff xem history của mình (tr.4) | Lọc CreatedByID từ account đăng nhập; gồm active/inactive |
+| REQ-15 | Create/Update bằng popup (tr.4) | Cả 6 luồng của account/category/news đều dùng dialog |
+| REQ-16 | Delete có confirmation (tr.4) | Cancel không xóa; Confirm mới gửi request |
+| REQ-17 | Validate mọi trường (tr.2) | BE kiểm tra kiểu/giá trị/FK; FE hỗ trợ nhập đúng, báo lỗi rõ |
+| REQ-18 | Kiểm thử FE/BE (tr.2) | Có kết quả thao tác React, API và dữ liệu SQL Server thật |
+| REQ-19 | Spring Initializr và IntelliJ IDEA (tr.2) | Sinh viên mở/chạy project trong IntelliJ và lưu minh chứng |
+
+### 4.2 Tiến trình cá nhân và tài liệu
+
+| ID | Yêu cầu | Tiêu chí nghiệm thu |
+|---|---|---|
+| GIT-01 | Repository cá nhân, đúng account | Remote/author đúng; kiểm tra commit gắn với profile GitHub |
+| GIT-02 | C2 - tiến trình cá nhân và Git, 2.0 điểm | Có phát triển thật từ baseline → chức năng → sửa lỗi/cải tiến; không đặt chỉ tiêu số commit |
+| DOC-01 | Bộ docs theo ảnh | Đủ 6 file và evidence; nội dung khớp code, test và commit |
+
+## 5. Màn hình và quyền truy cập
+
+| Khu vực | Khách | Admin (1) | Staff (2) |
+|---|---|---|---|
+| Tin active công khai | Xem | Xem | Xem |
+| Account | Không | CRUD + Search | Không |
+| Category | Không | Không | CRUD + Search |
+| News/tags | Không | Không | CRUD + Search |
+| Hồ sơ | Không | Ngoài phạm vi chức năng Admin | Xem/sửa của mình |
+| History | Không | Ngoài phạm vi chức năng Admin | Bài do mình tạo |
+
+Admin không tự động kế thừa quyền Staff. Module news cho Staff quản lý chung; bộ lọc bài của mình chỉ áp dụng cho history.
+
+## 6. Validation và chất lượng
+
+- Form có thông báo lỗi theo field; popup không đóng khi lưu thất bại.
+- Role/status/FK và ràng buộc xóa được BE kiểm tra, không chỉ ẩn nút trên FE.
+- Build/test chạy được; response không lộ password/hash; cấu hình không chứa secret.
+- Người khác chạy được theo README; sinh viên giải thích được luồng request và nghiệp vụ.
+- Chi tiết field/giới hạn ở [design](design.md); expected/actual ở [test-matrix](test-matrix.md).
+
+## 7. Tiến độ và ngoài phạm vi
+
+M1 đã kiểm tra Boot 3, tên BE/DB và kết nối SQL Server. REQ-01 còn React; REQ-02 còn API/ba lớp; REQ-03 còn schema/persistence; REQ-19 còn minh chứng IntelliJ. Chi tiết ở [development-plan](development-plan.md).
+
+Approval workflow, scheduling và analytics được nhắc trong phần giới thiệu nhưng không thuộc Main Functions. Logo AI, `Admin/Admin` và mock localStorage của Assignment 01 không phải yêu cầu Assignment 02. JWT là lựa chọn thiết kế, không phải yêu cầu bắt buộc của đề.

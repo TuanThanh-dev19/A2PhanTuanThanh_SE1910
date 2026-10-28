@@ -1,73 +1,71 @@
+Author: Phan Tuan Thanh - CE190595
+
 # A2PhanTuanThanh_SE1910
 
-Assignment 02 SBA301: FUNewsManagementSystem dùng Spring Boot 3, SQL Server và ReactJS/axios. Hiện mới triển khai nền tảng backend M1.
+Assignment 02 SBA301 — FUNewsManagementSystem, dùng Spring Boot 3, SQL Server và ReactJS/axios.
 
-## Trạng thái ngày 28/10/2026
+## Tiến độ
 
-- Đã đọc và đối chiếu đủ 5 trang đề, sơ đồ database, ảnh cấu trúc `docs` và tiêu chí C2 do sinh viên cung cấp.
-- Baseline Git: `6a26a99`; nay đã có Git local và origin `https://github.com/TuanThanh-dev19/A2PhanTuanThanh_SE1910.git`. Phiên M1 chưa push, chưa xác minh attribution trên GitHub.
-- Backend: **Spring Boot 3.5.16**, Java 21, Web, Data JPA, Validation và Microsoft JDBC `12.10.2.jre11` do Boot quản lý. Đây là bản phát hành ổn định thuộc 3.x phù hợp yêu cầu đề; [Spring xác nhận tương thích Java 17–25](https://docs.spring.io/spring-boot/3.5/system-requirements.html). [Release notes](https://spring.io/blog/2026/06/25/spring-boot-3-5-16-available-now/) ghi đây là bản OSS cuối của nhánh 3.5, không đồng nghĩa còn hỗ trợ OSS hiện tại.
-- AI/tool đã chạy `./mvnw.cmd -B clean verify`: **2 tests pass, 0 failures/errors/skipped**; đã chạy JAR và xác minh session SQL Server thật bằng PID Java. [Evidence M1](docs/evidence/2026-10-28-m1/inspection.md).
-- Database `A2PhanTuanThanh_SE1910` đã được tạo trên instance local `LAPTOP-JED9V0CH\SQL2022`, TCP 1433, Windows Authentication theo lựa chọn sinh viên. Chưa có entity, repository nghiệp vụ, CRUD, auth hay React; `ddl-auto=none`, 0 bảng nghiệp vụ.
-- **M1 còn thiếu sinh viên mở/chạy project trong IntelliJ và cung cấp evidence TC-SETUP-03**. CLI pass không nghiệm thu yêu cầu IDE.
-- Khảo sát ban đầu Boot 4/1 test/chưa Git được giữ tại [baseline inspection](docs/evidence/2026-10-28-baseline/inspection.md) và phần 1 development-plan; không dùng evidence Boot 4 để nghiệm thu Boot 3. Các thiết kế nghiệp vụ bên dưới vẫn là dự kiến.
+- Baseline: `6a26a99`. Nền tảng M1: `db2e8e6`.
+- Đã có Boot **3.5.16**, Java **21**, Web/JPA/Validation/JDBC và kết nối SQL Server bằng Windows Authentication. Kết quả đã lưu: **2 tests pass**, JAR chạy được. [Evidence M1](docs/evidence/2026-10-28-m1/inspection.md).
+- M1 còn thiếu minh chứng sinh viên chạy trong IntelliJ. Chưa có entity, bảng nghiệp vụ, CRUD, auth hoặc React. Bước tiếp theo: M2.
 
-## Đọc tài liệu theo thứ tự
+## Chạy backend trên Windows
 
-1. [Yêu cầu và phạm vi](docs/requirements.md): yêu cầu có mã, nguồn, tiêu chí nghiệm thu và điểm cần làm rõ.
-2. [Thiết kế](docs/design.md): kiến trúc ba lớp, database, API, phân quyền và validation.
-3. [Quy trình cá nhân và Git](docs/development-plan.md): mốc triển khai, điều kiện hoàn thành, commit và tài liệu đi kèm.
-4. [Luồng code](docs/code-flow.md): phân biệt code hiện có với luồng dự kiến.
-5. [Ma trận kiểm thử](docs/test-matrix.md): test theo yêu cầu, kết quả thực tế và việc chưa chạy.
-6. [Nhật ký lỗi](docs/debug-log.md) và [nhật ký dùng AI](docs/ai-usage-log.md).
-7. [Quy ước minh chứng](docs/evidence/README.md).
+Cần JDK 21 x64 và SQL Server chạy được qua TCP. Máy đã kiểm tra dùng instance `.\SQL2022`, cổng 1433 và Windows Authentication; máy khác thay bằng cấu hình thực tế.
 
-## Cấu hình và chạy backend trên Windows
-
-Yêu cầu: JDK 21 x64, SQL Server đang chạy/TCP khả dụng, Maven wrapper và mạng tải dependencies. Tests hiện kết nối DB thật; phải cấu hình môi trường trước cả `test`/`verify`. Không có H2 thay thế. [.env.example](.env.example) chỉ là bảng mẫu, **Spring Boot không tự đọc `.env`**; export biến trong PowerShell hoặc cấu hình môi trường của IntelliJ.
-
-1. Kiểm tra đúng instance và tạo DB rỗng bằng danh tính có quyền (script chỉ tạo khi chưa tồn tại, không tạo bảng):
+**1. Tạo database rỗng** nếu chưa có:
 
 ```powershell
-# Instance đã xác minh trên máy này; máy khác thay bằng instance thật.
 sqlcmd -S '.\SQL2022' -E -C -b -i scripts/create-database.sql
 ```
 
-2. Windows Authentication cần native DLL đúng version/kiến trúc JVM. Tải [gói auth 12.10.2 từ Microsoft](https://github.com/microsoft/mssql-jdbc/releases/download/v12.10.2/mssql-jdbc_auth.zip), giải nén vào thư mục local bị ignore, rồi thêm thư mục `x64` vào PATH **trước khi mở Maven/Java/IntelliJ**. JAR JDBC được Maven tải riêng, không commit DLL. [Hướng dẫn Microsoft](https://learn.microsoft.com/en-us/sql/connect/jdbc/building-the-connection-url?view=sql-server-ver17#connecting-with-integrated-authentication-on-windows).
+**2. Chuẩn bị Windows Authentication:** tải [native auth DLL 12.10.2 từ Microsoft](https://github.com/microsoft/mssql-jdbc/releases/download/v12.10.2/mssql-jdbc_auth.zip), giải nén để file `mssql-jdbc_auth-12.10.2.x64.dll` nằm trong `tmp/mssql-jdbc-12.10.2/x64/`. Thêm thư mục đó vào PATH của phiên chạy Java:
 
 ```powershell
-New-Item -ItemType Directory -Force tmp/mssql-jdbc-12.10.2 | Out-Null
-Invoke-WebRequest -Uri 'https://github.com/microsoft/mssql-jdbc/releases/download/v12.10.2/mssql-jdbc_auth.zip' -OutFile tmp/mssql-jdbc-12.10.2/auth.zip
-Expand-Archive -LiteralPath tmp/mssql-jdbc-12.10.2/auth.zip -DestinationPath tmp/mssql-jdbc-12.10.2 -Force
 $nativePath = (Resolve-Path tmp/mssql-jdbc-12.10.2/x64).Path
-Get-AuthenticodeSignature "$nativePath/mssql-jdbc_auth-12.10.2.x64.dll"
 $env:PATH = "$nativePath;$env:PATH"
 ```
 
-3. Export các biến cho phiên PowerShell hiện tại:
+**3. Đặt biến môi trường** trong cùng phiên PowerShell:
 
 ```powershell
-$env:SQLSERVER_HOST = 'localhost' # Đã xác minh tới SQL2022 qua TCP 1433.
+$env:SQLSERVER_HOST = 'localhost'
 $env:SQLSERVER_PORT = '1433'
 $env:SQLSERVER_INTEGRATED_SECURITY = 'true'
 $env:SQLSERVER_ENCRYPT = 'true'
-$env:SQLSERVER_TRUST_SERVER_CERTIFICATE = 'true' # Chỉ dev local với chứng chỉ tự ký.
+$env:SQLSERVER_TRUST_SERVER_CERTIFICATE = 'true' # Chỉ dev local với chứng chỉ tự ký
 Remove-Item Env:SQLSERVER_USERNAME,Env:SQLSERVER_PASSWORD -ErrorAction SilentlyContinue
 ```
 
-Mặc định `encrypt=true`, `trustServerCertificate=false`; ngoài dev local dùng chứng chỉ tin cậy và giữ kiểm tra chứng chỉ. Database được cố định đúng tên đề trong `application.properties`. Nếu dùng SQL login thay Windows: đặt `SQLSERVER_INTEGRATED_SECURITY=false`, `SQLSERVER_USERNAME` và `SQLSERVER_PASSWORD` bằng thông tin được cấp trong môi trường local; không đặt secret trong JDBC URL, source, evidence hoặc commit. Nhánh SQL login chưa được chạy trong M1.
+Tên DB đã cố định là `A2PhanTuanThanh_SE1910`. Mặc định source vẫn kiểm tra chứng chỉ (`trustServerCertificate=false`). Nếu dùng SQL login, đặt integrated security = false và username/password trong môi trường local; nhánh này chưa được kiểm tra trong M1.
 
-4. Build/test và chạy trong cùng phiên đã cấu hình:
+[.env.example](.env.example) là mẫu tham khảo; Spring Boot không tự nạp file `.env`. Không đưa secret hoặc DLL vào Git.
+
+**4. Build/test rồi chạy:**
 
 ```powershell
 .\mvnw.cmd -B clean verify
 java -jar target/A2PhanTuanThanh_SE1910-0.0.1-SNAPSHOT.jar
 ```
 
-Backend mặc định dùng cổng 8080; có thể thêm `--server.port=0` để chọn cổng trống (đã smoke test cách này). GET `/` trả 404 là expected vì chưa có controller nghiệp vụ. Dừng bằng Ctrl+C sau khi chạy thủ công.
+Tests hiện cần SQL Server thật. Backend dùng cổng 8080; GET `/` trả 404 vì chưa có controller. Ctrl+C để dừng.
 
-IntelliJ (sinh viên cần tự làm, **chưa được xác minh**): mở `pom.xml`, reload Maven, chọn Project SDK/Maven runner JDK 21, cấu hình các biến trên trong Run Configuration và native DLL qua PATH hoặc VM option `-Djava.library.path=<thư mục x64>`. Chạy main, lưu ảnh IDE/log Boot 3 và kết nối SQL Server. Không chụp secret. Frontend sẽ có hướng dẫn khi được triển khai.
+**IntelliJ:** mở `pom.xml`, reload Maven, chọn JDK 21 và đặt các biến trên trong Run Configuration. Cấu hình PATH chứa DLL hoặc VM option `-Djava.library.path=<thư mục x64>`. Sinh viên chạy main và lưu ảnh IDE/log làm minh chứng `TC-SETUP-03`.
 
-## Nguyên tắc theo dõi
+## Tài liệu
 
-Mỗi thay đổi chức năng phải nối được chuỗi `REQ → thiết kế → code → test → evidence → commit`. Chỉ ghi PASS khi thực sự chạy; chỉ ghi FIXED khi đã sửa và kiểm tra lại. C2 được chứng minh bằng sự phát triển có thể giải thích, không bằng chỉ tiêu số lượng commit.
+Bộ docs dùng bố cục báo cáo của Assignment 01: requirement/design, hướng dẫn giải thích code, test Expected/Actual và nhật ký theo milestone; nội dung và trạng thái theo Assignment 02.
+
+| File | Nội dung |
+|---|---|
+| [requirements](docs/requirements.md) | Bài yêu cầu gì và những điểm cần chốt |
+| [design](docs/design.md) | Kiến trúc, dữ liệu, API và validation dự kiến |
+| [development-plan](docs/development-plan.md) | Đã làm đến đâu, làm tiếp gì và cách commit |
+| [code-flow](docs/code-flow.md) | Code hiện có hoạt động thế nào |
+| [test-matrix](docs/test-matrix.md) | Các ca cần kiểm tra và kết quả đã chạy |
+| [debug-log](docs/debug-log.md) | Lỗi thật, cách sửa và kiểm tra lại |
+| [ai-usage-log](docs/ai-usage-log.md) | Phần AI hỗ trợ và người đã kiểm tra |
+| [evidence](docs/evidence/README.md) | Log/report của từng lần chạy |
+
+Cập nhật docs và evidence cùng tính năng; chỉ ghi PASS khi đã chạy. Hướng dẫn Microsoft: [JDBC Windows Authentication](https://learn.microsoft.com/en-us/sql/connect/jdbc/building-the-connection-url?view=sql-server-ver17#connecting-with-integrated-authentication-on-windows).
