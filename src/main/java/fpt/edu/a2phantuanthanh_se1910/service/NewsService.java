@@ -3,12 +3,17 @@ package fpt.edu.a2phantuanthanh_se1910.service;
 
 import fpt.edu.a2phantuanthanh_se1910.dto.response.NewsDetail;
 import fpt.edu.a2phantuanthanh_se1910.dto.response.NewsSummary;
+import fpt.edu.a2phantuanthanh_se1910.dto.request.NewsRequest;
+import fpt.edu.a2phantuanthanh_se1910.entity.Category;
 import fpt.edu.a2phantuanthanh_se1910.entity.NewsArticle;
 import fpt.edu.a2phantuanthanh_se1910.entity.NewsTag;
 import fpt.edu.a2phantuanthanh_se1910.entity.SystemAccount;
 import fpt.edu.a2phantuanthanh_se1910.entity.Tag;
 import fpt.edu.a2phantuanthanh_se1910.repository.NewsArticleRepository;
 import fpt.edu.a2phantuanthanh_se1910.repository.NewsTagRepository;
+import fpt.edu.a2phantuanthanh_se1910.repository.CategoryRepository;
+import fpt.edu.a2phantuanthanh_se1910.repository.SystemAccountRepository;
+import fpt.edu.a2phantuanthanh_se1910.repository.TagRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,16 +23,29 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.TreeSet;
+import java.util.Set;
 
 @Service
 @Transactional(readOnly = true)
 public class NewsService {
     private final NewsArticleRepository articles;
     private final NewsTagRepository newsTags;
+    private final CategoryRepository categories;
+    private final SystemAccountRepository accounts;
+    private final TagRepository tagRepository;
 
-    public NewsService(NewsArticleRepository articles, NewsTagRepository newsTags) {
+    public NewsService(NewsArticleRepository articles, NewsTagRepository newsTags,
+                       CategoryRepository categories, SystemAccountRepository accounts, TagRepository tagRepository) {
         this.articles = articles;
         this.newsTags = newsTags;
+        this.categories = categories;
+        this.accounts = accounts;
+        this.tagRepository = tagRepository;
     }
 
     public List<NewsSummary> search(String query) {
@@ -71,5 +89,60 @@ public class NewsService {
                 article.getNewsStatus(), article.getCreatedBy().getAccountId(),
                 article.getCreatedBy().getAccountName(), updatedById, updatedByName,
                 article.getModifiedDate(), tags);
+    }
+
+    @Transactional
+    public NewsDetail create(NewsRequest request, long accountId) {
+        Category category = requireCategory(request.categoryId());
+        SystemAccount creator = accounts.findById(accountId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Account no longer exists"));
+        Map<Long, Tag> existingTags = validateTags(request.tags(), null);
+        NewsArticle article = new NewsArticle(request.newsTitle(), request.headline(), LocalDateTime.now(ZoneOffset.UTC),
+                request.newsContent(), request.newsSource(), category, request.newsStatus(), creator);
+        articles.saveAndFlush(article);
+        saveTags(article, request.tags(), existingTags);
+        return findById(article.getNewsArticleId());
+    }
+
+    private Category requireCategory(long id) {
+        return categories.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                "Danh mục không tồn tại. Vui lòng chọn lại."));
+    }
+
+    private Map<Long, Tag> validateTags(List<NewsRequest.TagInput> inputs, Long articleId) {
+        Set<Long> tagIds = new TreeSet<>();
+        for (NewsRequest.TagInput input : inputs) {
+            if (input.tagId() != null && !tagIds.add(input.tagId())) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "ID tag không được lặp lại.");
+            }
+        }
+        Map<Long, Tag> existingTags = new HashMap<>();
+        // Lock existing tags in ID order so two requests cannot claim the same free tag.
+        for (Long tagId : tagIds) {
+            Tag tag = tagRepository.findForUpdate(tagId).orElseThrow(() ->
+                    new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tag không tồn tại. Vui lòng chọn lại."));
+            NewsTag link = newsTags.findByTag_TagId(tagId).orElse(null);
+            if (link != null && !link.getNewsArticle().getNewsArticleId().equals(articleId)) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "Tag đang thuộc bài viết khác.");
+            }
+            existingTags.put(tagId, tag);
+        }
+        return existingTags;
+    }
+
+    private void saveTags(NewsArticle article, List<NewsRequest.TagInput> inputs, Map<Long, Tag> existingTags) {
+        for (NewsRequest.TagInput input : inputs) {
+            Tag tag;
+            if (input.tagId() == null) {
+                tag = new Tag(input.tagName(), input.note());
+            } else {
+                tag = existingTags.get(input.tagId());
+                tag.setTagName(input.tagName());
+                tag.setNote(input.note());
+            }
+            tagRepository.saveAndFlush(tag);
+            newsTags.save(new NewsTag(article, tag));
+        }
+        newsTags.flush();
     }
 }

@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react'
 import client from '../api/client'
 import NewsDetailDialog from '../components/NewsDetailDialog'
+import NewsFormDialog from '../components/NewsFormDialog'
 
 export default function NewsPage() {
   const [news, setNews] = useState([])
@@ -13,6 +14,8 @@ export default function NewsPage() {
   const [detail, setDetail] = useState(null)
   const [openingId, setOpeningId] = useState(null)
   const [actionError, setActionError] = useState('')
+  const [creating, setCreating] = useState(false)
+  const [success, setSuccess] = useState('')
 
   useEffect(() => {
     const controller = new AbortController()
@@ -77,7 +80,14 @@ export default function NewsPage() {
           }} />
         <button type="submit" className="button-primary" disabled={loading}>Tìm kiếm</button>
         {(keyword || searchQuery) && <button type="button" className="button-secondary" onClick={clearSearch}>Xóa tìm kiếm</button>}
+        <button type="button" className="button-primary" onClick={() => {
+          setSuccess(''); setActionError(''); setCreating(true)
+        }}>Thêm bài viết</button>
       </form>
+      {success && <p className="notice" role="status">{success}</p>}
+      {creating && <NewsFormDialog onClose={() => setCreating(false)} onSaved={() => {
+        setCreating(false); setSuccess('Đã thêm bài viết.'); reloadNews()
+      }} />}
       {actionError && <p className="error-message" role="alert">{actionError}</p>}
       {detail && <NewsDetailDialog news={detail} onClose={() => setDetail(null)} />}
       <section className="card" aria-busy={loading} aria-label="Danh sách bài viết">

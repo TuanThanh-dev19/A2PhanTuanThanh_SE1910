@@ -192,3 +192,10 @@ Các kết quả M3 ở `api/M3ApiTests.java`, chạy SQL Server DB biệt lập
 | ID | Trường hợp | Expected | Actual | Trạng thái |
 |---|---|---|---|---|
 | TC-M6P3-TAGS | Tag tự do/thuộc bài đang sửa; search và quyền | Không trả tag bài khác; q/ID sai bị chặn | SQL Server + JWT: đủ nhánh chọn/search tiếng Việt/wildcard/empty; 400/404/401/403 đúng; 28 tests đạt | Pass |
+
+## M6 - Phần 4: tạo News và tags (29-10-2026)
+
+| ID | Trường hợp | Expected | Actual | Trạng thái |
+|---|---|---|---|---|
+| TC-M6P4-API | Tạo cả status, gắn/sửa tag tự do, tag mới và audit | 201/Location; audit từ server; sai field/FK/tag/quyền không lưu | SQL Server riêng: 3 write tests đạt, trim/Unicode/audit đúng; 400/409/401/403 giữ dữ liệu; mvnw verify 49 tests đạt | Pass |
+| TC-M6P4-UI | Popup trống, tạo có tag và nhấn kép | Lỗi giữ popup; lưu xong đóng và reload; một POST | Chrome + JAR/SQL riêng: validation đạt, bài/tag/note hiện ở detail, dblclick đúng 1 POST; npm lint/build đạt | Pass |
