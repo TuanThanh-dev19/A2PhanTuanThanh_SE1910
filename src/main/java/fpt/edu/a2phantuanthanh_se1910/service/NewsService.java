@@ -50,15 +50,26 @@ public class NewsService {
     }
 
     public List<NewsSummary> search(String query) {
+        return mapSummaries(articles.searchNews(searchKeyword(query)));
+    }
+
+    public List<NewsSummary> searchHistory(String query, long accountId) {
+        return mapSummaries(articles.searchCreatedNews(accountId, searchKeyword(query)));
+    }
+
+    private String searchKeyword(String query) {
         String keyword = query.trim();
         if (keyword.length() > 200) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Search must be at most 200 characters");
         }
         // Treat SQL Server LIKE wildcards as literal search text.
-        keyword = keyword.toLowerCase(Locale.ROOT).replace("!", "!!")
+        return keyword.toLowerCase(Locale.ROOT).replace("!", "!!")
                 .replace("%", "!%").replace("_", "!_").replace("[", "![");
+    }
+
+    private List<NewsSummary> mapSummaries(List<NewsArticle> matches) {
         List<NewsSummary> response = new ArrayList<>();
-        for (NewsArticle article : articles.searchNews(keyword)) {
+        for (NewsArticle article : matches) {
             response.add(new NewsSummary(article.getNewsArticleId(), article.getNewsTitle(),
                     article.getHeadline(), article.getCreatedDate(), article.getCategory().getCategoryId(),
                     article.getCategory().getCategoryName(), article.getNewsStatus(),

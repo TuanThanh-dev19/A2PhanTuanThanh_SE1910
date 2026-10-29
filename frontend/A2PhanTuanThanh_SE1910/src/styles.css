@@ -217,6 +217,7 @@ nav a.active {
   background: #edf1fa;
 }
 .page-content {
+  min-width: 0;
   padding: 40px;
   max-width: 1400px;
   width: 100%;

@@ -89,9 +89,9 @@ Minh chứng kỹ thuật đã lưu: [kết quả M2](evidence/2026-10-28-m2/ins
 
 | ID | Trường hợp | Các bước | Kết quả mong đợi | Actual | Trạng thái |
 |---|---|---|---|---|---|
-| TC-SELF-01 | Profile; REQ-13 | Sửa tên/email/password của mình, login lại | Lưu đúng; password mới được, cũ bị từ chối | Chưa chạy | Not run |
-| TC-SELF-02 | Ownership/role; REQ-13,07 | Gửi ID người khác hoặc role giả qua profile | Không sửa người khác/tự nâng quyền | Chưa chạy | Not run |
-| TC-SELF-03 | History; REQ-14 | Hai Staff xem bài mình tạo, cả hai status | Không lẫn bài người khác | Chưa chạy | Not run |
+| TC-SELF-01 | Profile; REQ-13 | Sửa tên/email/password của mình, login lại | Lưu đúng; password mới được, cũ bị từ chối | HTTP/Chrome/SQL: tên/email khớp sau reload; password trống giữ hash, đổi password lưu BCrypt, login cũ 401/mới 200 | Pass |
+| TC-SELF-02 | Ownership/role; REQ-13,07 | Gửi ID người khác hoặc role giả qua profile | Không sửa người khác/tự nâng quyền | PUT nhận ID/role giả vẫn chỉ sửa Staff trong JWT, role giữ 2; SQL account khác không đổi; khách 401/Admin 403 | Pass |
+| TC-SELF-03 | History; REQ-14 | Hai Staff xem bài mình tạo, cả hai status | Không lẫn bài người khác | HTTP/Chrome/SQL: hai Staff chỉ thấy bài theo CreatedByID, cả active/inactive; bài chỉ sửa không lọt vào history, bài của mình do người khác sửa vẫn còn | Pass |
 
 ## Dialog, Validation và tích hợp
 
@@ -244,3 +244,19 @@ Các kết quả M3 ở `api/M3ApiTests.java`, chạy SQL Server DB biệt lập
 | TC-M7P2-AUTH | Khách/Admin mở URL; JWT hết hạn và timer phiên | Khách về login, Admin về accounts; 401/hết phiên xóa session và thông báo | Chrome: khách/Admin không gửi GET profile, menu Admin không có My profile; JWT ký thật hết hạn nhận 401 và timer đều đưa về login kèm notice | Pass |
 | TC-M7P2-LAYOUT | Email dài và màn hình nhỏ | Email xuống dòng, trang không tràn ngang | Hai phiên Chrome: email 254 ký tự khớp SQL, xuống dòng; viewport 390px/320px không tràn; không có lỗi JavaScript chưa xử lý | Pass |
 | TC-M7P2-BUILD | Frontend lint/build | Không lỗi, đóng gói thành công | npm run lint (--max-warnings 0) và npm run build đạt; kiểm tra UI chạy local, không tạo file test/evidence | Pass |
+
+## M7 - Phần 3: sửa hồ sơ (29-10-2026)
+
+| ID | Trường hợp | Expected | Actual | Trạng thái |
+|---|---|---|---|---|
+| TC-M7P3-API | PUT profile hợp lệ/sai, trùng email, giả ID/role và đổi password | Chỉ sửa mình; 400/409 không lưu; password trống giữ hash, mới lưu BCrypt | HTTP/JAR/SQL riêng: normal/trim/giới hạn field, password ngắn/blank/73 byte và email trùng đúng; password 72 byte UTF-8 hợp lệ; ID/role giả không ảnh hưởng account khác/quyền; cũ 401/mới 200 | Pass |
+| TC-M7P3-UI | Popup, Cancel, lỗi, nhấn kép, session/header và mobile | Prefill không password; lỗi giữ form; một PUT; tên/email mới giữ sau reload | Chrome: Cancel không lưu, field trống/409 giữ popup; dblclick 1 PUT; header/profile/session khớp SQL, đổi password đạt; popup 390px không tràn; lint/build đạt | Pass |
+
+## M7 - Phần 4: history và kiểm tra hoàn tất (29-10-2026)
+
+| ID | Trường hợp | Expected | Actual | Trạng thái |
+|---|---|---|---|---|
+| TC-M7P4-API | History theo creator, search, status và sort | Chỉ bài mình tạo, cả status; mới trước/cùng ngày ID giảm; q tối đa 200, wildcard literal | HTTP/JAR/SQL riêng: ID/order khớp SQL; creator khác dù mình sửa bị loại; người khác sửa bài mình vẫn giữ; tìm title/headline/content, trim/hoa thường/%/_/[/! đạt; q 201 trả 400, 200 hợp lệ; ID giả không đổi owner | Pass |
+| TC-M7P4-UI | Menu/route, hai Staff, rỗng, search/clear và detail | Danh sách đúng người; rỗng/no-result rõ; detail có tags; lỗi retry được | Chrome: hai phiên khớp SQL, reload giữ phiên; empty/no-result/search/clear đạt; detail bài inactive có tags; loading/lỗi mạng mô phỏng rồi retry đạt; viewport 390px cuộn bảng bên trong, không tràn trang | Pass |
+| TC-M7P4-AUTH | Khách/Admin, hết phiên và bài bị xóa | 401/403 đúng; route UI chặn; 401 về login; bài xóa không còn history | API khách 401/Admin 403; Chrome khách về login/Admin về accounts, menu ẩn; JWT ký thật hết hạn xóa phiên và báo notice; detail bài đã xóa báo 404, reload bỏ dòng, SQL giữ tag | Pass |
+| TC-M7-FINAL | Backend regression và frontend | Test/build/lint đạt; chỉ cập nhật test-matrix, test giữ local | mvnw verify chạy tuần tự: 57 tests, 0 failure/error/skipped, BUILD SUCCESS; npm run lint/build đạt; các kiểm tra HTTP/Chrome/SQL M7 đạt; không tạo evidence hay file test mới | Pass |

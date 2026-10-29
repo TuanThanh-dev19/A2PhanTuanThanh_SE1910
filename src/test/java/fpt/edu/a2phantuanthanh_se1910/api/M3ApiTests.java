@@ -153,7 +153,7 @@ class M3ApiTests {
                         .andExpect(status().isUnauthorized());
             }
             if (route.startsWith("/api/categories") || route.startsWith("/api/news")
-                    || route.equals("/api/tags") || route.equals("/api/profile")) {
+                    || route.equals("/api/tags") || route.equals("/api/profile") || route.equals("/api/profile/news")) {
                 mvc.perform(get(route).header("Authorization", "Bearer " + staffToken)).andExpect(status().isOk());
             } else {
                 // Modules without a controller still return 404 after passing the security filter.

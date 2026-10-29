@@ -1,12 +1,17 @@
 // Author: Phan Tuan Thanh - CE190595
-import { useEffect, useState } from 'react'
+import { useContext, useEffect, useState } from 'react'
 import client from '../api/client'
+import { AuthContext } from '../auth/AuthContext'
+import ProfileFormDialog from '../components/ProfileFormDialog'
 
 export default function ProfilePage() {
+  const { session, startSession } = useContext(AuthContext)
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [reloadCount, setReloadCount] = useState(0)
+  const [editing, setEditing] = useState(false)
+  const [success, setSuccess] = useState('')
 
   useEffect(() => {
     const controller = new AbortController()
@@ -41,8 +46,18 @@ export default function ProfilePage() {
       <p className="eyebrow">My account</p>
       <h1>My profile</h1>
       <p className="muted page-description">View your current account details.</p>
+      {success && <p className="notice" role="status">{success}</p>}
+      {editing && <ProfileFormDialog profile={profile} onClose={() => setEditing(false)} onSaved={(account) => {
+        setProfile(account)
+        startSession({ ...session, account })
+        setEditing(false)
+        setSuccess('Profile updated.')
+      }} />}
       <section className="card" aria-labelledby="profile-title" aria-busy={loading}>
-        <div className="card-heading"><h2 id="profile-title">Account details</h2></div>
+        <div className="card-heading"><h2 id="profile-title">Account details</h2>
+          {!loading && !error && profile && <button type="button" className="button-primary"
+            onClick={() => { setSuccess(''); setEditing(true) }}>Edit profile</button>}
+        </div>
         {loading && <p className="state-message" role="status">Loading your profile…</p>}
         {!loading && error && <div className="state-message">
           <p className="error-message" role="alert">{error}</p>
