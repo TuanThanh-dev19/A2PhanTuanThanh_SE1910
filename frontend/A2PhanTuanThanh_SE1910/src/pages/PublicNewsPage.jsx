@@ -63,7 +63,9 @@ export default function PublicNewsPage() {
           <h2><Link to={`/public/news/${article.newsArticleId}`}>{article.newsTitle}</Link></h2>
           <p>{article.headline}</p>
           <p className="muted">{article.createdDate.replace('T', ' ')} UTC</p>
-          <Link to={`/public/news/${article.newsArticleId}`}>Read article</Link>
+          <Link className="button-link button-secondary" to={`/public/news/${article.newsArticleId}`}>
+            Read article <span aria-hidden="true">→</span>
+          </Link>
         </article>)}</div>}
     </>
   )

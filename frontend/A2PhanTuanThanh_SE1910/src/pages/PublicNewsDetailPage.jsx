@@ -38,7 +38,9 @@ export default function PublicNewsDetailPage() {
 
   return (
     <>
-      <p><Link to="/public/news">← All news</Link></p>
+      <p><Link className="button-link button-secondary" to="/public/news">
+        <span aria-hidden="true">←</span> All news
+      </Link></p>
       {loading && <p role="status">Loading articles…</p>}
       {!loading && notFound && <h1>Article not found</h1>}
       {!loading && error && <div><p className="error-message" role="alert">{error}</p>

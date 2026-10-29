@@ -280,3 +280,17 @@ Các kết quả M3 ở `api/M3ApiTests.java`, chạy SQL Server DB biệt lập
 |---|---|---|---|---|
 | TC-LOCAL-CONFIG | Nạp host, SQL login và JWT từ file local | Kết nối SQL Server; secret không nằm trong source Git | application.local.properties được git check-ignore xác nhận; mvnw -DskipTests package đạt; JAR chạy Java 24 không đặt SQLSERVER/JWT trong môi trường, validate schema đạt, khởi động cổng 8080 | Pass |
 | TC-LOCAL-HTTP | Gọi API sau khởi động | Public 200; account cần đăng nhập 401 | GET /api/public/news trả 200 và JSON hợp lệ; GET /api/accounts không token trả 401 | Pass |
+
+## Đơn giản hóa lưu news/tags (29-10-2026)
+
+| ID | Trường hợp | Expected | Actual | Trạng thái |
+|---|---|---|---|---|
+| TC-SIMPLE-NEWS | Đọc, tạo, sửa, xóa news/tags; validation và quyền | Giữ hành vi CRUD, audit, status, tags và 400/401/403/404/409 | mvnw -Dtest=NewsWriteApiTests,NewsReadApiTests test trên SQL Server riêng: 13 tests, 0 failure/error/skipped; BUILD SUCCESS | Pass |
+| TC-SIMPLE-TAG | Hai request tranh cùng tag; lỗi DB sau khi lưu | Unique TagID chặn hai bài cùng tag; lỗi rollback bài/tag/link/audit | Test hiện có đạt: concurrent 201/409, chỉ thêm một bài; lỗi CHECK khi Create/Update giữ nguyên dữ liệu | Pass |
+
+## Giao diện nút điều hướng (29-10-2026)
+
+| ID | Trường hợp | Expected | Actual | Trạng thái |
+|---|---|---|---|---|
+| TC-NAV-BUTTON | Public news, Management/Sign in, Read article, All news, Read public news | Nền/viền/bo góc đồng bộ, hover/focus rõ, chuyển trang đúng | Chrome: kiểm tra CSS, hover và Tab/Shift+Tab đạt; đăng nhập Admin/Staff, đọc bài/quay lại, chuyển public/management đúng; không lỗi JavaScript | Pass |
+| TC-NAV-MOBILE | Login, public list/detail, accounts và staff ở 320px; lint/build | Không tràn ngang; frontend kiểm tra đạt | Chrome: scrollWidth = viewport 320px ở cả 5 trang; npm run lint và npm run build đạt | Pass |

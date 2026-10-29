@@ -56,7 +56,7 @@ export default function LoginPage() {
         <p className="eyebrow">Welcome back</p>
         <h2 id="login-title">Sign in</h2>
         <p className="muted">Enter your email and password.</p>
-        <p><Link to="/public/news">Read public news</Link></p>
+        <p><Link className="button-link button-secondary" to="/public/news">Read public news</Link></p>
         {notice && <p className="notice" role="status">{notice}</p>}
         {error && <p className="error-message" role="alert">{error}</p>}
         <form onSubmit={handleSubmit} aria-busy={submitting}>

@@ -10,7 +10,9 @@ export default function PublicLayout() {
     <div className="app-shell">
       <header className="app-header">
         <Link className="brand" to="/public/news"><span className="brand-mark">FU</span>News Management</Link>
-        <Link to={homePath(session)}>{session ? 'Management' : 'Sign in'}</Link>
+        <Link className="button-link button-primary" to={homePath(session)}>
+          {session ? 'Management' : 'Sign in'}
+        </Link>
       </header>
       <main className="public-content"><Outlet /></main>
     </div>

@@ -13,7 +13,7 @@ export default function ManagementLayout() {
       <header className="app-header">
         <div className="brand"><span className="brand-mark">FU</span>News Management</div>
         <div className="current-account">
-          <Link to="/public/news">Public news</Link>
+          <Link className="button-link button-secondary" to="/public/news">Public news</Link>
           <div><strong>{account.accountName}</strong><span>{isAdmin ? 'Admin' : 'Staff'}</span></div>
           <button type="button" className="button-secondary" onClick={logout}>Sign out</button>
         </div>

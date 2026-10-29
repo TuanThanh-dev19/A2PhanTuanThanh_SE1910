@@ -28,8 +28,6 @@ import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.TreeSet;
-import java.util.Set;
 
 @Service
 @Transactional(readOnly = true)
@@ -160,16 +158,16 @@ public class NewsService {
     }
 
     private Map<Long, Tag> validateTags(List<NewsRequest.TagInput> inputs, Long articleId) {
-        Set<Long> tagIds = new TreeSet<>();
+        Map<Long, Tag> existingTags = new HashMap<>();
         for (NewsRequest.TagInput input : inputs) {
-            if (input.tagId() != null && !tagIds.add(input.tagId())) {
+            Long tagId = input.tagId();
+            if (tagId == null) {
+                continue;
+            }
+            if (existingTags.containsKey(tagId)) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tag IDs must not be repeated.");
             }
-        }
-        Map<Long, Tag> existingTags = new HashMap<>();
-        // Lock existing tags in ID order so two requests cannot claim the same free tag.
-        for (Long tagId : tagIds) {
-            Tag tag = tagRepository.findForUpdate(tagId).orElseThrow(() ->
+            Tag tag = tagRepository.findById(tagId).orElseThrow(() ->
                     new ResponseStatusException(HttpStatus.BAD_REQUEST, "The tag no longer exists. Please select another tag."));
             NewsTag link = newsTags.findByTag_TagId(tagId).orElse(null);
             if (link != null && !link.getNewsArticle().getNewsArticleId().equals(articleId)) {
@@ -190,9 +188,11 @@ public class NewsService {
                 tag.setTagName(input.tagName());
                 tag.setNote(input.note());
             }
-            tagRepository.saveAndFlush(tag);
-            if (!newsTags.existsByTag_TagId(tag.getTagId())) {
-                newsTags.save(new NewsTag(article, tag));
+            tagRepository.save(tag);
+            NewsTag link = new NewsTag(article, tag);
+            // Check this article/tag pair; unique TagID rejects a concurrent claim by another article.
+            if (!newsTags.existsById(link.getId())) {
+                newsTags.save(link);
             }
         }
         newsTags.flush();
