@@ -141,7 +141,8 @@ class M3ApiTests {
     void roleRulesProtectReadsAndWrites() throws Exception {
         String adminToken = login(admin.getAccountEmail(), password).path("accessToken").asText();
         String staffToken = login(staff.getAccountEmail(), password).path("accessToken").asText();
-        String[] staffRoutes = {"/api/categories", "/api/categories/" + active.getCategory().getCategoryId(), "/api/news", "/api/news/1",
+        String[] staffRoutes = {"/api/categories", "/api/categories/" + active.getCategory().getCategoryId(),
+                "/api/news", "/api/news/" + active.getNewsArticleId(),
                 "/api/tags", "/api/profile", "/api/profile/news"};
         for (String route : staffRoutes) {
             for (String method : new String[]{"GET", "POST", "PUT", "DELETE"}) {
@@ -151,7 +152,7 @@ class M3ApiTests {
                 mvc.perform(request(org.springframework.http.HttpMethod.valueOf(method), route))
                         .andExpect(status().isUnauthorized());
             }
-            if (route.startsWith("/api/categories")) {
+            if (route.startsWith("/api/categories") || route.startsWith("/api/news")) {
                 mvc.perform(get(route).header("Authorization", "Bearer " + staffToken)).andExpect(status().isOk());
             } else {
                 // Modules without a controller still return 404 after passing the security filter.
@@ -458,7 +459,7 @@ class M3ApiTests {
         temporary.setAccountRole(2);
         accounts.saveAndFlush(temporary);
         mvc.perform(get("/api/accounts").header("Authorization", "Bearer " + token)).andExpect(status().isForbidden());
-        mvc.perform(get("/api/news").header("Authorization", "Bearer " + token)).andExpect(status().isNotFound());
+        mvc.perform(get("/api/news").header("Authorization", "Bearer " + token)).andExpect(status().isOk());
         accounts.delete(temporary);
         accounts.flush();
         mvc.perform(get("/api/news").header("Authorization", "Bearer " + token)).andExpect(status().isUnauthorized());

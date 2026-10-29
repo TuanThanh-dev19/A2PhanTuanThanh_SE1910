@@ -12,6 +12,15 @@ import java.util.Optional;
 
 public interface NewsArticleRepository extends JpaRepository<NewsArticle, Long> {
 
+    @Query(value = """
+            SELECT n.* FROM dbo.NewsArticle n
+            WHERE LOWER(n.NewsTitle) LIKE CONCAT('%', :keyword, '%') ESCAPE '!'
+                OR LOWER(n.Headline) LIKE CONCAT('%', :keyword, '%') ESCAPE '!'
+                OR LOWER(n.NewsContent) LIKE CONCAT('%', :keyword, '%') ESCAPE '!'
+            ORDER BY n.CreatedDate DESC, n.NewsArticleID DESC
+            """, nativeQuery = true)
+    List<NewsArticle> searchNews(@Param("keyword") String keyword);
+
     // Native SQL avoids Hibernate treating nvarchar(max) content as NCLOB in lower().
     @Query(value = """
             SELECT n.* FROM dbo.NewsArticle n

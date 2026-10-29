@@ -171,3 +171,12 @@ Các kết quả M3 ở `api/M3ApiTests.java`, chạy SQL Server DB biệt lập
 | TC-M5P2-DELETE | Cancel/Confirm, có bài active/inactive và DEC-05 | Cancel không DELETE; 204 hợp lệ; 409 có bài; giữ con/cháu/bài | 9 Category API tests đạt; Chrome + JAR/SQL: Cancel 0 DELETE, xóa leaf/parent 204, con còn và parent null; category có bài 409 giữ popup, SQL bài active/inactive còn nguyên | Pass |
 | TC-M5P2-SUBMIT | Nhấn kép Create/Update/Delete và Search | Mỗi thao tác 1 request; giữ keyword sau lưu/xóa | Proxy tạm chuyển nguyên request: dblclick lần lượt 1 POST 201, 1 PUT 200, 1 DELETE 204; SQL không trùng; search tạo/sửa/xóa và danh sách parent độc lập đạt | Pass |
 | TC-M5P2-VERIFY | Regression, HTTP quyền và build | Test/build/lint đạt; mọi thao tác chỉ Staff | mvnw verify: 41 tests, 0 failure/error/skipped; lint/build đạt; HTTP POST/PUT/DELETE khách 401/Admin 403. Test dùng DB riêng, không reset dữ liệu có sẵn | Pass |
+
+## M6 - Phần 1: API đọc và tìm kiếm News (29-10-2026)
+
+| ID | Trường hợp | Expected | Actual | Trạng thái |
+|---|---|---|---|---|
+| TC-M6P1-READ | Staff list/detail, cả status và creator khác | DTO đúng DB; mới trước, cùng ngày ID giảm; chi tiết đủ tags/audit, xử lý null | MockMvc/JWT thật + SQL Server riêng: 10 field list và 15 field detail khớp DB; tags có note/null, bài không tags và updater null đạt; không trả password/hash/email | Pass |
+| TC-M6P1-SEARCH | Title/headline/content, hoa thường/trim, wildcard, trống/no-match và giới hạn | Search literal; trống trả đủ, không khớp []; q > 200 trả 400; không sửa bài/links | Test SQL đạt tiếng Việt và % _ [ !; tìm được inactive; 200 ký tự hợp lệ, 201 trả 400; dữ liệu giữ nguyên | Pass |
+| TC-M6P1-AUTH | Khách/Admin, ID sai/thiếu và public | Khách 401/Admin 403; ID sai 400, thiếu 404; public chỉ active | List/detail đúng 401/403; ID 0/âm/chữ/thập phân/tràn long 400, không tồn tại 404; public list chỉ active, detail inactive 404 | Pass |
+| TC-M6P1-VERIFY | Backend regression và build | Các test cũ/mới đạt, đóng gói thành công | 4 NewsReadApiTests đạt; cập nhật kỳ vọng quyền M3 từ 404 sang 200 cho API News đã có; mvnw verify: 45 tests, 0 failure/error/skipped, BUILD SUCCESS | Pass |
