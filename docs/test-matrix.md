@@ -186,3 +186,9 @@ Các kết quả M3 ở `api/M3ApiTests.java`, chạy SQL Server DB biệt lập
 | ID | Trường hợp | Expected | Actual | Trạng thái |
 |---|---|---|---|---|
 | TC-M6P2-UI | Staff đọc, mở chi tiết, tìm không khớp và clear | Bảng đủ status; chi tiết tags/audit; clear trả đủ | Chrome + JAR/SQL riêng: 2 bài, dialog đúng, no-result và clear đạt; npm lint/build đạt | Pass |
+
+## M6 - Phần 3: API chọn tags (29-10-2026)
+
+| ID | Trường hợp | Expected | Actual | Trạng thái |
+|---|---|---|---|---|
+| TC-M6P3-TAGS | Tag tự do/thuộc bài đang sửa; search và quyền | Không trả tag bài khác; q/ID sai bị chặn | SQL Server + JWT: đủ nhánh chọn/search tiếng Việt/wildcard/empty; 400/404/401/403 đúng; 28 tests đạt | Pass |

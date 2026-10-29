@@ -152,7 +152,7 @@ class M3ApiTests {
                 mvc.perform(request(org.springframework.http.HttpMethod.valueOf(method), route))
                         .andExpect(status().isUnauthorized());
             }
-            if (route.startsWith("/api/categories") || route.startsWith("/api/news")) {
+            if (route.startsWith("/api/categories") || route.startsWith("/api/news") || route.equals("/api/tags")) {
                 mvc.perform(get(route).header("Authorization", "Bearer " + staffToken)).andExpect(status().isOk());
             } else {
                 // Modules without a controller still return 404 after passing the security filter.

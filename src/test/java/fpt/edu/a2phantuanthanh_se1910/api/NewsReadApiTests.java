@@ -215,6 +215,33 @@ class NewsReadApiTests {
         return json.readTree(body);
     }
 
+    @Test
+    void tagChoicesOnlyIncludeFreeTagsAndTagsOfTheSelectedArticle() throws Exception {
+        Tag free = tags.saveAndFlush(new Tag("Tự do 100%_ [M6]!", "Ghi chú tìm kiếm"));
+        JsonNode available = read("/api/tags", "");
+        assertThat(available.size()).isEqualTo(1);
+        assertThat(available.get(0).path("tagId").asLong()).isEqualTo(free.getTagId());
+        assertThat(read("/api/tags", "GHI CHÚ TÌM KIẾM").size()).isEqualTo(1);
+        assertThat(read("/api/tags", "%_ [M6]!").size()).isEqualTo(1);
+        assertThat(read("/api/tags", "no-match").isEmpty()).isTrue();
+        mvc.perform(get("/api/tags").param("newsArticleId", inactive.getNewsArticleId().toString())
+                        .header("Authorization", "Bearer " + staffToken))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.length()").value(3));
+        mvc.perform(get("/api/tags").param("newsArticleId", active.getNewsArticleId().toString())
+                        .header("Authorization", "Bearer " + staffToken))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.length()").value(1));
+        mvc.perform(get("/api/tags")).andExpect(status().isUnauthorized());
+        mvc.perform(get("/api/tags").header("Authorization", "Bearer " + adminToken)).andExpect(status().isForbidden());
+        for (String id : new String[]{"0", "-1", "abc", "1.5"}) {
+            mvc.perform(get("/api/tags").param("newsArticleId", id).header("Authorization", "Bearer " + staffToken))
+                    .andExpect(status().isBadRequest());
+        }
+        mvc.perform(get("/api/tags").param("newsArticleId", Long.toString(Long.MAX_VALUE))
+                        .header("Authorization", "Bearer " + staffToken)).andExpect(status().isNotFound());
+        mvc.perform(get("/api/tags").param("q", "x".repeat(201)).header("Authorization", "Bearer " + staffToken))
+                .andExpect(status().isBadRequest());
+    }
+
     private String login(String email, String password) throws Exception {
         String body = mvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON)
                         .content(json.writeValueAsString(Map.of("email", email, "password", password))))
