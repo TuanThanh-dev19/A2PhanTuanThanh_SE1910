@@ -23,6 +23,7 @@ export default function ManagementLayout() {
           {isAdmin && <NavLink to="/accounts">Tài khoản</NavLink>}
           {!isAdmin && <NavLink to="/staff">Trang Staff</NavLink>}
           {!isAdmin && <NavLink to="/categories">Danh mục</NavLink>}
+          {!isAdmin && <NavLink to="/news">Bài viết</NavLink>}
         </nav>
         <main className="page-content"><Outlet /></main>
       </div>

@@ -180,3 +180,9 @@ Các kết quả M3 ở `api/M3ApiTests.java`, chạy SQL Server DB biệt lập
 | TC-M6P1-SEARCH | Title/headline/content, hoa thường/trim, wildcard, trống/no-match và giới hạn | Search literal; trống trả đủ, không khớp []; q > 200 trả 400; không sửa bài/links | Test SQL đạt tiếng Việt và % _ [ !; tìm được inactive; 200 ký tự hợp lệ, 201 trả 400; dữ liệu giữ nguyên | Pass |
 | TC-M6P1-AUTH | Khách/Admin, ID sai/thiếu và public | Khách 401/Admin 403; ID sai 400, thiếu 404; public chỉ active | List/detail đúng 401/403; ID 0/âm/chữ/thập phân/tràn long 400, không tồn tại 404; public list chỉ active, detail inactive 404 | Pass |
 | TC-M6P1-VERIFY | Backend regression và build | Các test cũ/mới đạt, đóng gói thành công | 4 NewsReadApiTests đạt; cập nhật kỳ vọng quyền M3 từ 404 sang 200 cho API News đã có; mvnw verify: 45 tests, 0 failure/error/skipped, BUILD SUCCESS | Pass |
+
+## M6 - Phần 2: React đọc/tìm News (29-10-2026)
+
+| ID | Trường hợp | Expected | Actual | Trạng thái |
+|---|---|---|---|---|
+| TC-M6P2-UI | Staff đọc, mở chi tiết, tìm không khớp và clear | Bảng đủ status; chi tiết tags/audit; clear trả đủ | Chrome + JAR/SQL riêng: 2 bài, dialog đúng, no-result và clear đạt; npm lint/build đạt | Pass |

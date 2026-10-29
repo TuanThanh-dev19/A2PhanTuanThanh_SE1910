@@ -8,6 +8,7 @@ import AccountsPage from '../pages/AccountsPage'
 import CategoriesPage from '../pages/CategoriesPage'
 import LoginPage from '../pages/LoginPage'
 import StaffPage from '../pages/StaffPage'
+import NewsPage from '../pages/NewsPage'
 import ProtectedRoute from './ProtectedRoute'
 
 export default function AppRoutes() {
@@ -24,6 +25,7 @@ export default function AppRoutes() {
         <Route element={<ManagementLayout />}>
           <Route path="/staff" element={<StaffPage />} />
           <Route path="/categories" element={<CategoriesPage />} />
+          <Route path="/news" element={<NewsPage />} />
         </Route>
       </Route>
       <Route path="*" element={<Navigate to={homePath(session)} replace />} />
