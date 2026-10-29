@@ -9,6 +9,7 @@ import CategoriesPage from '../pages/CategoriesPage'
 import LoginPage from '../pages/LoginPage'
 import StaffPage from '../pages/StaffPage'
 import NewsPage from '../pages/NewsPage'
+import ProfilePage from '../pages/ProfilePage'
 import PublicLayout from '../components/PublicLayout'
 import PublicNewsPage from '../pages/PublicNewsPage'
 import PublicNewsDetailPage from '../pages/PublicNewsDetailPage'
@@ -34,6 +35,7 @@ export default function AppRoutes() {
           <Route path="/staff" element={<StaffPage />} />
           <Route path="/categories" element={<CategoriesPage />} />
           <Route path="/news" element={<NewsPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
         </Route>
       </Route>
       <Route path="*" element={<Navigate to={homePath(session)} replace />} />

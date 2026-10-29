@@ -234,3 +234,13 @@ Các kết quả M3 ở `api/M3ApiTests.java`, chạy SQL Server DB biệt lập
 | TC-M7P1-READ | Hai Staff đọc GET /api/profile, gửi ID người khác qua query | Chỉ trả hồ sơ theo principal; DTO 4 field, không password/hash; no-store | MockMvc/JWT thật + SQL Server riêng: từng Staff nhận đúng ID/tên/email/role trong DB; accountId/id giả không đổi hồ sơ; đủ 4 field và Cache-Control: no-store | Pass |
 | TC-M7P1-AUTH | Khách, token sai/hết hạn, Admin; account đổi thông tin/role hoặc bị xóa | 401/403 đúng; cùng token đọc dữ liệu hiện tại, mất quyền khi role đổi/account bị xóa | Khách/token sai/hết hạn 401, Admin 403; tên/email mới hiện với token cũ; đổi role sang Admin 403, xóa account 401 | Pass |
 | TC-M7P1-VERIFY | Backend regression và đóng gói | Test/build đạt; kiểm tra mới giữ local | mvnw verify: 57 tests, 0 failure/error/skipped, BUILD SUCCESS; 3 test profile mới đạt. Chưa chạy UI hoặc sửa profile/history | Pass |
+
+## M7 - Phần 2: giao diện xem hồ sơ (29-10-2026)
+
+| ID | Trường hợp | Expected | Actual | Trạng thái |
+|---|---|---|---|---|
+| TC-M7P2-READ | Staff mở My profile, reload; hai Staff ở hai phiên | Axios gửi Bearer; đủ ID/tên/email/role từ API, đúng người đăng nhập | Chrome + JAR/SQL Server riêng: 200, 4 field khớp SQL; menu active, reload giữ phiên; hai Staff nhận đúng hồ sơ riêng | Pass |
+| TC-M7P2-STATE | Loading, mất mạng và backend 403 | Có loading/lỗi rõ; Try again tải lại, không hiện dữ liệu cũ khi lỗi | Trì hoãn request thật hiện loading/aria-busy; mô phỏng lỗi mạng hiện lỗi, retry đọc BE; đổi role trong SQL nhận 403, khôi phục role rồi retry đạt | Pass |
+| TC-M7P2-AUTH | Khách/Admin mở URL; JWT hết hạn và timer phiên | Khách về login, Admin về accounts; 401/hết phiên xóa session và thông báo | Chrome: khách/Admin không gửi GET profile, menu Admin không có My profile; JWT ký thật hết hạn nhận 401 và timer đều đưa về login kèm notice | Pass |
+| TC-M7P2-LAYOUT | Email dài và màn hình nhỏ | Email xuống dòng, trang không tràn ngang | Hai phiên Chrome: email 254 ký tự khớp SQL, xuống dòng; viewport 390px/320px không tràn; không có lỗi JavaScript chưa xử lý | Pass |
+| TC-M7P2-BUILD | Frontend lint/build | Không lỗi, đóng gói thành công | npm run lint (--max-warnings 0) và npm run build đạt; kiểm tra UI chạy local, không tạo file test/evidence | Pass |

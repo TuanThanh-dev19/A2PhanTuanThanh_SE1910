@@ -25,6 +25,7 @@ export default function ManagementLayout() {
           {!isAdmin && <NavLink to="/staff">Staff home</NavLink>}
           {!isAdmin && <NavLink to="/categories">Categories</NavLink>}
           {!isAdmin && <NavLink to="/news">Articles</NavLink>}
+          {!isAdmin && <NavLink to="/profile">My profile</NavLink>}
         </nav>
         <main className="page-content"><Outlet /></main>
       </div>
