@@ -7,6 +7,7 @@ import fpt.edu.a2phantuanthanh_se1910.service.NewsService;
 import fpt.edu.a2phantuanthanh_se1910.dto.request.NewsRequest;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import java.security.Principal;
 import java.net.URI;
@@ -45,5 +46,12 @@ public class NewsController {
         NewsDetail response = newsService.create(request, Long.parseLong(principal.getName()));
         return ResponseEntity.created(URI.create("/api/news/" + response.newsArticleId()))
                 .cacheControl(CacheControl.noStore()).body(response);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<NewsDetail> update(@PathVariable @Positive long id,
+            @Valid @RequestBody NewsRequest request, Principal principal) {
+        return ResponseEntity.ok().cacheControl(CacheControl.noStore())
+                .body(newsService.update(id, request, Long.parseLong(principal.getName())));
     }
 }

@@ -5,6 +5,7 @@ import fpt.edu.a2phantuanthanh_se1910.dto.response.ApiError;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -64,5 +65,11 @@ public class ApiExceptionHandler {
         return ResponseEntity.status(409).body(ApiError.of(409, "CONFLICT",
                 "Data conflicts with an existing account or news reference. Reload and try again.",
                 request.getRequestURI()));
+    }
+
+    @ExceptionHandler(ConcurrencyFailureException.class)
+    public ResponseEntity<ApiError> concurrentChange(HttpServletRequest request) {
+        return ResponseEntity.status(409).body(ApiError.of(409, "CONFLICT",
+                "Dữ liệu đang được cập nhật. Vui lòng tải lại và thử lại.", request.getRequestURI()));
     }
 }

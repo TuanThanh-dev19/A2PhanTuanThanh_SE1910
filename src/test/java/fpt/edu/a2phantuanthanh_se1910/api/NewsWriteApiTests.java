@@ -166,6 +166,93 @@ class NewsWriteApiTests {
         return body;
     }
 
+    @Test
+    void updateByAnotherStaffPreservesCreationAndSynchronizesTagsAndPublicStatus() throws Exception {
+        var initial = body(1);
+        initial.put("tags", List.of(tagInput(null, "Keep", "Before"), tagInput(null, "Detach", null)));
+        JsonNode created = create(initial);
+        long id = created.path("newsArticleId").asLong();
+        long keepId = created.path("tags").get(0).path("tagId").asLong();
+        long detachId = created.path("tags").get(1).path("tagId").asLong();
+        Tag free = tags.saveAndFlush(new Tag("Free", null));
+        String password = "Other-" + UUID.randomUUID();
+        SystemAccount other = accounts.saveAndFlush(new SystemAccount("Other Staff", UUID.randomUUID() + "@example.com",
+                2, passwords.encode(password)));
+        String token = login(other.getAccountEmail(), password);
+        Category newCategory = categories.saveAndFlush(new Category("New category", null, null, 1));
+        var changed = body(0);
+        changed.put("newsTitle", " Đã cập nhật ");
+        changed.put("categoryId", newCategory.getCategoryId());
+        changed.put("createdById", other.getAccountId());
+        changed.put("createdDate", "2000-01-01T00:00:00");
+        changed.put("tags", List.of(tagInput(keepId, "Renamed", "After"),
+                tagInput(free.getTagId(), "Attached", null), tagInput(null, "New", null)));
+        String responseBody = mvc.perform(put("/api/news/" + id).header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON).content(json.writeValueAsString(changed)))
+                .andExpect(status().isOk()).andExpect(jsonPath("newsTitle").value("Đã cập nhật"))
+                .andExpect(jsonPath("categoryId").value(newCategory.getCategoryId()))
+                .andExpect(jsonPath("createdById").value(staff.getAccountId()))
+                .andExpect(jsonPath("updatedById").value(other.getAccountId()))
+                .andExpect(jsonPath("tags.length()").value(3)).andReturn().getResponse().getContentAsString();
+        JsonNode response = json.readTree(responseBody);
+        assertThat(response.path("createdDate")).isEqualTo(created.path("createdDate"));
+        assertThat(response.path("modifiedDate").isNull()).isFalse();
+        assertThat(tags.findById(keepId).orElseThrow().getNote()).isEqualTo("After");
+        assertThat(tags.existsById(detachId)).isTrue();
+        assertThat(links.existsByTag_TagId(detachId)).isFalse();
+        mvc.perform(get("/api/public/news/" + id)).andExpect(status().isNotFound());
+        changed.put("newsStatus", 1);
+        changed.put("tags", List.of());
+        mvc.perform(put("/api/news/" + id).header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON).content(json.writeValueAsString(changed)))
+                .andExpect(status().isOk()).andExpect(jsonPath("tags.length()").value(0));
+        mvc.perform(get("/api/public/news/" + id)).andExpect(status().isOk());
+        assertThat(links.findByNewsArticle_NewsArticleId(id)).isEmpty();
+        assertThat(tags.existsById(keepId)).isTrue();
+    }
+
+    @Test
+    void invalidUpdateLeavesArticleTagsAndAuditUnchangedAndChecksPermissions() throws Exception {
+        var initial = body(1);
+        initial.put("tags", List.of(tagInput(null, "Original tag", "Original note")));
+        JsonNode created = create(initial);
+        long id = created.path("newsArticleId").asLong();
+        long tagId = created.path("tags").get(0).path("tagId").asLong();
+        var occupiedBody = body(1);
+        occupiedBody.put("tags", List.of(tagInput(null, "Occupied", null)));
+        long occupiedId = create(occupiedBody).path("tags").get(0).path("tagId").asLong();
+        long articleCount = articles.count();
+        long tagCount = tags.count();
+        for (long invalidId : new long[]{occupiedId, Long.MAX_VALUE}) {
+            var changed = body(0);
+            changed.put("newsTitle", "Must not save");
+            changed.put("tags", List.of(tagInput(tagId, "Must not rename", null),
+                    tagInput(null, "Must not create", null), tagInput(invalidId, "Invalid", null)));
+            mvc.perform(put("/api/news/" + id).header("Authorization", "Bearer " + staffToken)
+                            .contentType(MediaType.APPLICATION_JSON).content(json.writeValueAsString(changed)))
+                    .andExpect(status().is(invalidId == occupiedId ? 409 : 400));
+        }
+        var invalid = body(1);
+        invalid.put("categoryId", Long.MAX_VALUE);
+        mvc.perform(put("/api/news/" + id).header("Authorization", "Bearer " + staffToken)
+                        .contentType(MediaType.APPLICATION_JSON).content(json.writeValueAsString(invalid)))
+                .andExpect(status().isBadRequest());
+        mvc.perform(put("/api/news/" + id).contentType(MediaType.APPLICATION_JSON).content(json.writeValueAsString(body(1))))
+                .andExpect(status().isUnauthorized());
+        mvc.perform(put("/api/news/" + id).header("Authorization", "Bearer " + adminToken)
+                        .contentType(MediaType.APPLICATION_JSON).content(json.writeValueAsString(body(1))))
+                .andExpect(status().isForbidden());
+        mvc.perform(put("/api/news/" + Long.MAX_VALUE).header("Authorization", "Bearer " + staffToken)
+                        .contentType(MediaType.APPLICATION_JSON).content(json.writeValueAsString(body(1))))
+                .andExpect(status().isNotFound());
+        assertThat(articles.findById(id).orElseThrow().getNewsTitle()).isEqualTo("Bài viết M6");
+        assertThat(articles.findById(id).orElseThrow().getModifiedDate()).isNull();
+        assertThat(tags.findById(tagId).orElseThrow().getTagName()).isEqualTo("Original tag");
+        assertThat(links.findByNewsArticle_NewsArticleId(id)).hasSize(1);
+        assertThat(articles.count()).isEqualTo(articleCount);
+        assertThat(tags.count()).isEqualTo(tagCount);
+    }
+
     private Map<String, Object> tagInput(Long id, String name, String note) {
         Map<String, Object> tag = new LinkedHashMap<>();
         tag.put("tagId", id);

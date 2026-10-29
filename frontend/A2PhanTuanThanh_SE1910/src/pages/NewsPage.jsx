@@ -14,7 +14,7 @@ export default function NewsPage() {
   const [detail, setDetail] = useState(null)
   const [openingId, setOpeningId] = useState(null)
   const [actionError, setActionError] = useState('')
-  const [creating, setCreating] = useState(false)
+  const [formState, setFormState] = useState(null)
   const [success, setSuccess] = useState('')
 
   useEffect(() => {
@@ -53,12 +53,16 @@ export default function NewsPage() {
     reloadNews()
   }
 
-  async function openDetail(id) {
+  async function openDetail(id, editing = false) {
     setOpeningId(id)
     setActionError('')
     try {
       const response = await client.get(`/news/${id}`)
-      setDetail(response.data)
+      if (editing) {
+        setFormState({ news: response.data })
+      } else {
+        setDetail(response.data)
+      }
     } catch (requestError) {
       setActionError(requestError.response?.data?.message || 'Không tải được chi tiết bài viết.')
     } finally {
@@ -81,12 +85,14 @@ export default function NewsPage() {
         <button type="submit" className="button-primary" disabled={loading}>Tìm kiếm</button>
         {(keyword || searchQuery) && <button type="button" className="button-secondary" onClick={clearSearch}>Xóa tìm kiếm</button>}
         <button type="button" className="button-primary" onClick={() => {
-          setSuccess(''); setActionError(''); setCreating(true)
-        }}>Thêm bài viết</button>
+          setSuccess(''); setActionError(''); setFormState({ news: null })
+        }} disabled={openingId !== null}>Thêm bài viết</button>
       </form>
       {success && <p className="notice" role="status">{success}</p>}
-      {creating && <NewsFormDialog onClose={() => setCreating(false)} onSaved={() => {
-        setCreating(false); setSuccess('Đã thêm bài viết.'); reloadNews()
+      {formState && <NewsFormDialog news={formState.news} onClose={() => setFormState(null)} onSaved={() => {
+        setSuccess(formState.news ? 'Đã cập nhật bài viết.' : 'Đã thêm bài viết.')
+        setFormState(null)
+        reloadNews()
       }} />}
       {actionError && <p className="error-message" role="alert">{actionError}</p>}
       {detail && <NewsDetailDialog news={detail} onClose={() => setDetail(null)} />}
@@ -108,7 +114,9 @@ export default function NewsPage() {
             <td>{article.createdByName}</td><td>{article.createdDate.replace('T', ' ')}</td>
             <td><div className="row-actions"><button type="button" className="button-secondary"
               disabled={openingId !== null} onClick={() => openDetail(article.newsArticleId)}>
-              {openingId === article.newsArticleId ? 'Đang tải…' : 'Chi tiết'}</button></div></td>
+              {openingId === article.newsArticleId ? 'Đang tải…' : 'Chi tiết'}</button>
+              <button type="button" className="button-secondary" disabled={openingId !== null}
+                onClick={() => openDetail(article.newsArticleId, true)}>Sửa</button></div></td>
           </tr>)}</tbody>
         </table></div>}
       </section>

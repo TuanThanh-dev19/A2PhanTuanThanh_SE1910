@@ -3,11 +3,13 @@ import { useEffect, useRef, useState } from 'react'
 import client from '../api/client'
 import NewsTagsEditor from './NewsTagsEditor'
 
-export default function NewsFormDialog({ onClose, onSaved }) {
+export default function NewsFormDialog({ news, onClose, onSaved }) {
   const dialogRef = useRef(null)
   const savingRef = useRef(false)
-  const [form, setForm] = useState({ newsTitle: '', headline: '', newsContent: '', newsSource: '', categoryId: '', newsStatus: '1' })
-  const [tags, setTags] = useState([])
+  const [form, setForm] = useState({ newsTitle: news?.newsTitle || '', headline: news?.headline || '',
+    newsContent: news?.newsContent || '', newsSource: news?.newsSource || '',
+    categoryId: String(news?.categoryId || ''), newsStatus: String(news?.newsStatus ?? 1) })
+  const [tags, setTags] = useState(() => (news?.tags || []).map((tag) => ({ ...tag, note: tag.note || '' })))
   const [categories, setCategories] = useState([])
   const [tagChoices, setTagChoices] = useState([])
   const [loading, setLoading] = useState(true)
@@ -24,7 +26,7 @@ export default function NewsFormDialog({ onClose, onSaved }) {
       try {
         const [categoryResponse, tagResponse] = await Promise.all([
           client.get('/categories', { signal: controller.signal }),
-          client.get('/tags', { signal: controller.signal }),
+          client.get('/tags', { params: { newsArticleId: news?.newsArticleId }, signal: controller.signal }),
         ])
         if (!controller.signal.aborted) {
           setCategories(categoryResponse.data)
@@ -38,7 +40,7 @@ export default function NewsFormDialog({ onClose, onSaved }) {
     }
     loadChoices()
     return () => controller.abort()
-  }, [reloadCount])
+  }, [reloadCount, news?.newsArticleId])
 
   function changeField(event) {
     setForm({ ...form, [event.target.name]: event.target.value })
@@ -74,7 +76,12 @@ export default function NewsFormDialog({ onClose, onSaved }) {
     setSaving(true)
     try {
       const body = { ...form, categoryId: Number(form.categoryId), newsStatus: Number(form.newsStatus), tags }
-      const response = await client.post('/news', body)
+      let response
+      if (news) {
+        response = await client.put(`/news/${news.newsArticleId}`, body)
+      } else {
+        response = await client.post('/news', body)
+      }
       onSaved(response.data)
     } catch (requestError) {
       setError(requestError.response?.data?.message || 'Không lưu được bài viết. Vui lòng thử lại.')
@@ -88,7 +95,7 @@ export default function NewsFormDialog({ onClose, onSaved }) {
   return (
     <dialog ref={dialogRef} className="account-dialog news-dialog" aria-labelledby="news-form-title" onCancel={cancel}>
       <form onSubmit={submit} noValidate aria-busy={loading || saving}>
-        <h2 id="news-form-title">Thêm bài viết</h2>
+        <h2 id="news-form-title">{news ? 'Sửa bài viết' : 'Thêm bài viết'}</h2>
         {loading && <p role="status">Đang tải danh mục và tags…</p>}
         {loadError && <div><p className="error-message" role="alert">{loadError}</p>
           <button type="button" className="button-secondary" onClick={() => {

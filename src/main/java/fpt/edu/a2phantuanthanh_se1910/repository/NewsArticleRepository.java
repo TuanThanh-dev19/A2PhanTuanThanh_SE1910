@@ -9,8 +9,13 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.jpa.repository.Lock;
+import jakarta.persistence.LockModeType;
 
 public interface NewsArticleRepository extends JpaRepository<NewsArticle, Long> {
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT n FROM NewsArticle n WHERE n.newsArticleId = :id")
+    Optional<NewsArticle> findForUpdate(@Param("id") Long id);
 
     @Query(value = """
             SELECT n.* FROM dbo.NewsArticle n

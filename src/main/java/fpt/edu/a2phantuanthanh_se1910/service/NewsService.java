@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Locale;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeSet;
@@ -97,7 +98,8 @@ public class NewsService {
         SystemAccount creator = accounts.findById(accountId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Account no longer exists"));
         Map<Long, Tag> existingTags = validateTags(request.tags(), null);
-        NewsArticle article = new NewsArticle(request.newsTitle(), request.headline(), LocalDateTime.now(ZoneOffset.UTC),
+        LocalDateTime createdDate = LocalDateTime.now(ZoneOffset.UTC).truncatedTo(ChronoUnit.MICROS);
+        NewsArticle article = new NewsArticle(request.newsTitle(), request.headline(), createdDate,
                 request.newsContent(), request.newsSource(), category, request.newsStatus(), creator);
         articles.saveAndFlush(article);
         saveTags(article, request.tags(), existingTags);
@@ -107,6 +109,33 @@ public class NewsService {
     private Category requireCategory(long id) {
         return categories.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
                 "Danh mục không tồn tại. Vui lòng chọn lại."));
+    }
+
+    @Transactional
+    public NewsDetail update(long id, NewsRequest request, long accountId) {
+        NewsArticle article = articles.findForUpdate(id).orElseThrow(() ->
+                new ResponseStatusException(HttpStatus.NOT_FOUND, "News article not found"));
+        Category category = requireCategory(request.categoryId());
+        SystemAccount updater = accounts.findById(accountId).orElseThrow(() ->
+                new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Account no longer exists"));
+        Map<Long, Tag> existingTags = validateTags(request.tags(), id);
+        for (NewsTag link : newsTags.findByNewsArticle_NewsArticleId(id)) {
+            if (!existingTags.containsKey(link.getTag().getTagId())) {
+                newsTags.delete(link);
+            }
+        }
+        newsTags.flush();
+        article.setNewsTitle(request.newsTitle());
+        article.setHeadline(request.headline());
+        article.setNewsContent(request.newsContent());
+        article.setNewsSource(request.newsSource());
+        article.setCategory(category);
+        article.setNewsStatus(request.newsStatus());
+        article.setUpdatedBy(updater);
+        article.setModifiedDate(LocalDateTime.now(ZoneOffset.UTC).truncatedTo(ChronoUnit.MICROS));
+        articles.saveAndFlush(article);
+        saveTags(article, request.tags(), existingTags);
+        return findById(id);
     }
 
     private Map<Long, Tag> validateTags(List<NewsRequest.TagInput> inputs, Long articleId) {
@@ -141,7 +170,9 @@ public class NewsService {
                 tag.setNote(input.note());
             }
             tagRepository.saveAndFlush(tag);
-            newsTags.save(new NewsTag(article, tag));
+            if (!newsTags.existsByTag_TagId(tag.getTagId())) {
+                newsTags.save(new NewsTag(article, tag));
+            }
         }
         newsTags.flush();
     }
