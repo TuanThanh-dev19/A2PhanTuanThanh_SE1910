@@ -212,3 +212,9 @@ Các kết quả M3 ở `api/M3ApiTests.java`, chạy SQL Server DB biệt lập
 | ID | Trường hợp | Expected | Actual | Trạng thái |
 |---|---|---|---|---|
 | TC-M6P6-DELETE | Xóa bài cả hai status, có nhiều tags; quyền/ID và confirmation | 204; chỉ xóa bài/links; Cancel không DELETE | 6 write tests SQL đạt, account/category/tags còn; 401/403/404/400 đúng. Chrome Cancel 0 DELETE; dblclick Confirm 1 DELETE; tag được chọn lại trong form tạo; lint/build đạt | Pass |
+
+## M6 - Phần 7: giao diện public (29-10-2026)
+
+| ID | Trường hợp | Expected | Actual | Trạng thái |
+|---|---|---|---|---|
+| TC-M6P7-PUBLIC | Khách đọc/tìm tin, URL inactive/sai, màn hình hẹp, token cũ | Chỉ active; public không gửi Bearer; giao diện đọc được | Chrome/JAR/SQL: list/detail/search/clear đạt; inactive/ID chữ báo không tìm thấy; viewport 390px không tràn; token giả cũ không gắn vào cả list/detail, vẫn đọc được; lint/build đạt | Pass |

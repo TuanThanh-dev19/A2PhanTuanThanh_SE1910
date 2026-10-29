@@ -1,6 +1,6 @@
 // Author: Phan Tuan Thanh - CE190595
 import { useContext } from 'react'
-import { NavLink, Outlet } from 'react-router-dom'
+import { Link, NavLink, Outlet } from 'react-router-dom'
 import { AuthContext } from '../auth/AuthContext'
 
 export default function ManagementLayout() {
@@ -13,6 +13,7 @@ export default function ManagementLayout() {
       <header className="app-header">
         <div className="brand"><span className="brand-mark">FU</span>News Management</div>
         <div className="current-account">
+          <Link to="/public/news">Tin công khai</Link>
           <div><strong>{account.accountName}</strong><span>{isAdmin ? 'Admin' : 'Staff'}</span></div>
           <button type="button" className="button-secondary" onClick={logout}>Đăng xuất</button>
         </div>

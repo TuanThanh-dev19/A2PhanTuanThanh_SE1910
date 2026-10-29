@@ -9,12 +9,20 @@ import CategoriesPage from '../pages/CategoriesPage'
 import LoginPage from '../pages/LoginPage'
 import StaffPage from '../pages/StaffPage'
 import NewsPage from '../pages/NewsPage'
+import PublicLayout from '../components/PublicLayout'
+import PublicNewsPage from '../pages/PublicNewsPage'
+import PublicNewsDetailPage from '../pages/PublicNewsDetailPage'
 import ProtectedRoute from './ProtectedRoute'
 
 export default function AppRoutes() {
   const { session } = useContext(AuthContext)
   return (
     <Routes>
+      <Route path="/" element={<Navigate to="/public/news" replace />} />
+      <Route element={<PublicLayout />}>
+        <Route path="/public/news" element={<PublicNewsPage />} />
+        <Route path="/public/news/:id" element={<PublicNewsDetailPage />} />
+      </Route>
       <Route path="/login" element={<LoginPage />} />
       <Route element={<ProtectedRoute role={1} />}>
         <Route element={<ManagementLayout />}>

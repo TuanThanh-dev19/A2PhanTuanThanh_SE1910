@@ -1,6 +1,6 @@
 // Author: Phan Tuan Thanh - CE190595
 import { useContext, useState } from 'react'
-import { Navigate } from 'react-router-dom'
+import { Link, Navigate } from 'react-router-dom'
 import client from '../api/client'
 import { AuthContext } from '../auth/AuthContext'
 import { homePath } from '../auth/session'
@@ -56,6 +56,7 @@ export default function LoginPage() {
         <p className="eyebrow">Chào mừng trở lại</p>
         <h2 id="login-title">Đăng nhập</h2>
         <p className="muted">Sử dụng email và mật khẩu của bạn.</p>
+        <p><Link to="/public/news">Đọc tin công khai</Link></p>
         {notice && <p className="notice" role="status">{notice}</p>}
         {error && <p className="error-message" role="alert">{error}</p>}
         <form onSubmit={handleSubmit} aria-busy={submitting}>

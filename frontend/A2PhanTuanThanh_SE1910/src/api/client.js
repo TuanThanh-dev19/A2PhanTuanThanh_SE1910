@@ -9,7 +9,7 @@ const client = axios.create({
 
 client.interceptors.request.use((config) => {
   const session = readSession()
-  if (session && config.url !== '/auth/login') {
+  if (session && config.url !== '/auth/login' && !config.url?.startsWith('/public/')) {
     config.headers.Authorization = `Bearer ${session.accessToken}`
   }
   return config
