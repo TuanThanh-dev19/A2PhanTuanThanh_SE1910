@@ -273,3 +273,10 @@ Các kết quả M3 ở `api/M3ApiTests.java`, chạy SQL Server DB biệt lập
 | TC-M8-UI | Luồng Admin → Staff → khách → profile/history → xóa | React/HTTP/SQL nhất quán; dialog/confirmation đúng | Chrome/JAR/SQL riêng: Create/Update/Search ba module, tags, profile/password/history/public đạt; guards xóa cả status; Cancel 0 DELETE, Confirm 1; tiếng Việt kiểm tra byte SQL, script chỉ hiện text; mobile 390px không tràn | Pass |
 | TC-M8-RECOVERY | Loading, 400/409/401, mạng và restart | Lỗi rõ; dữ liệu giữ nguyên, retry/reload hoạt động | FK stale 400 giữ popup; 409 giữ form/confirmation; deleted-account JWT 401 về login; mô phỏng mất mạng rồi retry đạt; JVM mới validate giữ DTO từ SQL, JWT cũ và React hoạt động | Pass |
 | TC-M8-HANDOVER | IntelliJ, ảnh sinh viên và tài liệu khớp tiến độ | Đủ thông tin và ảnh thật trước nộp | Chưa có ảnh sinh viên; TC-SETUP-03 chưa chạy. README/design/evidence index còn mô tả M3; lượt này chỉ sửa test-matrix theo AGENTS.md, chưa nghiệm thu bàn giao toàn bộ | Partial |
+
+## Sửa cấu hình khởi động local (29-10-2026)
+
+| ID | Trường hợp | Expected | Actual | Trạng thái |
+|---|---|---|---|---|
+| TC-LOCAL-CONFIG | Nạp host, SQL login và JWT từ file local | Kết nối SQL Server; secret không nằm trong source Git | application.local.properties được git check-ignore xác nhận; mvnw -DskipTests package đạt; JAR chạy Java 24 không đặt SQLSERVER/JWT trong môi trường, validate schema đạt, khởi động cổng 8080 | Pass |
+| TC-LOCAL-HTTP | Gọi API sau khởi động | Public 200; account cần đăng nhập 401 | GET /api/public/news trả 200 và JSON hợp lệ; GET /api/accounts không token trả 401 | Pass |
