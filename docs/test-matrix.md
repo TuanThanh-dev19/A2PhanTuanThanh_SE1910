@@ -4,6 +4,8 @@ Author: Phan Tuan Thanh - CE190595
 
 ## Trạng thái
 
+M8 ngày 29-10-2026: source xuất từ HEAD `ec94a5a` kèm sửa cấu hình M8, không dùng target/node_modules cũ; `clean verify` **57 tests pass**, `npm ci`, lint/build đạt. HTTP bổ sung và Chrome trên React production build + JAR + SQL Server riêng đạt. Còn sinh viên chạy IntelliJ/chụp ảnh; README và evidence index vẫn mô tả M3, chưa được cập nhật trong lượt này.
+
 M3 ngày 28-10-2026: AI/tool chạy `scripts/test-m3.ps1` trên SQL Server thật, **20 tests pass (2 M1 + 7 M2 + 11 M3), 0 failure/error/skipped**. JAR HTTP và restart persistence đạt; hai lần seed demo giữ counts 2/1/2. React/CRUD/profile/history chưa chạy. Report local ở `target/surefire-reports`; ảnh sinh viên tự chụp theo evidence index.
 
 **Pass:** đã chạy đủ và đạt; **Fail:** đã chạy nhưng sai; **Not run:** chưa chạy; **Partial:** mới đạt một phần; **Blocked:** bị chặn, cần ghi nguyên nhân. Một hàng nhiều nhánh chỉ Pass khi đủ các nhánh.
@@ -97,21 +99,21 @@ Minh chứng kỹ thuật đã lưu: [kết quả M2](evidence/2026-10-28-m2/ins
 
 | ID | Trường hợp | Các bước | Kết quả mong đợi | Actual | Trạng thái |
 |---|---|---|---|---|---|
-| TC-UI-01 | Popup; REQ-15 | Create và Update ở cả ba module | Cả 6 luồng dùng popup; lỗi giữ form | Chưa chạy | Not run |
-| TC-UI-02 | Confirmation; REQ-16 | Ba module Delete: Cancel rồi Confirm | Cancel không có DELETE; Confirm mới gửi | Chưa chạy | Not run |
-| TC-UI-03 | UI error/loading; REQ-04,17 | Submit kép, lỗi 400/409/401, mất mạng | Loading/feedback đúng; không ghi kép/lệch dữ liệu | Chưa chạy | Not run |
-| TC-VAL-01 | Field validation; REQ-17 | Null/blank, max/max+1, email sai, password quá 72 byte | Lỗi theo field, FE/BE thống nhất, không 500 | Chưa chạy | Not run |
-| TC-VAL-02 | Kiểu/miền; REQ-17 | ID chữ/âm/0, role/status sai, JSON sai kiểu, integer nhận thập phân | Không lưu hoặc âm thầm chuyển kiểu sai | Chưa chạy | Not run |
-| TC-VAL-03 | Constraint/concurrency; REQ-17 | FK/tag sai; hai request cùng vi phạm FK/unique | Rollback, 4xx phù hợp, DB giữ toàn vẹn | Chưa chạy | Not run |
-| TC-E2E-01 | Tích hợp; REQ-04,18 | React/axios gọi BE/SQL: login, CRUD/Search, profile/history, public | UI/request/DB nhất quán, CORS hoạt động | Chưa chạy | Not run |
-| TC-E2E-02 | Chạy lại; REQ-18 | Checkout sạch, cấu hình README, regression trên SQL Server | Tái hiện được từ môi trường sạch | Chưa chạy | Not run |
+| TC-UI-01 | Popup; REQ-15 | Create và Update ở cả ba module | Cả 6 luồng dùng popup; lỗi giữ form | M8 Chrome: 6 dialog Create/Update account/category/news đạt; field rỗng/409/400 giữ form; Cancel sửa account không lưu | Pass |
+| TC-UI-02 | Confirmation; REQ-16 | Ba module Delete: Cancel rồi Confirm | Cancel không có DELETE; Confirm mới gửi | M8 Chrome + HTTP/SQL: từng module Cancel 0 DELETE, dblclick Confirm 1 DELETE; đúng record bị xóa | Pass |
+| TC-UI-03 | UI error/loading; REQ-04,17 | Submit kép, lỗi 400/409/401, mất mạng | Loading/feedback đúng; không ghi kép/lệch dữ liệu | M8: Create/Update ba module mỗi lần 1 request; FK bị xóa sau khi chọn trả 400 giữ popup, 409 giữ confirmation; xóa account làm JWT 401 về login; loading/lỗi mạng mô phỏng rồi retry đạt | Pass |
+| TC-VAL-01 | Field validation; REQ-17 | Null/blank, max/max+1, email sai, password quá 72 byte | Lỗi theo field, FE/BE thống nhất, không 500 | M8 HTTP: field tối đa lưu được; 47 ca field/kiểu sai gồm null/blank/max+1/email/password UTF-8 trả 400, counts 5 bảng không đổi; FE báo field trống/giữ form | Pass |
+| TC-VAL-02 | Kiểu/miền; REQ-17 | ID chữ/âm/0, role/status sai, JSON sai kiểu, integer nhận thập phân | Không lưu hoặc âm thầm chuyển kiểu sai | M8 HTTP: ID 0/âm/chữ/thập phân/tràn long, role/status/FK sai kiểu và JSON lỗi đều 400; ID hợp lệ không tồn tại 404; không lưu sai | Pass |
+| TC-VAL-03 | Constraint/concurrency; REQ-17 | FK/tag sai; hai request cùng vi phạm FK/unique | Rollback, 4xx phù hợp, DB giữ toàn vẹn | M8 HTTP: hai request trùng email và hai request tranh tag đều 201/409, SQL đúng 1 record/link; 57 regression tests gồm CHECK sau flush xác nhận rollback bài/tag/link/audit | Pass |
+| TC-E2E-01 | Tích hợp; REQ-04,18 | React/axios gọi BE/SQL: login, CRUD/Search, profile/history, public | UI/request/DB nhất quán, CORS hoạt động | M8 Chrome trên production build + JAR/SQL riêng: đủ luồng 3 role; tiếng Việt/tags/audit/profile/history khớp SQL; public đổi theo status/xóa; CORS đúng origin, sai origin 403; restart validate giữ dữ liệu/JWT | Pass |
+| TC-E2E-02 | Chạy lại; REQ-18 | Checkout sạch, cấu hình README, regression trên SQL Server | Tái hiện được từ môi trường sạch | M8: export HEAD ec94a5a + sửa config M8, không target/node_modules cũ; Windows Auth/DLL theo README trên cùng máy; clean verify 57 tests, npm ci/lint/build đạt; JAR chạy và restart validate đạt | Pass |
 
 ## Git và tài liệu
 
 | ID | Trường hợp | Các bước | Kết quả mong đợi | Actual | Trạng thái |
 |---|---|---|---|---|---|
-| TC-PROC-01 | Git cá nhân; GIT-01,GIT-02 | Đối chiếu remote, author/profile và diff qua milestone | Đúng account, lịch sử phát triển thật | Local repo/author/origin đã kiểm tra; còn attribution và toàn tiến trình | Partial |
-| TC-PROC-02 | Docs; DOC-01 | Đối chiếu REQ → code → test → ảnh/commit | Tài liệu đúng code; ảnh đúng thao tác; chỉ Pass khi đã kiểm tra | Đã review đến persistence M2; còn API/UI và ảnh tự chụp | Partial |
+| TC-PROC-01 | Git cá nhân; GIT-01,GIT-02 | Đối chiếu remote, author/profile và diff qua milestone | Đúng account, lịch sử phát triển thật | M8: origin TuanThanh-dev19/A2PhanTuanThanh_SE1910; HEAD local/remote ec94a5a trùng; GitHub attribution và tài khoản kết nối TuanThanh-dev19; author/email local khớp profile, lịch sử M0–M7 theo phần việc | Pass |
+| TC-PROC-02 | Docs; DOC-01 | Đối chiếu REQ → code → test → ảnh/commit | Tài liệu đúng code; ảnh đúng thao tác; chỉ Pass khi đã kiểm tra | M8: chức năng/API/React và test đã đối chiếu; README/design/evidence index còn nội dung tiến độ cũ; chưa có ảnh sinh viên trong screenshots, IntelliJ còn Not run | Partial |
 
 ## Ghi kết quả cho các mốc tiếp theo
 
@@ -260,3 +262,14 @@ Các kết quả M3 ở `api/M3ApiTests.java`, chạy SQL Server DB biệt lập
 | TC-M7P4-UI | Menu/route, hai Staff, rỗng, search/clear và detail | Danh sách đúng người; rỗng/no-result rõ; detail có tags; lỗi retry được | Chrome: hai phiên khớp SQL, reload giữ phiên; empty/no-result/search/clear đạt; detail bài inactive có tags; loading/lỗi mạng mô phỏng rồi retry đạt; viewport 390px cuộn bảng bên trong, không tràn trang | Pass |
 | TC-M7P4-AUTH | Khách/Admin, hết phiên và bài bị xóa | 401/403 đúng; route UI chặn; 401 về login; bài xóa không còn history | API khách 401/Admin 403; Chrome khách về login/Admin về accounts, menu ẩn; JWT ký thật hết hạn xóa phiên và báo notice; detail bài đã xóa báo 404, reload bỏ dòng, SQL giữ tag | Pass |
 | TC-M7-FINAL | Backend regression và frontend | Test/build/lint đạt; chỉ cập nhật test-matrix, test giữ local | mvnw verify chạy tuần tự: 57 tests, 0 failure/error/skipped, BUILD SUCCESS; npm run lint/build đạt; các kiểm tra HTTP/Chrome/SQL M7 đạt; không tạo evidence hay file test mới | Pass |
+
+## M8 - Kiểm thử tích hợp và bàn giao (29-10-2026)
+
+| ID | Trường hợp | Expected | Actual | Trạng thái |
+|---|---|---|---|---|
+| TC-M8-CLEAN | Source sạch, dependency và build | Không phụ thuộc target/node_modules cũ | Export HEAD ec94a5a, áp dụng sửa config M8; clean verify 57 tests, 0 failure/error/skipped; npm ci/lint/build đạt, audit 0; chạy production build bằng Vite preview | Pass |
+| TC-M8-CONFIG | Password DB từ môi trường | Source không có password mặc định; Windows Auth vẫn chạy | Đổi fallback SQLSERVER_PASSWORD thành rỗng; clean verify/JAR kết nối SQL Server bằng Windows Authentication đạt | Pass |
+| TC-M8-API | Boundary, kiểu, quyền, CORS, đồng thời và ownership | 4xx đúng; không lưu sai, không nâng quyền | HTTP thật: 47 ca field/kiểu sai, max hợp lệ, ID/JSON/q sai đạt; quyền GET/POST/PUT/DELETE đúng; email/tag concurrent 201/409; giả ID/role không đổi owner; profile/history/public khớp SQL | Pass |
+| TC-M8-UI | Luồng Admin → Staff → khách → profile/history → xóa | React/HTTP/SQL nhất quán; dialog/confirmation đúng | Chrome/JAR/SQL riêng: Create/Update/Search ba module, tags, profile/password/history/public đạt; guards xóa cả status; Cancel 0 DELETE, Confirm 1; tiếng Việt kiểm tra byte SQL, script chỉ hiện text; mobile 390px không tràn | Pass |
+| TC-M8-RECOVERY | Loading, 400/409/401, mạng và restart | Lỗi rõ; dữ liệu giữ nguyên, retry/reload hoạt động | FK stale 400 giữ popup; 409 giữ form/confirmation; deleted-account JWT 401 về login; mô phỏng mất mạng rồi retry đạt; JVM mới validate giữ DTO từ SQL, JWT cũ và React hoạt động | Pass |
+| TC-M8-HANDOVER | IntelliJ, ảnh sinh viên và tài liệu khớp tiến độ | Đủ thông tin và ảnh thật trước nộp | Chưa có ảnh sinh viên; TC-SETUP-03 chưa chạy. README/design/evidence index còn mô tả M3; lượt này chỉ sửa test-matrix theo AGENTS.md, chưa nghiệm thu bàn giao toàn bộ | Partial |
