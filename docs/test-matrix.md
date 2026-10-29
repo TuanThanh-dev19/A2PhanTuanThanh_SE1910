@@ -21,9 +21,9 @@ M3 ngày 28-10-2026: AI/tool chạy `scripts/test-m3.ps1` trên SQL Server thậ
 
 Minh chứng: [baseline report](evidence/2026-10-28-baseline/context-test.txt), [M1 inspection](evidence/2026-10-28-m1/inspection.md), [build](evidence/2026-10-28-m1/build-test.txt), [SQL session](evidence/2026-10-28-m1/sqlserver-application-session.txt), [HTTP smoke](evidence/2026-10-28-m1/runtime-smoke.txt).
 
-Test M1 chạy trên base `6a26a99` + working tree, sau đó lưu ở `db2e8e6`. Lần chỉnh docs/header trước M2 (`ea84544`) không chạy lại ứng dụng; lần triển khai M2 có regression bên dưới. Cảnh báo còn lại xem OBS-001 trong [debug-log](debug-log.md).
+Kết quả lịch sử M1 ở commit `db2e8e6`; không dùng hàng TC-M1-SCHEMA (0 bảng lúc M1) để mô tả schema hiện tại.
 
-**Regression M1 trong M2 (28/10/2026):** chạy lại nguyên vẹn `A2PhanTuanThanhSe1910ApplicationTests` (2/2 pass); build Boot 3.5.16/JDK 21 đạt; JAR trên DB bài tập khởi động/GET `/` = 404, session TCP/NTLM/encrypt TRUE. [Report M1 chạy lại](evidence/2026-10-28-m2/run-05/fpt.edu.a2phantuanthanh_se1910.A2PhanTuanThanhSe1910ApplicationTests.txt), [JAR smoke](evidence/2026-10-28-m2/run-05/application-smoke.txt), [SQL session](evidence/2026-10-28-m2/run-05/sqlserver-application-session.txt). TC-M1-SCHEMA là lịch sử đúng phạm vi M1; M2 chủ động thay expectation thành 5 bảng, không yêu cầu 0 bảng nữa. IntelliJ vẫn chưa có minh chứng.
+M2 đã chạy lại 2 tests M1; JAR vẫn khởi động và kết nối SQL Server. IntelliJ còn chờ ảnh sinh viên tự chạy.
 
 ## Setup và database
 
@@ -31,11 +31,11 @@ Test M1 chạy trên base `6a26a99` + working tree, sau đó lưu ở `db2e8e6`.
 |---|---|---|---|---|---|
 | TC-SETUP-02 | Quy ước tên; REQ-01 | Xem BE, React folder/npm package và DB | Đúng tên theo requirements | BE/DB A2PhanTuanThanh_SE1910; frontend/A2PhanTuanThanh_SE1910, npm a2phantuanthanh-se1910 | Pass |
 | TC-SETUP-03 | IntelliJ; REQ-19 | Sinh viên mở project và chạy main bằng JDK 21 | Chạy được, có ảnh/log IDE thật | Chưa có evidence sinh viên chạy | Not run |
-| TC-DB-01 | JPA tạo schema; REQ-03,05 | Khởi động DB test rỗng, đối chiếu sys catalog; kiểm tra lại sau restart | Đủ 5 bảng/26 cột đúng kiểu/nullable, 5 PK/6 FK, 2 unique và 3 CHECK | Run-05 đạt toàn bộ; NewsTag PK ghép, unique TagID/email, FK NO_ACTION/trusted; 4 user identity; NewsContent nvarchar(max) NOT NULL giữ nguyên sau restart. [SQL schema](evidence/2026-10-28-m2/run-05/isolated-schema-data.txt) | Pass |
-| TC-DB-02 | Unicode/persistence; REQ-03 | Lưu fixture qua repository, đóng/mở context với validate/update; chạy hai JVM JAR riêng và so snapshot | Tiếng Việt/quan hệ/audit đúng, dữ liệu và schema còn nguyên | Run-05: 3 account/category/news/tag + 2 links, hai creator và hai status, nullable đúng; đọc content 5.800 ký tự qua repo. Hai snapshot trước/sau JVM có SHA256 giống nhau; [restart proof](evidence/2026-10-28-m2/run-05/process-restart-verification.txt) | Pass |
-| TC-DB-03 | Constraint/rollback; REQ-05,17 phần persistence | SQL sai cả 6 FK; xóa account/category có bài; link trùng, tái dùng tag, email trùng, role/status/self-parent/null sai; entity validation; flush title/Tag rồi cố lưu link sai | Chặn tại SQL hoặc Bean Validation; rollback toàn transaction, không lưu một phần | Run-05 đạt error 547/2627/515 như mong đợi; Bean Validation chặn blank/email/length/role/status/null relation; cả lỗi tag limit và lỗi FK đều rollback title đã flush + Tag mới, counts/quan hệ nguyên vẹn. [7 persistence tests](evidence/2026-10-28-m2/run-05/fpt.edu.a2phantuanthanh_se1910.persistence.NewsPersistenceTests.txt) | Pass |
+| TC-DB-01 | JPA tạo schema; REQ-03,05 | Khởi động DB test rỗng, xem bảng/khóa và kiểm tra lại sau restart | Đủ 5 bảng và đúng trường/ràng buộc | JPA tạo đúng schema; NOT NULL vẫn đúng sau restart | Pass |
+| TC-DB-02 | Unicode/persistence; REQ-03 | Lưu dữ liệu qua repository, khởi động lại rồi đọc | Tiếng Việt, quan hệ và dữ liệu còn đúng | Dữ liệu đọc đúng sau mở lại context và hai lần chạy JAR | Pass |
+| TC-DB-03 | Constraint/rollback; REQ-05,17 phần persistence | Thử FK/link/email/role/status/field sai; giao dịch có một bước lỗi | Dữ liệu sai bị chặn; không lưu một phần | Constraint/validation đạt; title và tag mới được rollback khi link lỗi | Pass |
 
-M2 chạy trên base `ea84544` + working tree được lưu cùng commit tính năng; DB biệt lập `A2PhanTuanThanh_SE1910_M2Test_20261028_182815_765a698b`, SQL Server 16.0.1000.6, Windows Authentication. [Build cuối](evidence/2026-10-28-m2/run-05/build-test.txt), [inspection](evidence/2026-10-28-m2/inspection.md). Run-01/02 fail compile/assertion; run-03 build pass nhưng SQL export lỗi; run-04 build/harness pass nhưng review snapshot phát hiện nullable sai sau update. Các lần này giữ nguyên và không dùng nghiệm thu cuối; DBG-002..005 có fix/retest thật. DB bài tập không seed, vẫn 0 record; có một lần sửa NOT NULL do bug M2 tạo ra, không sửa/xóa dữ liệu.
+Minh chứng kỹ thuật đã lưu: [kết quả M2](evidence/2026-10-28-m2/inspection.md), [report 7 tests persistence](evidence/2026-10-28-m2/run-05/fpt.edu.a2phantuanthanh_se1910.persistence.NewsPersistenceTests.txt). Các lỗi đã sửa ghi ngắn trong [debug-log](debug-log.md); không cần chép lại các lần chạy vào bảng này.
 
 ## Login và phân quyền
 
@@ -111,13 +111,13 @@ M2 chạy trên base `ea84544` + working tree được lưu cùng commit tính n
 | ID | Trường hợp | Các bước | Kết quả mong đợi | Actual | Trạng thái |
 |---|---|---|---|---|---|
 | TC-PROC-01 | Git cá nhân; GIT-01,GIT-02 | Đối chiếu remote, author/profile và diff qua milestone | Đúng account, lịch sử phát triển thật | Local repo/author/origin đã kiểm tra; còn attribution và toàn tiến trình | Partial |
-| TC-PROC-02 | Docs; DOC-01 | Đối chiếu REQ → code → test → evidence → commit | Không có PASS thiếu minh chứng hoặc mô tả sai code | Đã review M1/docs; còn toàn bộ nghiệp vụ | Partial |
+| TC-PROC-02 | Docs; DOC-01 | Đối chiếu REQ → code → test → ảnh/commit | Tài liệu đúng code; ảnh đúng thao tác; chỉ Pass khi đã kiểm tra | Đã review đến persistence M2; còn API/UI và ảnh tự chụp | Partial |
 
 ## Ghi kết quả cho các mốc tiếp theo
 
-Đã có `PersistenceFixture` ở test source với Admin/hai Staff, account/category có và không có bài, bài active/inactive và tag tự do/đã gắn. Fixture dùng password ngẫu nhiên phục vụ persistence, chưa phải account đăng nhập/demo UI. M3 có seed demo bật qua môi trường và fixture API riêng; React cần kiểm tra ở mốc sau.
+Fixture repository đã có trong test source và dùng trên DB test riêng; chưa phải account đăng nhập/UI. Chuẩn bị dữ liệu demo phù hợp khi có chức năng.
 
-Ghi actual, ngày/môi trường, revision và evidence sau khi chạy. Test service/API kiểm tra rule, validation và quyền; dùng SQL Server thật cho FK/transaction/Unicode/persistence. Kiểm tra browser riêng cho popup/confirmation/axios; mock/H2 hoặc API Pass không thay thế kiểm tra tích hợp/UI. Có thể dùng Postman CLI khi có endpoint; lỗi thực tế liên kết debug-log.
+Sau khi chạy, ghi Actual và trạng thái ngắn trong hàng tương ứng. Kiểm tra Service/API và browser khi có chức năng; lỗi thật mới thêm debug log. Ảnh do sinh viên tự chụp, không đánh dấu có ảnh khi chưa có file.
 
 ## Kiểm tra bổ sung M3
 
@@ -226,3 +226,11 @@ Các kết quả M3 ở `api/M3ApiTests.java`, chạy SQL Server DB biệt lập
 | TC-M6P8-ATOMIC | Hai request tranh tag; lỗi DB sau flush | Chỉ một bài nhận tag; Create/Update lỗi rollback mọi thay đổi | 8 write tests SQL đạt: concurrent 201/409, chỉ thêm một bài; CHECK tạm gây lỗi link sau flush, cả Create/Update rollback bài/tag/link/audit; dữ liệu đúng ở giới hạn field tối đa | Pass |
 | TC-M6P8-E2E | React tạo/sửa/status/xóa, khách đọc và mất mạng | UI/API/DB nhất quán; text hiển thị an toàn; retry được | Chrome với hai phiên: active đọc được, inactive/đã xóa không đọc được, tag sửa đúng; nội dung script chỉ là text; lỗi mạng mô phỏng rồi retry đạt; SQL xác nhận tags còn, links null, account/category nguyên vẹn | Pass |
 | TC-M6P8-VERIFY | Backend regression, frontend và Author | Test/build/lint đạt; file sửa có Author; không thêm evidence | mvnw verify: 54 tests, 0 failure/error/skipped; frontend lint/build đạt; Author kiểm tra ở các file M6; chỉ cập nhật test-matrix trong docs | Pass |
+
+## M7 - Phần 1: API đọc hồ sơ (29-10-2026)
+
+| ID | Trường hợp | Expected | Actual | Trạng thái |
+|---|---|---|---|---|
+| TC-M7P1-READ | Hai Staff đọc GET /api/profile, gửi ID người khác qua query | Chỉ trả hồ sơ theo principal; DTO 4 field, không password/hash; no-store | MockMvc/JWT thật + SQL Server riêng: từng Staff nhận đúng ID/tên/email/role trong DB; accountId/id giả không đổi hồ sơ; đủ 4 field và Cache-Control: no-store | Pass |
+| TC-M7P1-AUTH | Khách, token sai/hết hạn, Admin; account đổi thông tin/role hoặc bị xóa | 401/403 đúng; cùng token đọc dữ liệu hiện tại, mất quyền khi role đổi/account bị xóa | Khách/token sai/hết hạn 401, Admin 403; tên/email mới hiện với token cũ; đổi role sang Admin 403, xóa account 401 | Pass |
+| TC-M7P1-VERIFY | Backend regression và đóng gói | Test/build đạt; kiểm tra mới giữ local | mvnw verify: 57 tests, 0 failure/error/skipped, BUILD SUCCESS; 3 test profile mới đạt. Chưa chạy UI hoặc sửa profile/history | Pass |

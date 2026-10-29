@@ -6,7 +6,7 @@ Author: Phan Tuan Thanh - CE190595
 
 Ứng dụng ưu tiên đúng core requirements, rõ trách nhiệm và dễ giải thích khi đánh giá. Backend ba lớp giữ nghiệp vụ và dữ liệu; React quản lý tương tác và gọi API bằng axios. Tránh generic CRUD engine hoặc global state khi chưa cần.
 
-**Hiện có sau M2:** Boot 3.5.16/JDK 21, Web/JPA/Validation và JDBC 12.10.2.jre11; 5 entity/repository trên SQL Server qua Windows Authentication. `ddl-auto=update`, tên bảng/cột giữ nguyên bằng `PhysicalNamingStrategyStandardImpl`, `open-in-view=false`. Phần persistence ở mục 5 đã triển khai; API/auth/Service/React ở các mục còn lại vẫn **dự kiến**. Cấu hình thực tế ở [README](../README.md).
+Entity/repository và persistence đã triển khai; API, auth và React bên dưới còn là thiết kế dự kiến. Tiến độ thực tế và cách chạy xem [README](../README.md).
 
 ### 1.1 Quy ước code dễ giải thích
 
@@ -114,20 +114,15 @@ BrowserRouter → AuthProvider → App/Routes
 | Description / source / note | Tối đa 1000 / 500 / 500; có thể trống |
 | CreatedDate / ModifiedDate | LocalDateTime → datetime2(6); caller cung cấp giá trị UTC, ModifiedDate nullable. Chưa có service tự gán audit |
 
-Quan hệ:
+Quan hệ và cách lưu:
 
-- NewsArticle `@ManyToOne` lazy tới Category và creator, bắt buộc NOT NULL/FK; updater nullable với FK riêng. Category parent lazy nullable; CHECK chặn self-parent. Chu kỳ nhiều category cần service kiểm tra ở M5, chưa triển khai.
-- NewsTag dùng `@EmbeddedId NewsTagId`, `@MapsId` hai association lazy, PK ghép NewsArticleID+TagID. Constructor yêu cầu article/tag đã có ID; key có equals/hashCode, Serializable. Unique `UQ_NewsTag_TagID` thực thi DEC-01 tạm; chưa có xác nhận giảng viên.
-- Không cấu hình cascade/orphanRemoval hoặc ON DELETE CASCADE; tất cả FK là NO_ACTION. DEC-05/06 và xóa bài/links sẽ do service transaction ở mốc sau xử lý.
-- Text dùng `@Nationalized`/nvarchar; content là nvarchar(max) NOT NULL với Bean Validation tối đa 20.000 ký tự. `NewsContent.length=Integer.MAX_VALUE` khớp COLUMN_SIZE do SQL Server JDBC báo cho nvarchar(max), tránh Hibernate update liên tục ALTER rồi làm mất NOT NULL; đây là metadata vật lý, không phải giới hạn input nghiệp vụ. Đã bổ sung kiểm tra schema sau restart; chi tiết lỗi thật ở DBG-005. Tên/title/headline/content/email/password không blank; field bắt buộc @NotNull. Description/source/note cho phép null.
-- CHECK có tên cho role 1/2, NewsStatus và IsActive 0/1; unique email theo collation SQL Server hiện tại. M2 không tự đổi collation, trim/lowercase email hoặc kiểm tra role của creator qua FK; role/quyền creator, audit và mapping DTO thuộc service sau này.
-- `hibernate.validator.apply_to_ddl=false` giữ DDL theo annotation mapping/CHECK tường minh; Bean Validation vẫn chạy khi persist/update. FK/NOT NULL/unique/CHECK bảo vệ cả lệnh SQL ngoài JPA. Giới hạn text/blank/email format dùng Bean Validation, chưa tuyên bố SQL chặn mọi rule DTO.
+- Một news thuộc một category và creator; updater có thể null. Category có parent nullable; entity chặn tự làm parent, vòng nhiều category sẽ do Service kiểm tra.
+- NewsTag dùng hai ID làm khóa ghép; `@MapsId` gắn hai ID này với quan hệ news/tag. Unique TagID giữ mỗi tag thuộc tối đa một bài theo DEC-01 đang áp dụng tạm.
+- Quan hệ lazy, không cascade xóa. FK, NOT NULL, unique email/tag và CHECK role/status giữ dữ liệu hợp lệ; Bean Validation kiểm tra field khi lưu bằng JPA.
+- Text dùng Unicode; NewsContent là nvarchar(max), bắt buộc nhập, giới hạn 20.000 ký tự ở entity. Ngày là datetime2(6), caller cung cấp UTC; Service gán audit ở mốc nghiệp vụ sau.
+- `create-database.sql` tạo DB rỗng; JPA `update` tạo bảng/FK thiếu, không tự seed/reset. Test dùng DB riêng và kiểm tra lại sau restart. Cách hiểu tạo DB/bảng theo DEC-03 vẫn chưa được giảng viên xác nhận.
 
-`scripts/create-database.sql` chỉ tạo DB rỗng nếu thiếu (giữ nguyên). JPA `update` tạo bảng/FK; `hibernate.hbm2ddl.halt_on_error=true` khiến startup dừng nếu DDL lỗi. Test restart dùng cả `validate` và `update`. Không dùng create/create-drop, không startup seed/reset. Đây là cách áp dụng DEC-03 theo yêu cầu sinh viên, chưa phải phê duyệt giảng viên; Hibernate update không thay thế migration cho schema cũ khác thiết kế.
-
-Repositories cung cấp JpaRepository, tra email ignore-case; tìm category con; kiểm tra news tham chiếu creator/category/updater; history theo creator với thứ tự CreatedDate/ID giảm dần; lọc news theo status; tra links theo bài/tag. Chưa thêm search JPQL khi chưa có service cần nó.
-
-Fixture và orchestration nằm hoàn toàn trong test source/`scripts/test-persistence.ps1`. TransactionTemplate bao các thao tác nhiều repository; mỗi truy vấn quan hệ lazy được đọc trong transaction. Test lỗi SQL/FK chạy trên DB biệt lập có hậu tố duy nhất, giữ lại để inspection; không xóa dữ liệu DB bài tập. Xem [code-flow](code-flow.md) và [evidence M2](evidence/2026-10-28-m2/inspection.md).
+Repository cung cấp CRUD cơ bản và query theo email, creator, status, parent, tag hoặc kiểm tra tham chiếu. Quyền người dùng, xử lý xóa và transaction nghiệp vụ sẽ nằm ở Service, không đặt trong Repository. File cần mở xem [code-flow](code-flow.md).
 
 ## 6. State ownership và API
 
@@ -191,6 +186,6 @@ FK/unique bảo vệ dữ liệu khi request đồng thời; chuyển constraint
 
 ## 10. Definition of Done
 
-Một tính năng xong khi đúng yêu cầu, có normal/negative test, FE/BE/DB nhất quán nếu có UI, docs/evidence được cập nhật và sinh viên giải thích được Purpose → Input → Trigger → Transform → Output. Các mốc triển khai và commit ở [development-plan](development-plan.md).
+Một tính năng xong khi đúng yêu cầu, đã kiểm tra normal/negative case và sinh viên giải thích được luồng xử lý. Với UI, chuẩn bị màn hình/dữ liệu chạy được để sinh viên tự chụp theo evidence index. Chỉ cập nhật design khi thiết kế đổi; kế hoạch chung ở [development-plan](development-plan.md).
 
 Tham khảo: [Spring Boot code structure](https://docs.spring.io/spring-boot/3.5/reference/using/structuring-your-code.html), [JPA initialization](https://docs.spring.io/spring-boot/3.5/how-to/data-initialization.html).

@@ -6,12 +6,17 @@ Assignment 02 SBA301 — FUNewsManagementSystem, dùng Spring Boot 3, SQL Server
 
 ## Tiến độ
 
-- Baseline: `6a26a99`. Nền tảng M1: `db2e8e6`.
-- Đã có Boot **3.5.16**, Java **21**, Web/JPA/Validation/JDBC và kết nối SQL Server bằng Windows Authentication. Kết quả đã lưu: **2 tests pass**, JAR chạy được. [Evidence M1](docs/evidence/2026-10-28-m1/inspection.md).
-- M2 đã thêm 5 entity, 5 repository và constraint SQL Server; xem [thiết kế persistence](docs/design.md#5-data-model-và-persistence) và [evidence M2](docs/evidence/2026-10-28-m2/inspection.md). DEC-01/03 áp dụng tạm theo yêu cầu sinh viên, chưa có xác nhận giảng viên.
-- M1 còn thiếu minh chứng sinh viên chạy trong IntelliJ. M3 đã có login/JWT, phân quyền và API tin công khai; chưa có REST CRUD hoặc React.
+| Mốc | Kết quả đã có | Commit |
+|---|---|---|
+| M0 | Skeleton và tài liệu phân tích | `6a26a99` |
+| M1 | Boot 3.5.16/JDK 21, kết nối SQL Server; 2 tests pass | `db2e8e6` |
+| Chuẩn bị M2 | Docs, header Author và quy ước code | `ea84544` |
+| M2 | 5 entity/repository, JPA tạo bảng; 9 tests pass, Unicode/constraint/rollback/restart đạt | `ec46274` |
+| M3 | Login BCrypt/JWT, quyền backend, public news, seed demo; 20 tests pass | Commit M3 |
 
-- M3: login BCrypt/JWT, quyền backend, public news và seed demo; 20 tests pass.
+Còn bổ sung ảnh sinh viên chạy IntelliJ. M3 đã có login/JWT, phân quyền và API tin công khai; chưa có CRUD quản trị hoặc React. DEC-01/03 đã áp dụng tạm, chưa được giảng viên xác nhận.
+
+Kế hoạch toàn bài ở [development-plan](docs/development-plan.md); kết quả kiểm tra ở [test-matrix](docs/test-matrix.md). Màn hình/ảnh cần chuẩn bị nằm trong [evidence index](docs/evidence/README.md); sinh viên tự chụp khi thao tác thực tế.
 
 ## Chạy backend trên Windows
 
@@ -75,14 +80,14 @@ Bộ docs dùng bố cục báo cáo của Assignment 01: requirement/design, h�
 |---|---|
 | [requirements](docs/requirements.md) | Bài yêu cầu gì và những điểm cần chốt |
 | [design](docs/design.md) | Kiến trúc, dữ liệu, API và validation dự kiến |
-| [development-plan](docs/development-plan.md) | Đã làm đến đâu, làm tiếp gì và cách commit |
+| [development-plan](docs/development-plan.md) | Kế hoạch cố định M0–M8 và cách làm Git |
 | [code-flow](docs/code-flow.md) | Code hiện có hoạt động thế nào |
 | [test-matrix](docs/test-matrix.md) | Các ca cần kiểm tra và kết quả đã chạy |
 | [debug-log](docs/debug-log.md) | Lỗi thật, cách sửa và kiểm tra lại |
 | [ai-usage-log](docs/ai-usage-log.md) | Phần AI hỗ trợ và người đã kiểm tra |
 | [evidence](docs/evidence/README.md) | Log/report của từng lần chạy |
 
-Cập nhật docs và evidence cùng tính năng; chỉ ghi PASS khi đã chạy. Hướng dẫn Microsoft: [JDBC Windows Authentication](https://learn.microsoft.com/en-us/sql/connect/jdbc/building-the-connection-url?view=sql-server-ver17#connecting-with-integrated-authentication-on-windows).
+Cập nhật kết quả và hướng dẫn khi cần; giữ kế hoạch tổng thể ổn định. Chỉ ghi PASS khi đã chạy. Hướng dẫn Microsoft: [JDBC Windows Authentication](https://learn.microsoft.com/en-us/sql/connect/jdbc/building-the-connection-url?view=sql-server-ver17#connecting-with-integrated-authentication-on-windows).
 
 
 ## M3: đăng nhập và tin công khai

@@ -152,7 +152,8 @@ class M3ApiTests {
                 mvc.perform(request(org.springframework.http.HttpMethod.valueOf(method), route))
                         .andExpect(status().isUnauthorized());
             }
-            if (route.startsWith("/api/categories") || route.startsWith("/api/news") || route.equals("/api/tags")) {
+            if (route.startsWith("/api/categories") || route.startsWith("/api/news")
+                    || route.equals("/api/tags") || route.equals("/api/profile")) {
                 mvc.perform(get(route).header("Authorization", "Bearer " + staffToken)).andExpect(status().isOk());
             } else {
                 // Modules without a controller still return 404 after passing the security filter.
@@ -533,6 +534,67 @@ class M3ApiTests {
                 .isInstanceOf(IllegalStateException.class);
         assertThatThrownBy(() -> configuration.jwtSecretKey("c2hvcnQ="))
                 .isInstanceOf(IllegalStateException.class);
+    }
+
+    @Test
+    void profileReturnsOnlyAuthenticatedStaffEvenWhenAnotherAccountIdIsSupplied() throws Exception {
+        SystemAccount otherStaff = accounts.saveAndFlush(new SystemAccount("Staff thứ hai",
+                "second.profile@example.com", 2, passwords.encode(password)));
+        for (SystemAccount account : new SystemAccount[]{staff, otherStaff}) {
+            String accessToken = login(account.getAccountEmail(), password).path("accessToken").asText();
+            long otherId = staff.getAccountId();
+            if (account.getAccountId().equals(staff.getAccountId())) {
+                otherId = otherStaff.getAccountId();
+            }
+            String body = mvc.perform(get("/api/profile")
+                            .param("accountId", Long.toString(otherId)).param("id", Long.toString(otherId))
+                            .header("Authorization", "Bearer " + accessToken))
+                    .andExpect(status().isOk()).andExpect(header().string("Cache-Control", "no-store"))
+                    .andReturn().getResponse().getContentAsString();
+            JsonNode response = json.readTree(body);
+            SystemAccount stored = accounts.findById(account.getAccountId()).orElseThrow();
+            assertThat(response.size()).isEqualTo(4);
+            assertThat(response.path("accountId").asLong()).isEqualTo(stored.getAccountId());
+            assertThat(response.path("accountName").asText()).isEqualTo(stored.getAccountName());
+            assertThat(response.path("accountEmail").asText()).isEqualTo(stored.getAccountEmail());
+            assertThat(response.path("accountRole").asInt()).isEqualTo(2);
+            assertThat(body).doesNotContain("password", "Password", stored.getAccountPassword());
+        }
+    }
+
+    @Test
+    void profileUsesCurrentDatabaseValuesAndRevokesAccessAfterRoleChangeOrDeletion() throws Exception {
+        SystemAccount account = accounts.saveAndFlush(new SystemAccount("Profile before change",
+                "current.profile@example.com", 2, passwords.encode(password)));
+        String accessToken = login(account.getAccountEmail(), password).path("accessToken").asText();
+        account.setAccountName("Tên hồ sơ mới");
+        account.setAccountEmail("changed.profile@example.com");
+        accounts.saveAndFlush(account);
+        mvc.perform(get("/api/profile").header("Authorization", "Bearer " + accessToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("accountName").value("Tên hồ sơ mới"))
+                .andExpect(jsonPath("accountEmail").value("changed.profile@example.com"));
+        account.setAccountRole(1);
+        accounts.saveAndFlush(account);
+        mvc.perform(get("/api/profile").header("Authorization", "Bearer " + accessToken))
+                .andExpect(status().isForbidden());
+        accounts.delete(account);
+        accounts.flush();
+        mvc.perform(get("/api/profile").header("Authorization", "Bearer " + accessToken))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void profileRejectsGuestsInvalidExpiredTokensAndAdmin() throws Exception {
+        mvc.perform(get("/api/profile")).andExpect(status().isUnauthorized());
+        for (String accessToken : new String[]{"bad-token",
+                token(staff, Instant.now().minusSeconds(2), "A2PhanTuanThanh_SE1910")}) {
+            mvc.perform(get("/api/profile").header("Authorization", "Bearer " + accessToken))
+                    .andExpect(status().isUnauthorized());
+        }
+        String adminToken = login(admin.getAccountEmail(), password).path("accessToken").asText();
+        mvc.perform(get("/api/profile").header("Authorization", "Bearer " + adminToken))
+                .andExpect(status().isForbidden());
     }
 
     private JsonNode login(String email, String password) throws Exception {

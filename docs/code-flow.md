@@ -2,145 +2,70 @@ Author: Phan Tuan Thanh - CE190595
 
 # FUNewsManagementSystem - Code Flow Guide
 
-Tài liệu dùng để mở đúng file và giải thích theo khung: **Purpose → Input → Trigger → Transform → Output**. Mục 2/2.1–2.3 mô tả startup và persistence M1/M2 đã có; M3 login/quyền/public đã triển khai ở mục cuối; CRUD và React còn dự kiến.
+## 1. Cách giải thích bài làm
 
-## 1. Ranh giới trách nhiệm
+Với mỗi chức năng, trình bày: **làm gì → nhận dữ liệu gì → ai gọi → xử lý ra sao → trả kết quả gì**. Mở các file ở cuối tài liệu để minh họa.
 
-```text
-React Page/Form → axios → Spring Security
-  → REST Controller → Service → Repository/JPA → SQL Server
-  → response DTO → React cập nhật UI
-```
+Đã có startup, persistence và M3 login/JWT, quyền backend, public news. CRUD quản trị, profile/history và React chưa triển khai.
 
-- Page giữ keyword, selected item, trạng thái dialog/loading và kết quả API.
-- Form giữ input/error, gọi validator; axios thực hiện HTTP request.
-- Controller nhận DTO và xử lý HTTP; Service giữ nghiệp vụ/transaction.
-- Repository truy vấn DB; SQL Server là nguồn dữ liệu chính.
-
-Các lớp Controller/Service/nghiệp vụ/React chưa tồn tại. Hiện có application, datasource/JPA, entity/repository và test trên SQL Server.
-
-## 2. Startup và database flow đã có
+## 2. Khởi động backend
 
 ```text
 Application.main()
-  → SpringApplication.run()
-  → đọc application.properties và biến môi trường
-  → khởi tạo Tomcat, DataSource và JPA
-  → JDBC kết nối SQL Server
+  → Spring Boot đọc cấu hình/biến môi trường
+  → kết nối SQL Server
+  → JPA đọc entity và tạo bảng/quan hệ còn thiếu
+  → Tomcat sẵn sàng nhận request
 ```
 
-| Thành phần giải thích | Nội dung thực tế |
-|---|---|
-| Purpose | Khởi động backend và xác nhận SQL Server sẵn sàng |
-| Input | Biến SQLSERVER_*; database A2PhanTuanThanh_SE1910; native DLL nếu dùng Windows auth |
-| Trigger | Chạy main, `java -jar` hoặc `mvnw clean verify` |
-| Transform | Boot nạp cấu hình, mở JDBC connection; test kiểm tra JPA factory và `SELECT DB_NAME(), 1` |
-| Output | Hai tests pass; JAR/Tomcat chạy. GET `/` trả 404 vì chưa có controller |
+Database rỗng được tạo bằng `scripts/create-database.sql`. Entity mô tả bảng; repository đọc/ghi dữ liệu. M3 có API public tại `/api/public/news`; GET `/` hiện trả 401 theo security mặc định.
 
-`create-database.sql` tạo DB rỗng nếu thiếu, chạy trước app/test. Lịch sử M1: `ddl-auto=none`, 0 bảng nghiệp vụ, commit `db2e8e6`; [evidence M1](evidence/2026-10-28-m1/inspection.md). M2 chuyển sang `update`, quét 5 entity và 5 repository; không tự tạo fixture trên DB bài tập. Bảng Output “hai tests” ở trên là kết quả M1; lần chạy M2 gồm thêm 7 persistence tests.
-
-### 2.1 Mapping entity → SQL Server (M2)
-
-| Bước | File/method và cách giải thích |
-|---|---|
-| Purpose | `entity/SystemAccount`, `Category`, `NewsArticle`, `Tag`, `NewsTag` giữ đúng 5 bảng/26 cột PDF và toàn vẹn tham chiếu |
-| Input | Entity có field đã validate; NewsArticle nhận category/creator bắt buộc, updater nullable; Category nhận parent nullable |
-| Trigger | Startup đọc annotation; repository `saveAndFlush()` hoặc transaction commit kích hoạt persist/update |
-| Transform | `@Table/@Column/@JoinColumn` giữ tên SQL; `@Nationalized` sinh nvarchar; JPA kiểm tra @NotBlank/@Size/@NotNull/@Email/@Min/@Max, SQL kiểm tra FK/NOT NULL/unique/CHECK |
-| Output | 5 PK (NewsTag là composite), 6 FK NO_ACTION, unique email và TagID, CHECK role/status/self-parent. Lỗi phải rollback transaction chứa các thay đổi liên quan |
-
-Mở `NewsTagId.equals()/hashCode()` để giải thích định danh theo hai ID. `NewsTag(NewsArticle, Tag)` yêu cầu cả hai đã được lưu, tạo embedded key; `@MapsId` dùng cùng cột cho key và association. Không thêm ID phụ hoặc bảng nối ngầm. Quan hệ lazy một chiều, không có cascade: repository không tự xóa dữ liệu liên quan.
-
-### 2.2 Repository queries (M2)
-
-| Purpose | Input → Trigger → Transform → Output |
-|---|---|
-| Kiểm tra account/category đang được news sử dụng | accountId/categoryId → `NewsArticleRepository.existsByCreatedBy_AccountId()` / `existsByCategory_CategoryId()` → Spring Data bind tham số vào query tồn tại → boolean, không lọc status nên tính cả bài inactive |
-| History theo creator | accountId → `findByCreatedBy_AccountIdOrderByCreatedDateDescNewsArticleIdDesc()` → WHERE CreatedByID + ORDER BY ngày/ID DESC → danh sách bài của creator, cả hai status |
-| Chuẩn bị DEC-06 | accountId → `existsByUpdatedBy_AccountId()` / `findByUpdatedBy_AccountId()` → lọc updater → boolean/list, chưa gỡ updater hoặc xóa account |
-| Chuẩn bị DEC-05 | parentId → `CategoryRepository.findByParentCategory_CategoryId()` → lọc parent → các category con, chưa thay parent/xóa |
-| Tra email | email → `SystemAccountRepository.findByAccountEmailIgnoreCase()` / `existsByAccountEmailIgnoreCase()` → query ignore-case → Optional/boolean; chưa login hoặc chuẩn hóa email |
-| Lọc status | status hoặc ID+status → `findByNewsStatusOrderByCreatedDateDescNewsArticleIdDesc()` / `findByNewsArticleIdAndNewsStatus()` → SQL lọc → list/Optional; chưa phải API public |
-| Tra tag links | newsId/tagId → `NewsTagRepository.findByNewsArticle_NewsArticleId()` / `existsByTag_TagId()` / `findByTag_TagId()` → lọc FK → list/boolean/Optional |
-
-`TagRepository` và các repository kế thừa `JpaRepository` để save/read/delete/flush cơ bản; kiểm tra nghiệp vụ và transaction nhiều repository sẽ nằm ở Service sau này. Caller phải dùng transaction khi đọc thuộc tính của association lazy.
-
-### 2.3 Fixture → constraint → restart/rollback (M2)
-
-| Bước | File/method và cách giải thích |
-|---|---|
-| Purpose | `persistence/NewsPersistenceTests` chứng minh entity/repository hoạt động trên SQL Server thật; `scripts/test-persistence.ps1` chạy build và packaged JAR |
-| Input | Cấu hình SQLSERVER_* đã xác minh; DB mới `A2PhanTuanThanh_SE1910_M2Test_<suffix>`; fixture tiếng Việt, password ngẫu nhiên dành riêng cho test |
-| Trigger | PowerShell 7 chạy `scripts/test-persistence.ps1 -SqlServerInstance '.\SQL2022'` |
-| Transform | Script tạo DB test mới, không DROP/reset; `startOnExplicitIsolatedDatabase()` chặn tên ngoài prefix. `jpaCreatesExactTablesColumnsKeysAndConstraints()` đối chiếu sys catalog. `PersistenceFixture.create()` lưu qua 5 repo trong TransactionTemplate |
-| Output | Fixture có 3 account/category/news/tag và 2 links, tag tự do, article active/inactive với hai creator; logs/report và SQL snapshot thực tế |
-
-`assertFixtureAndQueries()` đọc lại Unicode, nullable, audit, parent/creator/updater/tag và mọi derived query đã thêm. `committedDataSurvivesApplicationRestartAndSchemaValidation()` đóng toàn bộ context/EMF/pool, mở lại với validate rồi update và đọc lại từ DB. Script hiện chạy JAR trên DB bài tập (HTTP public news 200, kiểm tra session), chạy hai JVM JAR riêng trên DB test; snapshot metadata/counts/audit/Unicode content SHA256 phải giữ nguyên.
-
-`databaseRejectsEveryInvalidForeignKeyAndReferencedDeletes()` và `databaseRejectsDuplicateLinksTagReuseEmailAndInvalidDomains()` dùng SQL trong transaction để chứng minh DB chặn trực tiếp bằng error 547/2627/515; không chỉ dựa vào Bean Validation. `repositoryValidationRejectsBlankOversizeEmailRoleStatusAndNullRelation()` kiểm tra tầng entity.
-
-`failedLinkRollsBackFlushedArticleAndNewTag()` sửa title và flush, lưu Tag mới, rồi gây lỗi tag đã thuộc bài khác; transaction rollback title/Tag/links. Lặp lại với FK bài có ID dương không tồn tại để tới được SQL FK. Sau mỗi lỗi, `assertFixtureAndQueries()` xác nhận toàn bộ fixture còn đúng và không tăng counts. Đây là test giao dịch repository, chưa tuyên bố Service/API CRUD đã triển khai.
-
-## 3. Login backend
-
-Đã triển khai ở M3; luồng và file thực tế xem mục M3 cuối tài liệu. Login UI/axios còn chờ React.
-
-## 4. Create và Update flow dự kiến
+## 3. Lưu và đọc dữ liệu đã có
 
 ```text
-Add/Edit → popup rỗng hoặc prefill bản copy item
-  → submit → FE validate → axios POST/PUT
-  → Controller validate DTO → Service kiểm tra rule/FK
-  → Repository lưu trong transaction
-  → response → đóng popup và tải lại danh sách
+Dữ liệu test → repository.save()/saveAndFlush()
+  → JPA validate entity và thực hiện SQL
+  → SQL Server kiểm tra khóa/ràng buộc
+  → repository đọc lại entity và quan hệ
 ```
 
-News lưu bài cùng links tag trong một transaction; lỗi tag/FK phải rollback toàn bộ. Creator/updater/date do server gán. Update giữ creator/ngày tạo; FE không được giả mạo các field này.
+- Mỗi news có một category và creator; updater có thể trống.
+- Category có thể có category cha.
+- NewsTag nối news với tag bằng hai ID; theo lựa chọn hiện tại mỗi tag thuộc tối đa một bài.
+- Không tự xóa bài khi xóa account/category. Các query kiểm tra tham chiếu đã có; quy trình xóa và thông báo nghiệp vụ sẽ nằm trong Service sau này.
+- Repository hỗ trợ tìm theo email, creator, status, parent và tag. History theo creator có cả active/inactive.
 
-## 5. Delete flow dự kiến
+## 4. Luồng UI/API dự kiến
 
 ```text
-Delete(item) → ConfirmDialog
-  → Cancel: đóng dialog, không gửi DELETE
-  → Confirm: axios DELETE /{id}
-  → BE kiểm tra role, record và quan hệ
-  → bị chặn: 409 + lý do; hợp lệ: xóa, trả 204
-  → React cập nhật danh sách
+Người dùng thao tác trên React → axios gửi request
+  → BE kiểm tra đăng nhập/quyền
+  → Controller nhận DTO → Service xử lý nghiệp vụ
+  → Repository lưu/đọc SQL Server
+  → trả response → React hiển thị kết quả
 ```
 
-- Account đã tạo bài hoặc category có bài tham chiếu không được xóa, kể cả bài inactive.
-- Category có con/account chỉ có updater reference xử lý theo DEC-05/06 trong [requirements](requirements.md).
-- Xóa news chỉ xóa bài và NewsTag links; giữ account/category/Tag. FK vẫn bảo vệ dữ liệu khi request đồng thời.
+Create/Update mở popup; lỗi giữ form để sửa. Delete mở confirmation: Cancel không gửi request, Confirm mới xóa. Public chỉ trả news active; profile/history dùng tài khoản đăng nhập, không lấy ID tùy ý từ client.
 
-## 6. Search, public và history flow dự kiến
+Chỉ bổ sung tên method/route thật khi triển khai chức năng đó; không viết lại toàn bộ luồng sau mỗi milestone.
 
-```text
-Search input → keyword riêng → axios GET ?q=...
-  → Service/Repository tìm trong phạm vi có quyền
-  → trả danh sách → React render kết quả hoặc no-result
-```
+## 5. Kiểm tra dữ liệu
 
-Query trống trả toàn bộ danh sách được phép xem. Public list/detail lọc NewsStatus = 1 ở BE; detail inactive trả 404. History lấy CreatedByID từ principal và gồm cả hai status; quản lý news chung không bị bộ lọc history giới hạn.
+Fixture test lưu account/category/news/tag bằng repository vào DB test riêng. Kiểm tra đọc tiếng Việt, quan hệ, constraint, rollback khi lỗi và dữ liệu còn sau restart. Kết quả M2 đã lưu: 9 tests pass; không phải kết quả test mới của lần sửa docs này.
 
-## 7. Profile và persistence flow dự kiến
+Để chạy lại, làm theo [README](../README.md). Fixture M2 không dùng để login; demo M3 chỉ seed khi bật cấu hình.
 
-Profile lấy account từ principal, chỉ sửa tên/email/password; không nhận ID người khác hoặc role để sửa. Sau lưu/reload, React lấy lại dữ liệu qua API từ SQL Server. Không dùng localStorage làm nguồn CRUD thứ hai.
+## 6. File cần mở khi giảng viên hỏi
 
-## 8. File cần mở khi giải thích code
-
-| Câu hỏi | File hiện có / hướng cập nhật |
+| Câu hỏi | File |
 |---|---|
-| Backend khởi động ở đâu? | [Application](../src/main/java/fpt/edu/a2phantuanthanh_se1910/A2PhanTuanThanhSe1910Application.java) |
-| Cấu hình Boot/dependency? | [pom.xml](../pom.xml) |
-| Kết nối SQL Server thế nào? | [application.properties](../src/main/resources/application.properties), [.env.example](../.env.example) |
-| Database rỗng được tạo ra sao? | [create-database.sql](../scripts/create-database.sql) |
-| Test đang kiểm tra gì? | [ApplicationTests](../src/test/java/fpt/edu/a2phantuanthanh_se1910/A2PhanTuanThanhSe1910ApplicationTests.java) |
-| Mapping/constraints News và composite key? | [NewsArticle](../src/main/java/fpt/edu/a2phantuanthanh_se1910/entity/NewsArticle.java), [NewsTag](../src/main/java/fpt/edu/a2phantuanthanh_se1910/entity/NewsTag.java), [NewsTagId](../src/main/java/fpt/edu/a2phantuanthanh_se1910/entity/NewsTagId.java) |
-| Kiểm tra references/history/status? | [NewsArticleRepository](../src/main/java/fpt/edu/a2phantuanthanh_se1910/repository/NewsArticleRepository.java) |
-| Demo/retest M2? | [NewsPersistenceTests](../src/test/java/fpt/edu/a2phantuanthanh_se1910/persistence/NewsPersistenceTests.java), [PersistenceFixture](../src/test/java/fpt/edu/a2phantuanthanh_se1910/persistence/PersistenceFixture.java), [runner](../scripts/test-persistence.ps1) |
-| Auth/public API? | Xem mục M3 cuối tài liệu; CRUD/profile/history chưa triển khai |
-
-Khi code từng module, cập nhật luồng và file thực tế kèm mã test trong [test-matrix](test-matrix.md).
+| Chương trình bắt đầu ở đâu? | [Application](../src/main/java/fpt/edu/a2phantuanthanh_se1910/A2PhanTuanThanhSe1910Application.java) |
+| Kết nối DB và JPA cấu hình ở đâu? | [application.properties](../src/main/resources/application.properties) |
+| Quan hệ bài viết với category/account? | [NewsArticle](../src/main/java/fpt/edu/a2phantuanthanh_se1910/entity/NewsArticle.java) |
+| Vì sao bảng NewsTag có hai ID? | [NewsTag](../src/main/java/fpt/edu/a2phantuanthanh_se1910/entity/NewsTag.java), [NewsTagId](../src/main/java/fpt/edu/a2phantuanthanh_se1910/entity/NewsTagId.java) |
+| Kiểm tra account/category có bài như thế nào? | [NewsArticleRepository](../src/main/java/fpt/edu/a2phantuanthanh_se1910/repository/NewsArticleRepository.java) |
+| Dữ liệu test được tạo ở đâu? | [PersistenceFixture](../src/test/java/fpt/edu/a2phantuanthanh_se1910/persistence/PersistenceFixture.java) |
+| Các test đang xác nhận gì? | [NewsPersistenceTests](../src/test/java/fpt/edu/a2phantuanthanh_se1910/persistence/NewsPersistenceTests.java), [test-matrix](test-matrix.md) |
 
 
 ## M3 đã triển khai: login → bearer → public news

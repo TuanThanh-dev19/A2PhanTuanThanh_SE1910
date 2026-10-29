@@ -9,7 +9,7 @@ Author: Phan Tuan Thanh - CE190595
 | Bài tập | SBA301 Assignment 02 - CRUD Application with RESTful Web Service and ReactJS |
 | Project / database | `A2PhanTuanThanh_SE1910` |
 | Công nghệ bắt buộc | Spring Boot 3, SQL Server, Spring Data JPA, ReactJS và axios |
-| Trạng thái | M2: entity/repository và persistence SQL Server; API/auth/React chưa triển khai |
+| Tiến độ thực hiện | Xem [README](../README.md) và [test-matrix](test-matrix.md) |
 | Nguồn yêu cầu | Assignment 02 (5 trang); C2 và ảnh cấu trúc docs do sinh viên cung cấp trong chat |
 | Cách trình bày | Theo bộ docs Assignment 01 của sinh viên; nội dung nghiệp vụ theo Assignment 02 |
 
@@ -91,8 +91,8 @@ Admin không tự động kế thừa quyền Staff. Module news cho Staff quả
 - Người khác chạy được theo README; sinh viên giải thích được luồng request và nghiệp vụ.
 - Chi tiết field/giới hạn ở [design](design.md); expected/actual ở [test-matrix](test-matrix.md).
 
-## 7. Tiến độ và ngoài phạm vi
-
-M1 đã kiểm tra Boot 3, tên BE/DB và kết nối SQL Server. M2 bổ sung REQ-03/05 về schema/persistence và phần validation/constraint lưu trữ của REQ-17; kết quả thực chạy ở [test-matrix](test-matrix.md). REQ-01 còn React; REQ-02 còn API/ba lớp; REQ-17 còn DTO/FE/nghiệp vụ; REQ-19 còn minh chứng IntelliJ. Chi tiết ở [development-plan](development-plan.md).
+## 7. Ngoài phạm vi
 
 Approval workflow, scheduling và analytics được nhắc trong phần giới thiệu nhưng không thuộc Main Functions. Logo AI, `Admin/Admin` và mock localStorage của Assignment 01 không phải yêu cầu Assignment 02. JWT là lựa chọn thiết kế, không phải yêu cầu bắt buộc của đề.
+
+Kế hoạch chung ở [development-plan](development-plan.md); tiến độ thực tế xem README, không cập nhật lại yêu cầu sau mỗi milestone.
