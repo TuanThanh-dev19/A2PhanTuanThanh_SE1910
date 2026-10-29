@@ -13,18 +13,18 @@ export default function ManagementLayout() {
       <header className="app-header">
         <div className="brand"><span className="brand-mark">FU</span>News Management</div>
         <div className="current-account">
-          <Link to="/public/news">Tin công khai</Link>
+          <Link to="/public/news">Public news</Link>
           <div><strong>{account.accountName}</strong><span>{isAdmin ? 'Admin' : 'Staff'}</span></div>
-          <button type="button" className="button-secondary" onClick={logout}>Đăng xuất</button>
+          <button type="button" className="button-secondary" onClick={logout}>Sign out</button>
         </div>
       </header>
       <div className="workspace">
-        <nav aria-label="Điều hướng chính">
-          <p className="eyebrow">Khu vực quản lý</p>
-          {isAdmin && <NavLink to="/accounts">Tài khoản</NavLink>}
-          {!isAdmin && <NavLink to="/staff">Trang Staff</NavLink>}
-          {!isAdmin && <NavLink to="/categories">Danh mục</NavLink>}
-          {!isAdmin && <NavLink to="/news">Bài viết</NavLink>}
+        <nav aria-label="Main navigation">
+          <p className="eyebrow">Management</p>
+          {isAdmin && <NavLink to="/accounts">Accounts</NavLink>}
+          {!isAdmin && <NavLink to="/staff">Staff home</NavLink>}
+          {!isAdmin && <NavLink to="/categories">Categories</NavLink>}
+          {!isAdmin && <NavLink to="/news">Articles</NavLink>}
         </nav>
         <main className="page-content"><Outlet /></main>
       </div>

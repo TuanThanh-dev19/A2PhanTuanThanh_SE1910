@@ -108,7 +108,7 @@ public class NewsService {
 
     private Category requireCategory(long id) {
         return categories.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                "Danh mục không tồn tại. Vui lòng chọn lại."));
+                "The category no longer exists. Please select another category."));
     }
 
     @Transactional
@@ -152,17 +152,17 @@ public class NewsService {
         Set<Long> tagIds = new TreeSet<>();
         for (NewsRequest.TagInput input : inputs) {
             if (input.tagId() != null && !tagIds.add(input.tagId())) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "ID tag không được lặp lại.");
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tag IDs must not be repeated.");
             }
         }
         Map<Long, Tag> existingTags = new HashMap<>();
         // Lock existing tags in ID order so two requests cannot claim the same free tag.
         for (Long tagId : tagIds) {
             Tag tag = tagRepository.findForUpdate(tagId).orElseThrow(() ->
-                    new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tag không tồn tại. Vui lòng chọn lại."));
+                    new ResponseStatusException(HttpStatus.BAD_REQUEST, "The tag no longer exists. Please select another tag."));
             NewsTag link = newsTags.findByTag_TagId(tagId).orElse(null);
             if (link != null && !link.getNewsArticle().getNewsArticleId().equals(articleId)) {
-                throw new ResponseStatusException(HttpStatus.CONFLICT, "Tag đang thuộc bài viết khác.");
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "The tag already belongs to another article.");
             }
             existingTags.put(tagId, tag);
         }

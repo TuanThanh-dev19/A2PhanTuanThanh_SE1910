@@ -21,7 +21,7 @@ export default function LoginPage() {
     setError('')
     setFieldErrors({})
     if (new TextEncoder().encode(password).length > 72) {
-      setFieldErrors({ password: 'Mật khẩu tối đa 72 byte UTF-8.' })
+      setFieldErrors({ password: 'Password must be at most 72 UTF-8 bytes.' })
       return
     }
     setSubmitting(true)
@@ -30,12 +30,12 @@ export default function LoginPage() {
       startSession(response.data)
     } catch (requestError) {
       if (requestError.response?.status === 401) {
-        setError('Email hoặc mật khẩu không đúng.')
+        setError('Incorrect email or password.')
       } else if (requestError.response?.status === 400) {
         setFieldErrors(requestError.response.data.fieldErrors || {})
-        setError(requestError.response.data.message || 'Vui lòng kiểm tra thông tin đăng nhập.')
+        setError(requestError.response.data.message || 'Please check your sign-in details.')
       } else {
-        setError('Không thể đăng nhập. Vui lòng kiểm tra kết nối và thử lại.')
+        setError('Unable to sign in. Please check your connection and try again.')
       }
     } finally {
       setSubmitting(false)
@@ -47,16 +47,16 @@ export default function LoginPage() {
       <section className="login-intro">
         <div className="brand"><span className="brand-mark">FU</span>News Management</div>
         <div><p className="eyebrow">FUNewsManagementSystem</p>
-          <h1>Kết nối thông tin.<br />Quản lý dễ dàng.</h1>
-          <p>Đăng nhập để truy cập khu vực làm việc dành cho tài khoản của bạn.</p>
+          <h1>Stay informed.<br />Manage with ease.</h1>
+          <p>Sign in to access your workspace.</p>
         </div>
         <small>SBA301 · Assignment 02</small>
       </section>
       <section className="login-panel" aria-labelledby="login-title">
-        <p className="eyebrow">Chào mừng trở lại</p>
-        <h2 id="login-title">Đăng nhập</h2>
-        <p className="muted">Sử dụng email và mật khẩu của bạn.</p>
-        <p><Link to="/public/news">Đọc tin công khai</Link></p>
+        <p className="eyebrow">Welcome back</p>
+        <h2 id="login-title">Sign in</h2>
+        <p className="muted">Enter your email and password.</p>
+        <p><Link to="/public/news">Read public news</Link></p>
         {notice && <p className="notice" role="status">{notice}</p>}
         {error && <p className="error-message" role="alert">{error}</p>}
         <form onSubmit={handleSubmit} aria-busy={submitting}>
@@ -65,13 +65,13 @@ export default function LoginPage() {
             value={email} onChange={(event) => setEmail(event.target.value)} disabled={submitting}
             aria-invalid={Boolean(fieldErrors.email)} aria-describedby={fieldErrors.email ? 'email-error' : undefined} />
           {fieldErrors.email && <p id="email-error" className="field-error">{fieldErrors.email}</p>}
-          <label htmlFor="password">Mật khẩu</label>
+          <label htmlFor="password">Password</label>
           <input id="password" type="password" autoComplete="current-password" required maxLength={72}
             value={password} onChange={(event) => setPassword(event.target.value)} disabled={submitting}
             aria-invalid={Boolean(fieldErrors.password)} aria-describedby={fieldErrors.password ? 'password-error' : undefined} />
           {fieldErrors.password && <p id="password-error" className="field-error">{fieldErrors.password}</p>}
           <button type="submit" className="button-primary" disabled={submitting}>
-            {submitting ? 'Đang đăng nhập…' : 'Đăng nhập'}
+            {submitting ? 'Signing in…' : 'Sign in'}
           </button>
         </form>
       </section>

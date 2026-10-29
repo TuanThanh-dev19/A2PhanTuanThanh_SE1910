@@ -26,7 +26,7 @@ export default function CategoryDeleteDialog({ category, onClose, onDeleted }) {
       await client.delete(`/categories/${category.categoryId}`)
       onDeleted()
     } catch (requestError) {
-      setError(requestError.response?.data?.message || 'Không xóa được danh mục. Vui lòng thử lại.')
+      setError(requestError.response?.data?.message || 'Unable to delete the category. Please try again.')
     } finally {
       deletingRef.current = false
       setDeleting(false)
@@ -35,14 +35,14 @@ export default function CategoryDeleteDialog({ category, onClose, onDeleted }) {
 
   return (
     <dialog ref={dialogRef} className="account-dialog" aria-labelledby="delete-category-title" onCancel={handleCancel}>
-      <h2 id="delete-category-title">Xóa danh mục?</h2>
-      <p>Bạn có chắc muốn xóa <strong>{category.categoryName}</strong> (ID: {category.categoryId})?</p>
-      <p className="muted">Danh mục đang có bài viết sẽ không thể xóa. Các danh mục con được giữ lại và bỏ liên kết cha.</p>
+      <h2 id="delete-category-title">Delete category?</h2>
+      <p>Are you sure you want to delete <strong>{category.categoryName}</strong> (ID: {category.categoryId})?</p>
+      <p className="muted">Categories used by articles cannot be deleted. Child categories will be kept without a parent.</p>
       {error && <p className="error-message" role="alert">{error}</p>}
       <div className="dialog-actions">
-        <button type="button" className="button-secondary" onClick={onClose} disabled={deleting}>Hủy</button>
+        <button type="button" className="button-secondary" onClick={onClose} disabled={deleting}>Cancel</button>
         <button type="button" className="button-danger" onClick={confirmDelete} disabled={deleting}>
-          {deleting ? 'Đang xóa…' : 'Xác nhận xóa'}
+          {deleting ? 'Deleting…' : 'Confirm delete'}
         </button>
       </div>
     </dialog>

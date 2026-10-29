@@ -24,7 +24,7 @@ export default function AccountDeleteDialog({ account, onClose, onDeleted }) {
       await client.delete(`/accounts/${account.accountId}`)
       onDeleted(account.accountId)
     } catch (requestError) {
-      setError(requestError.response?.data?.message || 'Không xóa được tài khoản. Vui lòng thử lại.')
+      setError(requestError.response?.data?.message || 'Unable to delete the account. Please try again.')
     } finally {
       setDeleting(false)
     }
@@ -32,14 +32,14 @@ export default function AccountDeleteDialog({ account, onClose, onDeleted }) {
 
   return (
     <dialog ref={dialogRef} className="account-dialog" aria-labelledby="delete-account-title" onCancel={handleCancel}>
-      <h2 id="delete-account-title">Xóa tài khoản?</h2>
-      <p>Bạn có chắc muốn xóa <strong>{account.accountName}</strong> ({account.accountEmail})?</p>
-      <p className="muted">Tài khoản đã tạo bài viết sẽ không thể xóa.</p>
+      <h2 id="delete-account-title">Delete account?</h2>
+      <p>Are you sure you want to delete <strong>{account.accountName}</strong> ({account.accountEmail})?</p>
+      <p className="muted">Accounts that have created articles cannot be deleted.</p>
       {error && <p className="error-message" role="alert">{error}</p>}
       <div className="dialog-actions">
-        <button type="button" className="button-secondary" onClick={onClose} disabled={deleting}>Hủy</button>
+        <button type="button" className="button-secondary" onClick={onClose} disabled={deleting}>Cancel</button>
         <button type="button" className="button-danger" onClick={confirmDelete} disabled={deleting}>
-          {deleting ? 'Đang xóa…' : 'Xác nhận xóa'}
+          {deleting ? 'Deleting…' : 'Confirm delete'}
         </button>
       </div>
     </dialog>

@@ -27,7 +27,7 @@ export default function NewsPage() {
         if (!controller.signal.aborted) setNews(response.data)
       } catch (requestError) {
         if (!controller.signal.aborted) {
-          setError(requestError.response?.data?.message || 'Không tải được bài viết. Vui lòng thử lại.')
+          setError(requestError.response?.data?.message || 'Unable to load articles. Please try again.')
         }
       } finally {
         if (!controller.signal.aborted) setLoading(false)
@@ -66,7 +66,7 @@ export default function NewsPage() {
         setDetail(response.data)
       }
     } catch (requestError) {
-      setActionError(requestError.response?.data?.message || 'Không tải được chi tiết bài viết.')
+      setActionError(requestError.response?.data?.message || 'Unable to load article details.')
     } finally {
       setOpeningId(null)
     }
@@ -74,57 +74,57 @@ export default function NewsPage() {
 
   return (
     <>
-      <p className="eyebrow">Quản lý nội dung</p>
-      <h1>Bài viết</h1>
-      <p className="muted">Bài active và inactive của tất cả Staff.</p>
+      <p className="eyebrow">Content management</p>
+      <h1>Articles</h1>
+      <p className="muted">Active and inactive articles created by all staff.</p>
       <form className="account-toolbar" onSubmit={search}>
-        <label className="sr-only" htmlFor="news-search">Tìm bài theo tiêu đề, headline hoặc nội dung</label>
+        <label className="sr-only" htmlFor="news-search">Search articles by title, headline or content</label>
         <input id="news-search" type="search" maxLength={200} value={keyword}
-          placeholder="Tìm tiêu đề, headline hoặc nội dung" onChange={(event) => {
+          placeholder="Search by title, headline or content" onChange={(event) => {
             setKeyword(event.target.value)
             if (event.target.value.trim() === '' && searchQuery) clearSearch()
           }} />
-        <button type="submit" className="button-primary" disabled={loading}>Tìm kiếm</button>
-        {(keyword || searchQuery) && <button type="button" className="button-secondary" onClick={clearSearch}>Xóa tìm kiếm</button>}
+        <button type="submit" className="button-primary" disabled={loading}>Search</button>
+        {(keyword || searchQuery) && <button type="button" className="button-secondary" onClick={clearSearch}>Clear search</button>}
         <button type="button" className="button-primary" onClick={() => {
           setSuccess(''); setActionError(''); setFormState({ news: null })
-        }} disabled={openingId !== null}>Thêm bài viết</button>
+        }} disabled={openingId !== null}>Add article</button>
       </form>
       {success && <p className="notice" role="status">{success}</p>}
       {formState && <NewsFormDialog news={formState.news} onClose={() => setFormState(null)} onSaved={() => {
-        setSuccess(formState.news ? 'Đã cập nhật bài viết.' : 'Đã thêm bài viết.')
+        setSuccess(formState.news ? 'Article updated.' : 'Article created.')
         setFormState(null)
         reloadNews()
       }} />}
       {actionError && <p className="error-message" role="alert">{actionError}</p>}
       {detail && <NewsDetailDialog news={detail} onClose={() => setDetail(null)} />}
       {deleteNews && <NewsDeleteDialog news={deleteNews} onClose={() => setDeleteNews(null)} onDeleted={() => {
-        setDeleteNews(null); setSuccess('Đã xóa bài viết.'); reloadNews()
+        setDeleteNews(null); setSuccess('Article deleted.'); reloadNews()
       }} />}
-      <section className="card" aria-busy={loading} aria-label="Danh sách bài viết">
-        <div className="card-heading"><h2>Danh sách bài viết</h2>
-          {!loading && !error && <span className="count">{news.length} bài viết</span>}</div>
-        {loading && <p className="state-message" role="status">Đang tải bài viết…</p>}
+      <section className="card" aria-busy={loading} aria-label="Articles">
+        <div className="card-heading"><h2>Articles</h2>
+          {!loading && !error && <span className="count">Articles: {news.length}</span>}</div>
+        {loading && <p className="state-message" role="status">Loading articles…</p>}
         {!loading && error && <div className="state-message"><p className="error-message" role="alert">{error}</p>
-          <button type="button" className="button-secondary" onClick={reloadNews}>Thử lại</button></div>}
+          <button type="button" className="button-secondary" onClick={reloadNews}>Try again</button></div>}
         {!loading && !error && news.length === 0 && <p className="state-message" role="status">
-          {searchQuery ? 'Không tìm thấy bài viết phù hợp.' : 'Chưa có bài viết nào.'}</p>}
+          {searchQuery ? 'No matching articles found.' : 'No articles yet.'}</p>}
         {!loading && !error && news.length > 0 && <div className="table-scroll"><table>
-          <thead><tr><th scope="col">ID</th><th scope="col">Tiêu đề</th><th scope="col">Danh mục</th>
-            <th scope="col">Trạng thái</th><th scope="col">Người tạo</th><th scope="col">Ngày tạo (UTC)</th>
-            <th scope="col">Thao tác</th></tr></thead>
+          <thead><tr><th scope="col">ID</th><th scope="col">Title</th><th scope="col">Category</th>
+            <th scope="col">Status</th><th scope="col">Created by</th><th scope="col">Created (UTC)</th>
+            <th scope="col">Actions</th></tr></thead>
           <tbody>{news.map((article) => <tr key={article.newsArticleId}>
             <td>{article.newsArticleId}</td><td className="name-cell">{article.newsTitle}</td>
             <td>{article.categoryName}</td><td>{article.newsStatus === 1 ? 'Active' : 'Inactive'}</td>
             <td>{article.createdByName}</td><td>{article.createdDate.replace('T', ' ')}</td>
             <td><div className="row-actions"><button type="button" className="button-secondary"
               disabled={openingId !== null} onClick={() => openDetail(article.newsArticleId)}>
-              {openingId === article.newsArticleId ? 'Đang tải…' : 'Chi tiết'}</button>
+              {openingId === article.newsArticleId ? 'Loading…' : 'Details'}</button>
               <button type="button" className="button-secondary" disabled={openingId !== null}
-                onClick={() => openDetail(article.newsArticleId, true)}>Sửa</button>
+                onClick={() => openDetail(article.newsArticleId, true)}>Edit</button>
               <button type="button" className="button-danger" disabled={openingId !== null} onClick={() => {
                 setSuccess(''); setActionError(''); setDeleteNews(article)
-              }}>Xóa</button></div></td>
+              }}>Delete</button></div></td>
           </tr>)}</tbody>
         </table></div>}
       </section>

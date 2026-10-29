@@ -70,6 +70,6 @@ public class ApiExceptionHandler {
     @ExceptionHandler(ConcurrencyFailureException.class)
     public ResponseEntity<ApiError> concurrentChange(HttpServletRequest request) {
         return ResponseEntity.status(409).body(ApiError.of(409, "CONFLICT",
-                "Dữ liệu đang được cập nhật. Vui lòng tải lại và thử lại.", request.getRequestURI()));
+                "The data is being updated. Please reload and try again.", request.getRequestURI()));
     }
 }

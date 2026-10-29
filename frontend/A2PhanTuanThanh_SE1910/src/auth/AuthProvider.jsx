@@ -11,7 +11,7 @@ export default function AuthProvider({ children }) {
     function expireSession() {
       clearSession()
       setSession(null)
-      setNotice('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.')
+      setNotice('Your session has expired. Please sign in again.')
     }
 
     window.addEventListener('auth:expired', expireSession)

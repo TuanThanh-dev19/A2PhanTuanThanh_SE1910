@@ -89,7 +89,7 @@ public class AccountService {
         SystemAccount account = requireAccount(id);
         if (newsArticles.existsByCreatedBy_AccountId(id)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT,
-                    "Không thể xóa tài khoản đã tạo bài viết, kể cả bài inactive.");
+                    "Cannot delete an account that has created articles, including inactive articles.");
         }
         List<NewsArticle> editedArticles = newsArticles.findByUpdatedBy_AccountId(id);
         for (NewsArticle article : editedArticles) {

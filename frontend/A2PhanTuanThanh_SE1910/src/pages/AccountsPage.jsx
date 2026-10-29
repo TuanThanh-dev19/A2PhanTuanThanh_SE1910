@@ -30,9 +30,9 @@ export default function AccountsPage() {
       } catch (requestError) {
         if (!controller.signal.aborted) {
           if (requestError.response?.status === 403) {
-            setError('Bạn không có quyền xem danh sách tài khoản.')
+            setError('You do not have permission to view accounts.')
           } else {
-            setError('Không tải được danh sách tài khoản. Vui lòng thử lại.')
+            setError('Unable to load accounts. Please try again.')
           }
         }
       } finally {
@@ -73,7 +73,7 @@ export default function AccountsPage() {
   function accountSaved(savedAccount) {
     const wasEditing = Boolean(formState.account)
     setFormState(null)
-    setSuccess(wasEditing ? 'Đã cập nhật tài khoản.' : 'Đã thêm tài khoản.')
+    setSuccess(wasEditing ? 'Account updated.' : 'Account created.')
     if (savedAccount.accountId === session.account.accountId) {
       startSession({ ...session, account: savedAccount })
     }
@@ -88,7 +88,7 @@ export default function AccountsPage() {
       const response = await client.get(`/accounts/${accountId}`)
       setFormState({ account: response.data })
     } catch (requestError) {
-      setActionError(requestError.response?.data?.message || 'Không tải được tài khoản. Vui lòng thử lại.')
+      setActionError(requestError.response?.data?.message || 'Unable to load the account. Please try again.')
     } finally {
       setEditingId(null)
     }
@@ -100,27 +100,27 @@ export default function AccountsPage() {
       logout()
       return
     }
-    setSuccess('Đã xóa tài khoản.')
+    setSuccess('Account deleted.')
     reloadAccounts()
   }
 
   return (
     <>
-      <p className="eyebrow">Quản trị hệ thống</p>
-      <h1>Tài khoản</h1>
-      <p className="muted page-description">Danh sách tài khoản và vai trò trong hệ thống.</p>
+      <p className="eyebrow">System administration</p>
+      <h1>Accounts</h1>
+      <p className="muted page-description">Manage accounts and their roles.</p>
       <form className="account-toolbar" onSubmit={handleSearch}>
-        <label htmlFor="account-search" className="sr-only">Tìm tài khoản theo tên hoặc email</label>
-        <input id="account-search" type="search" maxLength={200} placeholder="Tìm theo tên hoặc email"
+        <label htmlFor="account-search" className="sr-only">Search accounts by name or email</label>
+        <input id="account-search" type="search" maxLength={200} placeholder="Search by name or email"
           value={keyword} onChange={changeKeyword} />
-        <button type="submit" className="button-primary" disabled={loading}>Tìm kiếm</button>
+        <button type="submit" className="button-primary" disabled={loading}>Search</button>
         {(keyword || searchQuery) && <button type="button" className="button-secondary"
-          onClick={clearSearch}>Xóa tìm kiếm</button>}
+          onClick={clearSearch}>Clear search</button>}
         <button type="button" className="button-primary" onClick={() => {
           setSuccess('')
           setActionError('')
           setFormState({ account: null })
-        }} disabled={editingId !== null}>Thêm tài khoản</button>
+        }} disabled={editingId !== null}>Add account</button>
       </form>
       {success && <p className="notice" role="status">{success}</p>}
       {actionError && <p className="error-message" role="alert">{actionError}</p>}
@@ -130,23 +130,23 @@ export default function AccountsPage() {
         onClose={() => setDeleteAccount(null)} onDeleted={accountDeleted} />}
       <section className="card" aria-labelledby="accounts-title" aria-busy={loading}>
         <div className="card-heading">
-          <h2 id="accounts-title">Danh sách tài khoản</h2>
-          {!loading && !error && <span className="count">{accounts.length} tài khoản</span>}
+          <h2 id="accounts-title">Accounts</h2>
+          {!loading && !error && <span className="count">Accounts: {accounts.length}</span>}
         </div>
-        {loading && <p className="state-message" role="status">Đang tải danh sách tài khoản…</p>}
+        {loading && <p className="state-message" role="status">Loading accounts…</p>}
         {!loading && error && <div className="state-message">
           <p className="error-message" role="alert">{error}</p>
-          <button type="button" className="button-secondary" onClick={reloadAccounts}>Thử lại</button>
+          <button type="button" className="button-secondary" onClick={reloadAccounts}>Try again</button>
         </div>}
         {!loading && !error && accounts.length === 0 &&
           <p className="state-message" role="status">
-            {searchQuery ? 'Không tìm thấy tài khoản phù hợp.' : 'Chưa có tài khoản nào.'}
+            {searchQuery ? 'No matching accounts found.' : 'No accounts yet.'}
           </p>}
         {!loading && !error && accounts.length > 0 && <div className="table-scroll">
           <table>
-            <caption className="sr-only">ID, tên, email và vai trò của các tài khoản</caption>
-            <thead><tr><th scope="col">ID</th><th scope="col">Tên</th><th scope="col">Email</th>
-              <th scope="col">Vai trò</th><th scope="col">Thao tác</th></tr></thead>
+            <caption className="sr-only">Account ID, name, email and role</caption>
+            <thead><tr><th scope="col">ID</th><th scope="col">Name</th><th scope="col">Email</th>
+              <th scope="col">Role</th><th scope="col">Actions</th></tr></thead>
             <tbody>{accounts.map((account) => <tr key={account.accountId}>
               <td className="id-cell">{account.accountId}</td>
               <td className="name-cell">{account.accountName}</td>
@@ -156,15 +156,15 @@ export default function AccountsPage() {
               </span></td>
               <td><div className="row-actions">
                 <button type="button" className="button-secondary" disabled={editingId !== null}
-                  aria-label={`Sửa ${account.accountEmail}`} onClick={() => openEditForm(account.accountId)}>
-                  {editingId === account.accountId ? 'Đang tải…' : 'Sửa'}
+                  aria-label={`Edit ${account.accountEmail}`} onClick={() => openEditForm(account.accountId)}>
+                  {editingId === account.accountId ? 'Loading…' : 'Edit'}
                 </button>
                 <button type="button" className="button-danger" disabled={editingId !== null}
-                  aria-label={`Xóa ${account.accountEmail}`} onClick={() => {
+                  aria-label={`Delete ${account.accountEmail}`} onClick={() => {
                     setSuccess('')
                     setActionError('')
                     setDeleteAccount(account)
-                  }}>Xóa</button>
+                  }}>Delete</button>
               </div></td>
             </tr>)}</tbody>
           </table>

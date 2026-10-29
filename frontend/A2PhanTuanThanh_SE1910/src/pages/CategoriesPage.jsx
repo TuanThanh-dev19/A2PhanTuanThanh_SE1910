@@ -28,9 +28,9 @@ export default function CategoriesPage() {
       } catch (requestError) {
         if (!controller.signal.aborted) {
           if (requestError.response?.status === 403) {
-            setError('Bạn không có quyền xem danh sách danh mục.')
+            setError('You do not have permission to view categories.')
           } else {
-            setError('Không tải được danh sách danh mục. Vui lòng thử lại.')
+            setError('Unable to load categories. Please try again.')
           }
         }
       } finally {
@@ -76,35 +76,35 @@ export default function CategoriesPage() {
       const response = await client.get(`/categories/${categoryId}`)
       setFormState({ category: response.data })
     } catch (requestError) {
-      setActionError(requestError.response?.data?.message || 'Không tải được danh mục. Vui lòng thử lại.')
+      setActionError(requestError.response?.data?.message || 'Unable to load the category. Please try again.')
     } finally {
       setEditingId(null)
     }
   }
 
   function categorySaved() {
-    setSuccess(formState.category ? 'Đã cập nhật danh mục.' : 'Đã thêm danh mục.')
+    setSuccess(formState.category ? 'Category updated.' : 'Category created.')
     setFormState(null)
     reloadCategories()
   }
 
   return (
     <>
-      <p className="eyebrow">Quản lý nội dung</p>
-      <h1>Danh mục</h1>
-      <p className="muted page-description">Danh sách danh mục đang hoạt động và ngừng hoạt động.</p>
+      <p className="eyebrow">Content management</p>
+      <h1>Categories</h1>
+      <p className="muted page-description">Manage active and inactive categories.</p>
       <form className="account-toolbar" onSubmit={handleSearch}>
-        <label htmlFor="category-search" className="sr-only">Tìm danh mục theo tên hoặc mô tả</label>
-        <input id="category-search" type="search" maxLength={200} placeholder="Tìm theo tên hoặc mô tả"
+        <label htmlFor="category-search" className="sr-only">Search categories by name or description</label>
+        <input id="category-search" type="search" maxLength={200} placeholder="Search by name or description"
           value={keyword} onChange={changeKeyword} />
-        <button type="submit" className="button-primary" disabled={loading}>Tìm kiếm</button>
+        <button type="submit" className="button-primary" disabled={loading}>Search</button>
         {(keyword || searchQuery) && <button type="button" className="button-secondary"
-          onClick={clearSearch}>Xóa tìm kiếm</button>}
+          onClick={clearSearch}>Clear search</button>}
         <button type="button" className="button-primary" onClick={() => {
           setSuccess('')
           setActionError('')
           setFormState({ category: null })
-        }} disabled={editingId !== null}>Thêm danh mục</button>
+        }} disabled={editingId !== null}>Add category</button>
       </form>
       {success && <p className="notice" role="status">{success}</p>}
       {actionError && <p className="error-message" role="alert">{actionError}</p>}
@@ -113,29 +113,29 @@ export default function CategoriesPage() {
       {deleteCategory && <CategoryDeleteDialog category={deleteCategory}
         onClose={() => setDeleteCategory(null)} onDeleted={() => {
           setDeleteCategory(null)
-          setSuccess('Đã xóa danh mục.')
+          setSuccess('Category deleted.')
           reloadCategories()
         }} />}
       <section className="card" aria-labelledby="categories-title" aria-busy={loading}>
         <div className="card-heading">
-          <h2 id="categories-title">Danh sách danh mục</h2>
-          {!loading && !error && <span className="count">{categories.length} danh mục</span>}
+          <h2 id="categories-title">Categories</h2>
+          {!loading && !error && <span className="count">Categories: {categories.length}</span>}
         </div>
-        {loading && <p className="state-message" role="status">Đang tải danh sách danh mục…</p>}
+        {loading && <p className="state-message" role="status">Loading categories…</p>}
         {!loading && error && <div className="state-message">
           <p className="error-message" role="alert">{error}</p>
-          <button type="button" className="button-secondary" onClick={reloadCategories}>Thử lại</button>
+          <button type="button" className="button-secondary" onClick={reloadCategories}>Try again</button>
         </div>}
         {!loading && !error && categories.length === 0 &&
           <p className="state-message" role="status">
-            {searchQuery ? 'Không tìm thấy danh mục phù hợp.' : 'Chưa có danh mục nào.'}
+            {searchQuery ? 'No matching categories found.' : 'No categories yet.'}
           </p>}
         {!loading && !error && categories.length > 0 && <div className="table-scroll">
           <table>
-            <caption className="sr-only">ID, tên, mô tả, ID và tên danh mục cha, trạng thái</caption>
-            <thead><tr><th scope="col">ID</th><th scope="col">Tên</th><th scope="col">Mô tả</th>
-              <th scope="col">ID cha</th><th scope="col">Danh mục cha</th><th scope="col">Trạng thái</th>
-              <th scope="col">Thao tác</th></tr></thead>
+            <caption className="sr-only">Category ID, name, description, parent ID, parent name and status</caption>
+            <thead><tr><th scope="col">ID</th><th scope="col">Name</th><th scope="col">Description</th>
+              <th scope="col">Parent ID</th><th scope="col">Parent category</th><th scope="col">Status</th>
+              <th scope="col">Actions</th></tr></thead>
             <tbody>{categories.map((category) => <tr key={category.categoryId}>
               <td className="id-cell">{category.categoryId}</td>
               <td className="name-cell">{category.categoryName}</td>
@@ -145,15 +145,15 @@ export default function CategoriesPage() {
               <td>{category.isActive === 1 ? 'Active' : 'Inactive'}</td>
               <td><div className="row-actions">
                 <button type="button" className="button-secondary" disabled={editingId !== null}
-                  aria-label={`Sửa danh mục ${category.categoryId}`} onClick={() => openEditForm(category.categoryId)}>
-                  {editingId === category.categoryId ? 'Đang tải…' : 'Sửa'}
+                  aria-label={`Edit category ${category.categoryId}`} onClick={() => openEditForm(category.categoryId)}>
+                  {editingId === category.categoryId ? 'Loading…' : 'Edit'}
                 </button>
                 <button type="button" className="button-danger" disabled={editingId !== null}
-                  aria-label={`Xóa danh mục ${category.categoryId}`} onClick={() => {
+                  aria-label={`Delete category ${category.categoryId}`} onClick={() => {
                     setSuccess('')
                     setActionError('')
                     setDeleteCategory(category)
-                  }}>Xóa</button>
+                  }}>Delete</button>
               </div></td>
             </tr>)}</tbody>
           </table>

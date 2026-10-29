@@ -75,7 +75,7 @@ public class CategoryService {
         Category category = requireCategory(id);
         if (newsArticles.existsByCategory_CategoryId(id)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT,
-                    "Không thể xóa danh mục đang có bài viết, kể cả bài inactive.");
+                    "Cannot delete a category used by articles, including inactive articles.");
         }
         List<Category> children = categories.findByParentCategory_CategoryId(id);
         for (Category child : children) {
@@ -95,18 +95,18 @@ public class CategoryService {
     private Category findParent(Long parentId, Long categoryId) {
         if (parentId == null) return null;
         if (parentId.equals(categoryId)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Danh mục không thể là cha của chính nó.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "A category cannot be its own parent.");
         }
         Category parent = categories.findById(parentId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                        "Danh mục cha không tồn tại. Vui lòng chọn lại."));
+                        "The parent category no longer exists. Please select another category."));
         Set<Long> visitedIds = new HashSet<>();
         Category ancestor = parent;
         // Keep the hierarchy stable until save; also stop if existing data already contains a cycle.
         while (ancestor != null) {
             Long ancestorId = ancestor.getCategoryId();
             if (ancestorId.equals(categoryId) || !visitedIds.add(ancestorId)) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Danh mục cha tạo vòng lặp nhiều cấp.");
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The selected parent would create a category cycle.");
             }
             ancestor = ancestor.getParentCategory();
         }

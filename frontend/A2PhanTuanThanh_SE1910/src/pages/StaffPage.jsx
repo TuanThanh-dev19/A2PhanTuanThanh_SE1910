@@ -2,11 +2,11 @@
 export default function StaffPage() {
   return (
     <>
-      <p className="eyebrow">Khu vực làm việc</p>
-      <h1>Xin chào, Staff</h1>
+      <p className="eyebrow">Workspace</p>
+      <h1>Welcome, Staff</h1>
       <section className="card staff-message">
-        <h2>Đăng nhập thành công</h2>
-        <p>Bạn đang sử dụng tài khoản Staff. Chỉ Admin có quyền xem danh sách tài khoản.</p>
+        <h2>Signed in successfully</h2>
+        <p>You are signed in as Staff. Only Admin can view accounts.</p>
       </section>
     </>
   )

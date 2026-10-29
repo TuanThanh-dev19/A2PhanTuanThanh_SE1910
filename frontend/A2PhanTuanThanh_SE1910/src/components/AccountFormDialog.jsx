@@ -26,17 +26,17 @@ export default function AccountFormDialog({ account, onClose, onSaved }) {
     event.preventDefault()
     if (saving) return
     const errors = {}
-    if (!accountName.trim()) errors.accountName = 'Vui lòng nhập tên.'
+    if (!accountName.trim()) errors.accountName = 'Please enter a name.'
     if (!accountEmail.trim()) {
-      errors.accountEmail = 'Vui lòng nhập email.'
+      errors.accountEmail = 'Please enter an email.'
     } else if (event.currentTarget.elements.accountEmail.validity.typeMismatch) {
-      errors.accountEmail = 'Email không đúng định dạng.'
+      errors.accountEmail = 'Invalid email format.'
     }
     if (!isEditing || password !== '') {
       if (!password.trim()) {
-        errors.password = 'Mật khẩu không được chỉ chứa khoảng trắng.'
+        errors.password = 'Password cannot contain only whitespace.'
       } else if (new TextEncoder().encode(password).length > 72) {
-        errors.password = 'Mật khẩu tối đa 72 byte UTF-8.'
+        errors.password = 'Password must be at most 72 UTF-8 bytes.'
       }
     }
     setFieldErrors(errors)
@@ -59,9 +59,9 @@ export default function AccountFormDialog({ account, onClose, onSaved }) {
       onSaved(response.data)
     } catch (requestError) {
       if (requestError.response?.status === 409) {
-        setError('Không lưu được tài khoản. Email có thể đã được sử dụng; vui lòng kiểm tra lại.')
+        setError('Unable to save the account. The email may already be in use; please check and try again.')
       } else {
-        setError(requestError.response?.data?.message || 'Không lưu được tài khoản. Vui lòng thử lại.')
+        setError(requestError.response?.data?.message || 'Unable to save the account. Please try again.')
       }
       setFieldErrors(requestError.response?.data?.fieldErrors || {})
     } finally {
@@ -72,10 +72,10 @@ export default function AccountFormDialog({ account, onClose, onSaved }) {
   return (
     <dialog ref={dialogRef} className="account-dialog" aria-labelledby="account-form-title" onCancel={handleCancel}>
       <form onSubmit={handleSubmit} noValidate aria-busy={saving}>
-        <h2 id="account-form-title">{isEditing ? 'Sửa tài khoản' : 'Thêm tài khoản'}</h2>
+        <h2 id="account-form-title">{isEditing ? 'Edit account' : 'Add account'}</h2>
         {error && <p className="error-message" role="alert">{error}</p>}
         <fieldset disabled={saving}>
-          <label htmlFor="account-name">Tên</label>
+          <label htmlFor="account-name">Name</label>
           <input id="account-name" name="accountName" required maxLength={100} value={accountName}
             onChange={(event) => setAccountName(event.target.value)} aria-invalid={Boolean(fieldErrors.accountName)}
             aria-describedby={fieldErrors.accountName ? 'account-name-error' : undefined} />
@@ -85,24 +85,24 @@ export default function AccountFormDialog({ account, onClose, onSaved }) {
             onChange={(event) => setAccountEmail(event.target.value)} aria-invalid={Boolean(fieldErrors.accountEmail)}
             aria-describedby={fieldErrors.accountEmail ? 'account-email-error' : undefined} />
           {fieldErrors.accountEmail && <p id="account-email-error" className="field-error" role="alert">{fieldErrors.accountEmail}</p>}
-          <label htmlFor="account-role">Vai trò</label>
+          <label htmlFor="account-role">Role</label>
           <select id="account-role" value={accountRole} onChange={(event) => setAccountRole(event.target.value)}
             aria-invalid={Boolean(fieldErrors.accountRole)} aria-describedby={fieldErrors.accountRole ? 'account-role-error' : undefined}>
             <option value="1">Admin</option><option value="2">Staff</option>
           </select>
           {fieldErrors.accountRole && <p id="account-role-error" className="field-error" role="alert">{fieldErrors.accountRole}</p>}
-          <label htmlFor="account-password">{isEditing ? 'Mật khẩu mới' : 'Mật khẩu'}</label>
+          <label htmlFor="account-password">{isEditing ? 'New password' : 'Password'}</label>
           <input id="account-password" type="password" autoComplete="new-password" required={!isEditing} maxLength={72}
             value={password} onChange={(event) => setPassword(event.target.value)} aria-invalid={Boolean(fieldErrors.password)}
             aria-describedby={fieldErrors.password ? 'account-password-error' : 'account-password-hint'} />
           <p id="account-password-hint" className="muted field-hint">
-            {isEditing ? 'Để trống để giữ nguyên mật khẩu hiện tại.' : 'Mật khẩu tối đa 72 byte UTF-8.'}
+            {isEditing ? 'Leave blank to keep the current password.' : 'Password must be at most 72 UTF-8 bytes.'}
           </p>
           {fieldErrors.password && <p id="account-password-error" className="field-error" role="alert">{fieldErrors.password}</p>}
         </fieldset>
         <div className="dialog-actions">
-          <button type="button" className="button-secondary" onClick={onClose} disabled={saving}>Hủy</button>
-          <button type="submit" className="button-primary" disabled={saving}>{saving ? 'Đang lưu…' : 'Lưu tài khoản'}</button>
+          <button type="button" className="button-secondary" onClick={onClose} disabled={saving}>Cancel</button>
+          <button type="submit" className="button-primary" disabled={saving}>{saving ? 'Saving…' : 'Save account'}</button>
         </div>
       </form>
     </dialog>

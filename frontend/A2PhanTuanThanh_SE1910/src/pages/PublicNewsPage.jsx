@@ -18,7 +18,7 @@ export default function PublicNewsPage() {
         const response = await client.get('/public/news', { params: { q: searchQuery }, signal: controller.signal })
         if (!controller.signal.aborted) setNews(response.data)
       } catch (requestError) {
-        if (!controller.signal.aborted) setError(requestError.response?.data?.message || 'Không tải được tin tức. Vui lòng thử lại.')
+        if (!controller.signal.aborted) setError(requestError.response?.data?.message || 'Unable to load news. Please try again.')
       } finally {
         if (!controller.signal.aborted) setLoading(false)
       }
@@ -38,32 +38,32 @@ export default function PublicNewsPage() {
   return (
     <>
       <p className="eyebrow">FUNewsManagementSystem</p>
-      <h1>Tin tức</h1>
-      <p className="muted">Thông tin và thông báo mới nhất từ nhà trường.</p>
+      <h1>News</h1>
+      <p className="muted">The latest news and announcements from the university.</p>
       <form className="account-toolbar" onSubmit={(event) => {
         event.preventDefault(); setSearchQuery(keyword.trim()); reloadNews()
       }}>
-        <label className="sr-only" htmlFor="public-search">Tìm tin theo tiêu đề, headline hoặc nội dung</label>
+        <label className="sr-only" htmlFor="public-search">Search news by title, headline or content</label>
         <input id="public-search" type="search" maxLength={200} value={keyword}
-          placeholder="Tìm tiêu đề, headline hoặc nội dung" onChange={(event) => {
+          placeholder="Search by title, headline or content" onChange={(event) => {
             setKeyword(event.target.value)
             if (!event.target.value.trim() && searchQuery) clearSearch()
           }} />
-        <button type="submit" className="button-primary" disabled={loading}>Tìm kiếm</button>
-        {(keyword || searchQuery) && <button type="button" className="button-secondary" onClick={clearSearch}>Xóa tìm kiếm</button>}
+        <button type="submit" className="button-primary" disabled={loading}>Search</button>
+        {(keyword || searchQuery) && <button type="button" className="button-secondary" onClick={clearSearch}>Clear search</button>}
       </form>
-      {loading && <p className="state-message" role="status">Đang tải tin tức…</p>}
+      {loading && <p className="state-message" role="status">Loading news…</p>}
       {!loading && error && <div className="state-message"><p className="error-message" role="alert">{error}</p>
-        <button type="button" className="button-secondary" onClick={reloadNews}>Thử lại</button></div>}
+        <button type="button" className="button-secondary" onClick={reloadNews}>Try again</button></div>}
       {!loading && !error && news.length === 0 && <p className="state-message" role="status">
-        {searchQuery ? 'Không tìm thấy tin phù hợp.' : 'Chưa có tin tức nào.'}</p>}
+        {searchQuery ? 'No matching news found.' : 'No news yet.'}</p>}
       {!loading && !error && <div className="news-grid">{news.map((article) =>
         <article className="card public-article" key={article.newsArticleId}>
           <p className="eyebrow">{article.categoryName}</p>
           <h2><Link to={`/public/news/${article.newsArticleId}`}>{article.newsTitle}</Link></h2>
           <p>{article.headline}</p>
           <p className="muted">{article.createdDate.replace('T', ' ')} UTC</p>
-          <Link to={`/public/news/${article.newsArticleId}`}>Đọc bài viết</Link>
+          <Link to={`/public/news/${article.newsArticleId}`}>Read article</Link>
         </article>)}</div>}
     </>
   )
