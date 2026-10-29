@@ -24,6 +24,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import org.springframework.jdbc.core.JdbcTemplate;
+import java.sql.DriverManager;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -39,7 +44,17 @@ class NewsWriteApiTests {
         }
         StandardEnvironment environment = new StandardEnvironment();
         environment.getPropertySources().addLast(new ResourcePropertySource("classpath:application.properties"));
-        String url = environment.getRequiredProperty("spring.datasource.url").replace(
+        String originalUrl = environment.getRequiredProperty("spring.datasource.url");
+        String writeDatabase = database + "_Writes";
+        // These tests commit/roll back real service transactions, separately from the read fixtures.
+        String masterUrl = originalUrl.replace("databaseName=A2PhanTuanThanh_SE1910;", "databaseName=master;");
+        try (var connection = DriverManager.getConnection(masterUrl,
+                environment.getRequiredProperty("spring.datasource.username"),
+                environment.getRequiredProperty("spring.datasource.password"));
+             var statement = connection.createStatement()) {
+            statement.execute("IF DB_ID(N'" + writeDatabase + "') IS NULL CREATE DATABASE [" + writeDatabase + "]");
+        }
+        String url = originalUrl.replace(
                 "databaseName=A2PhanTuanThanh_SE1910;", "databaseName=" + database + "_Writes;");
         registry.add("spring.datasource.url", () -> url);
         registry.add("app.demo.enabled", () -> "false");
@@ -53,6 +68,7 @@ class NewsWriteApiTests {
     @Autowired TagRepository tags;
     @Autowired NewsTagRepository links;
     @Autowired PasswordEncoder passwords;
+    @Autowired JdbcTemplate jdbc;
     private Category category;
     private SystemAccount staff;
     private String staffToken;
@@ -99,6 +115,13 @@ class NewsWriteApiTests {
             assertThat(response.toString()).doesNotContain("accountPassword", "$2a$");
         }
         create(body(1));
+        var boundary = body(1);
+        boundary.put("newsTitle", "x".repeat(200));
+        boundary.put("headline", "x".repeat(300));
+        boundary.put("newsContent", "x".repeat(20000));
+        boundary.put("newsSource", "x".repeat(500));
+        boundary.put("tags", List.of(tagInput(null, "x".repeat(100), "x".repeat(500))));
+        create(boundary);
     }
 
     @Test
@@ -164,6 +187,74 @@ class NewsWriteApiTests {
         body.put("newsStatus", status);
         body.put("tags", new ArrayList<>());
         return body;
+    }
+
+    @Test
+    void lateDatabaseConflictRollsBackArticleNewTagAndExistingTagChanges() throws Exception {
+        Tag free = tags.saveAndFlush(new Tag("Keep name", "Keep note"));
+        var initial = body(1);
+        initial.put("tags", List.of(tagInput(null, "Keep link", null)));
+        JsonNode original = create(initial);
+        long originalId = original.path("newsArticleId").asLong();
+        long articleCount = articles.count();
+        long tagCount = tags.count();
+        long linkCount = links.count();
+        // Force a failure at the link insert, after the article and tags have been flushed.
+        jdbc.execute("ALTER TABLE dbo.NewsTag ADD CONSTRAINT CK_M6_TestRollback CHECK (TagID <> " + free.getTagId() + ")");
+        try {
+            var body = body(1);
+            body.put("tags", List.of(tagInput(null, "Must roll back", null), tagInput(free.getTagId(), "Changed", "Changed")));
+            mvc.perform(post("/api/news").header("Authorization", "Bearer " + staffToken)
+                            .contentType(MediaType.APPLICATION_JSON).content(json.writeValueAsString(body)))
+                    .andExpect(status().isConflict());
+            body.put("newsTitle", "Must roll back update");
+            body.put("newsStatus", 0);
+            mvc.perform(put("/api/news/" + originalId).header("Authorization", "Bearer " + staffToken)
+                            .contentType(MediaType.APPLICATION_JSON).content(json.writeValueAsString(body)))
+                    .andExpect(status().isConflict());
+            NewsArticle unchangedArticle = articles.findById(originalId).orElseThrow();
+            assertThat(unchangedArticle.getNewsTitle()).isEqualTo("Bài viết M6");
+            assertThat(unchangedArticle.getNewsStatus()).isEqualTo(1);
+            assertThat(unchangedArticle.getModifiedDate()).isNull();
+            assertThat(links.findByNewsArticle_NewsArticleId(originalId)).hasSize(1);
+            assertThat(links.existsByTag_TagId(original.path("tags").get(0).path("tagId").asLong())).isTrue();
+            assertThat(articles.count()).isEqualTo(articleCount);
+            assertThat(tags.count()).isEqualTo(tagCount);
+            assertThat(links.count()).isEqualTo(linkCount);
+            Tag unchanged = tags.findById(free.getTagId()).orElseThrow();
+            assertThat(unchanged.getTagName()).isEqualTo("Keep name");
+            assertThat(unchanged.getNote()).isEqualTo("Keep note");
+        } finally {
+            jdbc.execute("ALTER TABLE dbo.NewsTag DROP CONSTRAINT CK_M6_TestRollback");
+        }
+    }
+
+    @Test
+    void concurrentCreatesCannotClaimTheSameTag() throws Exception {
+        Tag free = tags.saveAndFlush(new Tag("Concurrent tag", null));
+        long articleCount = articles.count();
+        var body = body(1);
+        body.put("tags", List.of(tagInput(free.getTagId(), "Concurrent tag", null)));
+        String requestBody = json.writeValueAsString(body);
+        CountDownLatch start = new CountDownLatch(1);
+        var workers = Executors.newFixedThreadPool(2);
+        try {
+            java.util.concurrent.Callable<Integer> create = () -> {
+                start.await();
+                return mvc.perform(post("/api/news").header("Authorization", "Bearer " + staffToken)
+                                .contentType(MediaType.APPLICATION_JSON).content(requestBody))
+                        .andReturn().getResponse().getStatus();
+            };
+            var first = workers.submit(create);
+            var second = workers.submit(create);
+            start.countDown();
+            assertThat(List.of(first.get(20, TimeUnit.SECONDS), second.get(20, TimeUnit.SECONDS)))
+                    .containsExactlyInAnyOrder(201, 409);
+            assertThat(articles.count()).isEqualTo(articleCount + 1);
+            assertThat(links.findByTag_TagId(free.getTagId())).isPresent();
+        } finally {
+            workers.shutdownNow();
+        }
     }
 
     @Test

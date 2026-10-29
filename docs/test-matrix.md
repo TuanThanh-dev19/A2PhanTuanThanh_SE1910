@@ -79,11 +79,11 @@ M2 chạy trên base `ea84544` + working tree được lưu cùng commit tính n
 
 | ID | Trường hợp | Các bước | Kết quả mong đợi | Actual | Trạng thái |
 |---|---|---|---|---|---|
-| TC-NEWS-01 | Create/Read/Update; REQ-12 | Lưu đủ field, gửi giả creator/updater/date | Một category; audit do server; update giữ creator/ngày tạo | Chưa chạy | Not run |
-| TC-NEWS-02 | Tags; REQ-12 | Thêm/sửa/gắn/bỏ tag; thử tag bài khác/link trùng | Links đúng; chặn xung đột theo DEC-01 | Chưa chạy | Not run |
-| TC-NEWS-03 | Transaction; REQ-12 | Sửa bài với một tag/FK không hợp lệ | Rollback cả bài và links | Chưa chạy | Not run |
-| TC-NEWS-04 | Search/status; REQ-12,06 | Tìm title/headline/content; đổi active↔inactive | Search đúng; public phản ánh status mới | Chưa chạy | Not run |
-| TC-NEWS-05 | Delete; REQ-12 | Xóa bài có nhiều tags | Xóa bài/links; giữ account/category/Tag | Chưa chạy | Not run |
+| TC-NEWS-01 | Create/Read/Update; REQ-12 | Lưu đủ field, gửi giả creator/updater/date | Một category; audit do server; update giữ creator/ngày tạo | API/Chrome/SQL: tạo/sửa đủ field, cả status; audit server UTC, giữ creator/ngày tạo; giả audit không ảnh hưởng | Pass |
+| TC-NEWS-02 | Tags; REQ-12 | Thêm/sửa/gắn/bỏ tag; thử tag bài khác/link trùng | Links đúng; chặn xung đột theo DEC-01 | API/Chrome: thêm/sửa/gắn/bỏ tags đạt; tag bài khác 409, ID trùng 400; tháo tag giữ bản ghi | Pass |
+| TC-NEWS-03 | Transaction; REQ-12 | Sửa bài với một tag/FK không hợp lệ | Rollback cả bài và links | SQL riêng: lỗi tag/FK không đổi dữ liệu; CHECK tạm buộc lỗi sau flush ở Create/Update đều rollback bài, tags, links và audit | Pass |
+| TC-NEWS-04 | Search/status; REQ-12,06 | Tìm title/headline/content; đổi active↔inactive | Search đúng; public phản ánh status mới | Search title/headline/content, trim/hoa thường/wildcard đạt; Chrome đổi active/inactive phản ánh ở public list/detail | Pass |
+| TC-NEWS-05 | Delete; REQ-12 | Xóa bài có nhiều tags | Xóa bài/links; giữ account/category/Tag | API/Chrome/SQL: 204 xóa bài/links; account/category/Tag còn; tag trở lại danh sách chọn; Cancel không DELETE | Pass |
 
 ## Profile và History
 
@@ -218,3 +218,11 @@ Các kết quả M3 ở `api/M3ApiTests.java`, chạy SQL Server DB biệt lập
 | ID | Trường hợp | Expected | Actual | Trạng thái |
 |---|---|---|---|---|
 | TC-M6P7-PUBLIC | Khách đọc/tìm tin, URL inactive/sai, màn hình hẹp, token cũ | Chỉ active; public không gửi Bearer; giao diện đọc được | Chrome/JAR/SQL: list/detail/search/clear đạt; inactive/ID chữ báo không tìm thấy; viewport 390px không tràn; token giả cũ không gắn vào cả list/detail, vẫn đọc được; lint/build đạt | Pass |
+
+## M6 - Phần 8: tích hợp và regression (29-10-2026)
+
+| ID | Trường hợp | Expected | Actual | Trạng thái |
+|---|---|---|---|---|
+| TC-M6P8-ATOMIC | Hai request tranh tag; lỗi DB sau flush | Chỉ một bài nhận tag; Create/Update lỗi rollback mọi thay đổi | 8 write tests SQL đạt: concurrent 201/409, chỉ thêm một bài; CHECK tạm gây lỗi link sau flush, cả Create/Update rollback bài/tag/link/audit; dữ liệu đúng ở giới hạn field tối đa | Pass |
+| TC-M6P8-E2E | React tạo/sửa/status/xóa, khách đọc và mất mạng | UI/API/DB nhất quán; text hiển thị an toàn; retry được | Chrome với hai phiên: active đọc được, inactive/đã xóa không đọc được, tag sửa đúng; nội dung script chỉ là text; lỗi mạng mô phỏng rồi retry đạt; SQL xác nhận tags còn, links null, account/category nguyên vẹn | Pass |
+| TC-M6P8-VERIFY | Backend regression, frontend và Author | Test/build/lint đạt; file sửa có Author; không thêm evidence | mvnw verify: 54 tests, 0 failure/error/skipped; frontend lint/build đạt; Author kiểm tra ở các file M6; chỉ cập nhật test-matrix trong docs | Pass |
