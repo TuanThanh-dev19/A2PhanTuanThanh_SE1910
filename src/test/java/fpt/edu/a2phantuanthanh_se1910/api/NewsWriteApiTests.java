@@ -167,6 +167,33 @@ class NewsWriteApiTests {
     }
 
     @Test
+    void deleteRemovesOnlyArticleAndLinksForBothStatusesAndChecksPermissions() throws Exception {
+        for (int status : new int[]{0, 1}) {
+            var body = body(status);
+            body.put("tags", List.of(tagInput(null, "Keep tag one", null), tagInput(null, "Keep tag two", "Note")));
+            JsonNode created = create(body);
+            long id = created.path("newsArticleId").asLong();
+            String path = "/api/news/" + id;
+            mvc.perform(delete(path)).andExpect(status().isUnauthorized());
+            mvc.perform(delete(path).header("Authorization", "Bearer " + adminToken)).andExpect(status().isForbidden());
+            assertThat(articles.existsById(id)).isTrue();
+            mvc.perform(delete(path).header("Authorization", "Bearer " + staffToken)).andExpect(status().isNoContent());
+            assertThat(articles.existsById(id)).isFalse();
+            assertThat(links.findByNewsArticle_NewsArticleId(id)).isEmpty();
+            for (JsonNode tag : created.path("tags")) {
+                long tagId = tag.path("tagId").asLong();
+                assertThat(tags.existsById(tagId)).isTrue();
+                assertThat(links.existsByTag_TagId(tagId)).isFalse();
+            }
+            assertThat(accounts.existsById(staff.getAccountId())).isTrue();
+            assertThat(categories.existsById(category.getCategoryId())).isTrue();
+            mvc.perform(get("/api/public/news/" + id)).andExpect(status().isNotFound());
+            mvc.perform(delete(path).header("Authorization", "Bearer " + staffToken)).andExpect(status().isNotFound());
+        }
+        mvc.perform(delete("/api/news/0").header("Authorization", "Bearer " + staffToken)).andExpect(status().isBadRequest());
+    }
+
+    @Test
     void updateByAnotherStaffPreservesCreationAndSynchronizesTagsAndPublicStatus() throws Exception {
         var initial = body(1);
         initial.put("tags", List.of(tagInput(null, "Keep", "Before"), tagInput(null, "Detach", null)));

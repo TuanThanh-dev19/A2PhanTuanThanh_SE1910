@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import client from '../api/client'
 import NewsDetailDialog from '../components/NewsDetailDialog'
 import NewsFormDialog from '../components/NewsFormDialog'
+import NewsDeleteDialog from '../components/NewsDeleteDialog'
 
 export default function NewsPage() {
   const [news, setNews] = useState([])
@@ -16,6 +17,7 @@ export default function NewsPage() {
   const [actionError, setActionError] = useState('')
   const [formState, setFormState] = useState(null)
   const [success, setSuccess] = useState('')
+  const [deleteNews, setDeleteNews] = useState(null)
 
   useEffect(() => {
     const controller = new AbortController()
@@ -96,6 +98,9 @@ export default function NewsPage() {
       }} />}
       {actionError && <p className="error-message" role="alert">{actionError}</p>}
       {detail && <NewsDetailDialog news={detail} onClose={() => setDetail(null)} />}
+      {deleteNews && <NewsDeleteDialog news={deleteNews} onClose={() => setDeleteNews(null)} onDeleted={() => {
+        setDeleteNews(null); setSuccess('Đã xóa bài viết.'); reloadNews()
+      }} />}
       <section className="card" aria-busy={loading} aria-label="Danh sách bài viết">
         <div className="card-heading"><h2>Danh sách bài viết</h2>
           {!loading && !error && <span className="count">{news.length} bài viết</span>}</div>
@@ -116,7 +121,10 @@ export default function NewsPage() {
               disabled={openingId !== null} onClick={() => openDetail(article.newsArticleId)}>
               {openingId === article.newsArticleId ? 'Đang tải…' : 'Chi tiết'}</button>
               <button type="button" className="button-secondary" disabled={openingId !== null}
-                onClick={() => openDetail(article.newsArticleId, true)}>Sửa</button></div></td>
+                onClick={() => openDetail(article.newsArticleId, true)}>Sửa</button>
+              <button type="button" className="button-danger" disabled={openingId !== null} onClick={() => {
+                setSuccess(''); setActionError(''); setDeleteNews(article)
+              }}>Xóa</button></div></td>
           </tr>)}</tbody>
         </table></div>}
       </section>

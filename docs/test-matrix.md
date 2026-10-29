@@ -206,3 +206,9 @@ Các kết quả M3 ở `api/M3ApiTests.java`, chạy SQL Server DB biệt lập
 |---|---|---|---|---|
 | TC-M6P5-API | Staff khác sửa bài; đổi category/status; giữ audit tạo; gắn/sửa/bỏ tag; request sai | 200; creator/ngày tạo giữ nguyên; tag tháo còn tồn tại; lỗi không đổi dữ liệu | 5 write tests SQL đạt; 400/404/409/401/403 đúng; public phản ánh đổi status. Audit UTC chuẩn microsecond để response khớp datetime2(6) | Pass |
 | TC-M6P5-UI | Prefill, lỗi giữ form, sửa tags/status và search | Dữ liệu đúng, một PUT khi nhấn kép, giữ keyword | Chrome/JAR/SQL: prefill và validation đạt; rename/thêm tag, inactive, 1 PUT và giữ search; lint/build đạt | Pass |
+
+## M6 - Phần 6: xóa News (29-10-2026)
+
+| ID | Trường hợp | Expected | Actual | Trạng thái |
+|---|---|---|---|---|
+| TC-M6P6-DELETE | Xóa bài cả hai status, có nhiều tags; quyền/ID và confirmation | 204; chỉ xóa bài/links; Cancel không DELETE | 6 write tests SQL đạt, account/category/tags còn; 401/403/404/400 đúng. Chrome Cancel 0 DELETE; dblclick Confirm 1 DELETE; tag được chọn lại trong form tạo; lint/build đạt | Pass |

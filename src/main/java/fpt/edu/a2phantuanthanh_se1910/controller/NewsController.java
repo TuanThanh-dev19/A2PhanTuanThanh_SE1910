@@ -8,6 +8,7 @@ import fpt.edu.a2phantuanthanh_se1910.dto.request.NewsRequest;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import java.security.Principal;
 import java.net.URI;
@@ -53,5 +54,11 @@ public class NewsController {
             @Valid @RequestBody NewsRequest request, Principal principal) {
         return ResponseEntity.ok().cacheControl(CacheControl.noStore())
                 .body(newsService.update(id, request, Long.parseLong(principal.getName())));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable @Positive long id) {
+        newsService.delete(id);
+        return ResponseEntity.noContent().build();
     }
 }

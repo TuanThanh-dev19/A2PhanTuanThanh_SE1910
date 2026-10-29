@@ -112,6 +112,16 @@ public class NewsService {
     }
 
     @Transactional
+    public void delete(long id) {
+        NewsArticle article = articles.findForUpdate(id).orElseThrow(() ->
+                new ResponseStatusException(HttpStatus.NOT_FOUND, "News article not found"));
+        newsTags.deleteAll(newsTags.findByNewsArticle_NewsArticleId(id));
+        newsTags.flush();
+        articles.delete(article);
+        articles.flush();
+    }
+
+    @Transactional
     public NewsDetail update(long id, NewsRequest request, long accountId) {
         NewsArticle article = articles.findForUpdate(id).orElseThrow(() ->
                 new ResponseStatusException(HttpStatus.NOT_FOUND, "News article not found"));
